@@ -1,1 +1,127 @@
-<p>content-registro works!</p>
+<div class="min-h-screen grid grid-cols-1 lg:grid-cols-2">
+
+  <!-- LADO IZQUIERDO -->
+  <div class="flex items-center justify-center bg-gray-100 px-8 py-12">
+
+    <div class="w-full max-w-md">
+
+      <!-- Logo -->
+      <div class="mb-10">
+        <div class="text-4xl font-bold text-indigo-600">~</div>
+      </div>
+
+      <!-- Título -->
+      <h1 class="text-4xl font-bold text-gray-900">
+        Sign in to your account
+      </h1>
+
+      <p class="mt-3 text-gray-500">
+        Not a member?
+        <a href="#" class="font-semibold text-indigo-600 hover:text-indigo-500">
+          Start a 14 day free trial
+        </a>
+      </p>
+
+      <!-- FORM -->
+      <form class="mt-10 space-y-6">
+
+        <!-- EMAIL -->
+        <div>
+          <label
+            for="email"
+            class="block text-sm font-medium text-gray-700"
+          >
+            Email address
+          </label>
+
+          <input
+            id="email"
+            type="email"
+            placeholder=""
+            class="mt-2 w-full rounded-md border border-gray-300 bg-white px-4 py-3 outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <!-- PASSWORD -->
+        <div>
+
+          <div class="flex items-center justify-between">
+            <label
+              for="password"
+              class="block text-sm font-medium text-gray-700"
+            >
+              Password
+            </label>
+
+            <a
+              href="#"
+              class="text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+            >
+              Forgot password?
+            </a>
+          </div>
+
+          <input
+            id="password"
+            type="password"
+            class="mt-2 w-full rounded-md border border-gray-300 bg-white px-4 py-3 outline-none focus:border-indigo-500"
+          />
+
+        </div>
+
+        <!-- BOTÓN -->
+        <button
+          type="submit"
+          class="w-full rounded-md bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-500"
+        >
+          Sign in
+        </button>
+
+      </form>
+
+      <!-- DIVIDER -->
+      <div class="my-8 flex items-center">
+
+        <div class="h-px flex-1 bg-gray-300"></div>
+
+        <span class="px-4 text-sm text-gray-500">
+          Or continue with
+        </span>
+
+        <div class="h-px flex-1 bg-gray-300"></div>
+
+      </div>
+
+      <!-- SOCIAL -->
+      <div class="grid grid-cols-2 gap-4">
+
+        <button
+          class="flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white py-3 font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Google
+        </button>
+
+        <button
+          class="flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white py-3 font-medium text-gray-700 hover:bg-gray-50"
+        >
+          GitHub
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- LADO DERECHO -->
+  <div class="hidden lg:block">
+
+    <img
+      src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1600&auto=format&fit=crop"
+      alt="Office"
+      class="h-full w-full object-cover"
+    />
+
+  </div>
+
+</div>
