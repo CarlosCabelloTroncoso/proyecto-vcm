@@ -1,1 +1,48 @@
-<p>navbar works!</p>
+<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+  <nav class="flex items-center justify-between px-6 py-3 lg:px-10">
+
+    <!-- Brand -->
+    <div class="flex items-center gap-3">
+      <img src="images/escudo-ucm.png" alt="UCM" class="h-10 w-auto" />
+      <span class="font-bold text-sm tracking-widest text-[#1B3A6B] uppercase">
+        UCM Vinculación
+      </span>
+    </div>
+
+    <!-- Links centro -->
+    <div class="hidden lg:flex items-center gap-2">
+      <a routerLink="/"
+         routerLinkActive="bg-[#1B3A6B] text-white"
+         [routerLinkActiveOptions]="{exact:true}"
+         class="text-sm font-medium px-5 py-2 rounded border border-gray-300 text-gray-700 hover:border-[#1B3A6B] hover:text-[#1B3A6B] transition-all">
+        Inicio
+      </a>
+      <a href="#"
+         class="text-sm font-medium px-5 py-2 rounded border border-gray-300 text-gray-700 hover:border-[#1B3A6B] hover:text-[#1B3A6B] transition-all">
+        Universidad
+      </a>
+    </div>
+
+    <!-- Acciones derecha -->
+    <div class="hidden lg:flex items-center gap-4">
+      <a routerLink="/login"
+         class="text-sm font-semibold text-[#3B82F6] hover:underline">
+        Ingresar
+      </a>
+      <a routerLink="/registro"
+         class="text-sm font-semibold border border-[#1B3A6B] text-[#1B3A6B] px-5 py-2 rounded hover:bg-[#1B3A6B] hover:text-white transition-all">
+        Registrarse
+      </a>
+    </div>
+
+    <!-- Hamburger mobile -->
+    <div class="flex lg:hidden">
+      <button class="p-2 text-gray-600 hover:text-[#1B3A6B]">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+        </svg>
+      </button>
+    </div>
+
+  </nav>
+</header>
