@@ -1,9 +1,22 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-home-encargado',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './home-encargado.html',
   styleUrl: './home-encargado.css',
 })
-export class HomeEncargado {}
+export class HomeEncargado {
+
+  mobileMenuOpen = false;
+  profileMenuOpen = false;
+
+  toggleMobileMenu() {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  toggleProfileMenu() {
+    this.profileMenuOpen = !this.profileMenuOpen;
+  }
+}

@@ -1,48 +1,140 @@
-<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-  <nav class="flex items-center justify-between px-6 py-3 lg:px-10">
+<header class="sticky top-0 z-50 border-b border-[#1B3A6B]/10 bg-white text-[#1B3A6B] shadow-sm">
 
-    <!-- Brand -->
-    <div class="flex items-center gap-3">
-      <img src="images/escudo-ucm.png" alt="UCM" class="h-10 w-auto" />
-      <span class="font-bold text-sm tracking-widest text-[#1B3A6B] uppercase">
-        UCM Vinculación
-      </span>
-    </div>
+  <nav class="mx-auto max-w-7xl px-4 lg:px-8">
 
-    <!-- Links centro -->
-    <div class="hidden lg:flex items-center gap-2">
-      <a routerLink="/"
-         routerLinkActive="bg-[#1B3A6B] text-white"
-         [routerLinkActiveOptions]="{exact:true}"
-         class="text-sm font-medium px-5 py-2 rounded border border-gray-300 text-gray-700 hover:border-[#1B3A6B] hover:text-[#1B3A6B] transition-all">
-        Inicio
-      </a>
-      <a href="#"
-         class="text-sm font-medium px-5 py-2 rounded border border-gray-300 text-gray-700 hover:border-[#1B3A6B] hover:text-[#1B3A6B] transition-all">
-        Universidad
-      </a>
-    </div>
+    <div class="flex h-20 items-center justify-between">
 
-    <!-- Acciones derecha -->
-    <div class="hidden lg:flex items-center gap-4">
-      <a routerLink="/login"
-         class="text-sm font-semibold text-[#3B82F6] hover:underline">
-        Ingresar
-      </a>
-      <a routerLink="/registro"
-         class="text-sm font-semibold border border-[#1B3A6B] text-[#1B3A6B] px-5 py-2 rounded hover:bg-[#1B3A6B] hover:text-white transition-all">
-        Registrarse
-      </a>
-    </div>
+      <!-- LOGO -->
+      <div class="flex items-center gap-3">
 
-    <!-- Hamburger mobile -->
-    <div class="flex lg:hidden">
-      <button class="p-2 text-gray-600 hover:text-[#1B3A6B]">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+        <img
+          src="images/escudo-ucm.png"
+          alt="UCM"
+          class="h-11 w-auto"
+        />
+
+        <span
+          class="text-sm font-bold uppercase tracking-[0.2em] text-[#1B3A6B] sm:text-base"
+        >
+          UCM Vinculación
+        </span>
+
+      </div>
+
+      <!-- MENU DESKTOP -->
+      <div class="hidden lg:flex items-center gap-2">
+
+        <a
+          routerLink="/"
+          routerLinkActive="bg-[#1B3A6B] text-white"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="rounded-xl px-5 py-2.5 text-sm font-medium transition hover:bg-[#1B3A6B]/10"
+        >
+          Inicio
+        </a>
+
+        <a
+          href="#"
+          class="rounded-xl px-5 py-2.5 text-sm font-medium transition hover:bg-[#1B3A6B]/10"
+        >
+          Universidad
+        </a>
+
+      </div>
+
+      <!-- ACTIONS DESKTOP -->
+      <div class="hidden lg:flex items-center gap-3">
+
+        <a
+          routerLink="/login"
+          class="rounded-xl border border-[#1B3A6B]/20 px-5 py-2.5 text-sm font-semibold transition hover:bg-[#1B3A6B]/10"
+        >
+          Ingresar
+        </a>
+
+        <a
+          routerLink="/registro"
+          class="rounded-xl bg-[#1B3A6B] px-5 py-2.5 text-sm font-semibold text-white transition hover:scale-[1.02] hover:bg-[#16315b]"
+        >
+          Registrarse
+        </a>
+
+      </div>
+
+      <!-- MOBILE BUTTON -->
+      <button
+        class="rounded-xl p-2 transition hover:bg-[#1B3A6B]/10 lg:hidden"
+        (click)="toggleMobileMenu()"
+      >
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-7 w-7"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+
         </svg>
+
       </button>
+
     </div>
+
+    <!-- MOBILE MENU -->
+    @if (mobileMenuOpen) {
+
+      <div class="border-t border-[#1B3A6B]/10 py-4 lg:hidden">
+
+        <div class="flex flex-col gap-3">
+
+          <!-- LINKS -->
+          <a
+            routerLink="/"
+            class="rounded-xl bg-[#1B3A6B]/10 px-4 py-3 text-sm font-medium"
+          >
+            Inicio
+          </a>
+
+          <a
+            href="#"
+            class="rounded-xl px-4 py-3 text-sm font-medium transition hover:bg-[#1B3A6B]/10"
+          >
+            Universidad
+          </a>
+
+          <!-- ACTIONS -->
+          <div class="mt-2 flex flex-col gap-3">
+
+            <a
+              routerLink="/login"
+              class="rounded-xl border border-[#1B3A6B]/20 px-4 py-3 text-center text-sm font-semibold transition hover:bg-[#1B3A6B]/10"
+            >
+              Ingresar
+            </a>
+
+            <a
+              routerLink="/registro"
+              class="rounded-xl bg-[#1B3A6B] px-4 py-3 text-center text-sm font-semibold text-white"
+            >
+              Registrarse
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    }
 
   </nav>
+
 </header>

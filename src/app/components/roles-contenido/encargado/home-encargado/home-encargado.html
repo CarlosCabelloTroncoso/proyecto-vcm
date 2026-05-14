@@ -1,1 +1,311 @@
-<p>home-encargado works!</p>
+<div class="min-h-screen bg-white text-[#1B3A6B]">
+
+  <!-- NAVBAR -->
+  <nav class="border-b border-[#1B3A6B]/10 bg-[#1B3A6B] text-white shadow-sm">
+
+    <div class="mx-auto max-w-7xl px-4">
+
+      <div class="flex h-20 items-center justify-between">
+
+        <!-- LEFT -->
+        <div class="flex items-center gap-10">
+
+          <!-- LOGO -->
+          <div class="flex items-center gap-3">
+
+            <img
+              src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=white"
+              class="h-9 w-9"
+              alt="Logo"
+            />
+
+            <span class="text-xl font-bold tracking-wide">
+              UCM Vinculación
+            </span>
+
+          </div>
+
+          <!-- MENU DESKTOP -->
+          <div class="hidden md:flex items-center gap-2">
+
+            <a
+              href="#"
+              class="rounded-xl bg-white/15 px-5 py-2.5 text-sm font-medium transition hover:bg-white/20"
+            >
+              Inicio
+            </a>
+
+            <a
+              href="#"
+              class="rounded-xl px-5 py-2.5 text-sm font-medium transition hover:bg-white/10"
+            >
+              Ver Solicitudes
+            </a>
+
+            <a
+              href="#"
+              class="rounded-xl px-5 py-2.5 text-sm font-medium transition hover:bg-white/10"
+            >
+              Gestión Planteamientos
+            </a>
+
+            <a
+              href="#"
+              class="rounded-xl px-5 py-2.5 text-sm font-medium transition hover:bg-white/10"
+            >
+              Gestión Proyectos
+            </a>
+
+            <a
+              href="#"
+              class="rounded-xl px-5 py-2.5 text-sm font-medium transition hover:bg-white/10"
+            >
+              Alumnos
+            </a>
+
+            <a
+              href="#"
+              class="rounded-xl px-5 py-2.5 text-sm font-medium transition hover:bg-white/10"
+            >
+              Reportes
+            </a>
+
+          </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="hidden md:flex items-center h-full">
+
+          <!-- PERFIL -->
+          <div class="relative flex items-center h-full">
+
+            <button
+              class="flex items-center justify-center"
+              (click)="toggleProfileMenu()"
+            >
+
+              <img
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"
+                alt="Perfil"
+                class="h-11 w-11 rounded-full border-2 border-white/30 object-cover transition hover:scale-105"
+              />
+
+            </button>
+
+            <!-- DROPDOWN -->
+            @if (profileMenuOpen) {
+
+              <div
+                class="absolute right-0 top-16 z-50 w-56 overflow-hidden rounded-2xl border border-[#1B3A6B]/10 bg-white shadow-2xl"
+              >
+
+                <a
+                  href="#"
+                  class="block px-4 py-3 text-sm text-[#1B3A6B] transition hover:bg-[#1B3A6B]/5"
+                >
+                  Mi Perfil
+                </a>
+
+                <a
+                  href="#"
+                  class="block px-4 py-3 text-sm text-[#1B3A6B] transition hover:bg-[#1B3A6B]/5"
+                >
+                  Configuración
+                </a>
+
+                <a
+                  href="#"
+                  class="block px-4 py-3 text-sm text-red-500 transition hover:bg-red-50"
+                >
+                  Cerrar sesión
+                </a>
+
+              </div>
+
+            }
+
+          </div>
+
+        </div>
+
+        <!-- MOBILE BUTTON -->
+        <button
+          class="text-white md:hidden"
+          (click)="toggleMobileMenu()"
+        >
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-7 w-7"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+
+          </svg>
+
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- MOBILE MENU -->
+    @if (mobileMenuOpen) {
+
+      <div class="border-t border-white/10 px-4 py-4 md:hidden">
+
+        <div class="flex flex-col gap-2">
+
+          <a
+            href="#"
+            class="rounded-xl bg-white/15 px-4 py-3"
+          >
+            Inicio
+          </a>
+
+          <a
+            href="#"
+            class="rounded-xl px-4 py-3 hover:bg-white/10"
+          >
+            Ver Solicitudes
+          </a>
+
+          <a
+            href="#"
+            class="rounded-xl px-4 py-3 hover:bg-white/10"
+          >
+            Gestión Planteamientos
+          </a>
+
+          <a
+            href="#"
+            class="rounded-xl px-4 py-3 hover:bg-white/10"
+          >
+            Gestión Proyectos
+          </a>
+
+          <a
+            href="#"
+            class="rounded-xl px-4 py-3 hover:bg-white/10"
+          >
+            Alumnos
+          </a>
+
+          <a
+            href="#"
+            class="rounded-xl px-4 py-3 hover:bg-white/10"
+          >
+            Reportes
+          </a>
+
+        </div>
+
+      </div>
+
+    }
+
+  </nav>
+
+  <!-- HERO -->
+  <section class="mx-auto max-w-7xl px-4 py-16 md:py-24">
+
+    <div class="grid items-center gap-14 md:grid-cols-2">
+
+      <!-- TEXTO -->
+      <div>
+
+        <h1 class="text-4xl font-extrabold leading-tight md:text-6xl">
+
+          Bienvenido a
+          <span class="text-[#1B3A6B]">
+            UCM Vinculación
+          </span>
+
+        </h1>
+        <p class="mt-8 max-w-xl text-xl leading-relaxed text-[#1B3A6B]/75">
+
+          ¿Qué nuevas solicitudes habrán?
+          ¡Veamos las solicitudes que nuestra región nos propone!
+
+        </p>
+
+        <div class="mt-10">
+
+          <button
+            class="rounded-2xl bg-[#1B3A6B] px-8 py-4 text-lg font-semibold text-white shadow-lg transition hover:scale-[1.02] hover:bg-[#16315b]"
+          >
+            Ver Solicitudes
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- PANEL DERECHO -->
+      <div
+        class="rounded-3xl border border-[#1B3A6B]/10 bg-[#1B3A6B] p-8 text-white shadow-2xl"
+      >
+
+        <h2 class="mb-8 text-2xl font-bold">
+          Resumen General
+        </h2>
+
+        <div class="space-y-5">
+
+          <!-- APROBADOS -->
+          <div class="rounded-2xl bg-white/10 p-5">
+
+            <p class="text-sm text-white/70">
+              Planteamientos Aprobados
+            </p>
+
+            <h3 class="mt-2 text-3xl font-bold">
+              28
+            </h3>
+
+          </div>
+
+          <!-- RECHAZADOS -->
+          <div class="rounded-2xl bg-white/10 p-5">
+
+            <p class="text-sm text-white/70">
+              Planteamientos Rechazados
+            </p>
+
+            <h3 class="mt-2 text-3xl font-bold">
+              6
+            </h3>
+
+          </div>
+
+          <!-- PROYECTOS -->
+          <div class="rounded-2xl bg-white/10 p-5">
+
+            <p class="text-sm text-white/70">
+              Proyectos Activos
+            </p>
+
+            <h3 class="mt-2 text-3xl font-bold">
+              14
+            </h3>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
