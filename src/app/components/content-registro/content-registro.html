@@ -1,100 +1,93 @@
 <div class="min-h-screen grid grid-cols-1 lg:grid-cols-2">
 
   <!-- LADO IZQUIERDO -->
-  <div class="flex items-center justify-center bg-gray-100 px-8 py-12">
+  <div class="flex items-center justify-center bg-gray-50 px-4 py-10 sm:px-8 lg:px-12">
 
-    <div class="w-full max-w-md">
+    <div class="w-full max-w-md flex flex-col">
 
       <!-- Logo -->
-      <div class="mb-10">
-      <img
-        src="/assets/ucmlogo.png"
-        alt="logo animado"
-        class="block w-32"
+      <div class="mb-6 flex justify-center">
+        <img
+          src="/assets/ucmlogo.png"
+          alt="logo"
+          class="h-auto w-32 object-contain"
         >
       </div>
 
-      <!-- Título -->
-      <h1 class="text-4xl font-bold text-gray-900">
-        Registrarse
+      <!-- TÍTULO -->
+      <h1 class="text-3xl font-extrabold text-gray-900 text-center tracking-tight">
+        Crear una cuenta
       </h1>
 
+      <!-- SUBTÍTULO -->
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Ingresa tus datos para registrarte en el sistema
+      </p>
+
       <!-- FORM -->
-      <form class="mt-10 space-y-6">
+      <form class="mt-8 space-y-5">
 
         <!-- RUT -->
         <div>
           <label
             for="rut"
-            class="block text-sm font-medium text-gray-700"
+            class="block text-sm font-semibold text-gray-700"
           >
-            Rut
+            RUT
           </label>
 
           <input
             id="rut"
             type="text"
             placeholder="12.345.678-9"
-            class="mt-2 w-full rounded-md border border-gray-300 bg-white px-4 py-3 outline-none focus:border-indigo-500"
+            class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
         </div>
 
-        <!-- NOMBRES -->
-        <div>
-          <label
-            for="nombres"
-            class="block text-sm font-medium text-gray-700"
-          >
-            Nombres
-          </label>
+        <!-- NOMBRES Y APELLIDOS -->
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 
-          <input
-            id="nombres"
-            type="text"
-            placeholder="Ingrese sus nombres"
-            class="mt-2 w-full rounded-md border border-gray-300 bg-white px-4 py-3 outline-none focus:border-indigo-500"
-          />
-        </div>
+          <!-- NOMBRES -->
+          <div>
+            <label
+              for="nombres"
+              class="block text-sm font-semibold text-gray-700"
+            >
+              Nombres
+            </label>
 
-        <!-- APELLIDOS -->
-        <div>
-          <label
-            for="apellidos"
-            class="block text-sm font-medium text-gray-700"
-          >
-            Apellidos
-          </label>
+            <input
+              id="nombres"
+              type="text"
+              placeholder="Juan"
+              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
 
-          <input
-            id="apellidos"
-            type="text"
-            placeholder="Ingrese sus apellidos"
-            class="mt-2 w-full rounded-md border border-gray-300 bg-white px-4 py-3 outline-none focus:border-indigo-500"
-          />
-        </div>
+          <!-- APELLIDOS -->
+          <div>
+            <label
+              for="apellidos"
+              class="block text-sm font-semibold text-gray-700"
+            >
+              Apellidos
+            </label>
 
-        <!-- TELEFONO -->
-        <div>
-          <label
-            for="telefono"
-            class="block text-sm font-medium text-gray-700"
-          >
-            Teléfono
-          </label>
+            <input
+              id="apellidos"
+              type="text"
+              placeholder="Pérez"
+              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
 
-          <input
-            id="telefono"
-            type="tel"
-            placeholder="+56 9 1234 5678"
-            class="mt-2 w-full rounded-md border border-gray-300 bg-white px-4 py-3 outline-none focus:border-indigo-500"
-          />
         </div>
 
         <!-- EMAIL -->
         <div>
           <label
             for="email"
-            class="block text-sm font-medium text-gray-700"
+            class="block text-sm font-semibold text-gray-700"
           >
             Correo Electrónico
           </label>
@@ -103,67 +96,77 @@
             id="email"
             type="email"
             placeholder="correo@ejemplo.com"
-            class="mt-2 w-full rounded-md border border-gray-300 bg-white px-4 py-3 outline-none focus:border-indigo-500"
+            class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition"
           />
         </div>
 
-        <!-- PASSWORD -->
-        <div>
-          <label
-            for="password"
-            class="block text-sm font-medium text-gray-700"
-          >
-            Contraseña
-          </label>
+        <!-- PASSWORDS -->
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 
-          <input
-            id="password"
-            type="password"
-            placeholder="********"
-            class="mt-2 w-full rounded-md border border-gray-300 bg-white px-4 py-3 outline-none focus:border-indigo-500"
-          />
-        </div>
+          <!-- PASSWORD -->
+          <div>
+            <label
+              for="password"
+              class="block text-sm font-semibold text-gray-700"
+            >
+              Contraseña
+            </label>
 
-        <!-- CONFIRMAR PASSWORD -->
-        <div>
-          <label
-            for="confirmPassword"
-            class="block text-sm font-medium text-gray-700"
-          >
-            Confirmar Contraseña
-          </label>
+            <input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
 
-          <input
-            id="confirmPassword"
-            type="password"
-            placeholder="********"
-            class="mt-2 w-full rounded-md border border-gray-300 bg-white px-4 py-3 outline-none focus:border-indigo-500"
-          />
+          <!-- CONFIRMAR PASSWORD -->
+          <div>
+            <label
+              for="confirmPassword"
+              class="block text-sm font-semibold text-gray-700"
+            >
+              Confirmar contraseña 
+            </label>
+
+            <input
+              id="confirmPassword"
+              type="password"
+              placeholder="••••••••"
+              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
+
         </div>
 
         <!-- BOTÓN -->
-        <button
-          type="submit"
-          class="w-full rounded-md bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-500"
-        >
-          Registrarse
-        </button>
+        <div class="pt-2">
+
+          <button
+            type="submit"
+            class="w-full rounded-lg bg-blue-600 py-3 font-bold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 active:scale-[0.98]"
+          >
+            Registrarse ahora
+          </button>
+
+        </div>
 
       </form>
 
       <!-- DIVIDER -->
-      <div class="my-8 flex items-center">
+      <div class="mt-8 text-center">
 
-        <div class="h-px flex-1 bg-gray-300"></div>
+        <p class="text-sm text-gray-600">
+          ¿Ya tienes una cuenta?
 
-        <a
-          routerLink="/login"
-          class="px-4 text-sm font-semibold text-blue-600 hover:text-blue-500"
-        >
-          ¿Ya estás registrado?
-        </a>
+          <a
+            routerLink="/login"
+            class="font-bold text-blue-600 hover:text-blue-500 transition"
+          >
+            Inicia sesión aquí
+          </a>
 
-        <div class="h-px flex-1 bg-gray-300"></div>
+        </p>
 
       </div>
 
@@ -172,13 +175,15 @@
   </div>
 
   <!-- LADO DERECHO -->
-  <div class="hidden lg:block">
+  <div class="hidden lg:block relative">
 
     <img
-      src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1600&auto=format&fit=crop"
-      alt="Office"
+      src="/assets/ucmportada.png"
+      alt="portada"
       class="h-full w-full object-cover"
     />
+
+    <div class="absolute inset-0 bg-blue-900/10"></div>
 
   </div>
 
