@@ -9,15 +9,4 @@ import { CommonModule } from '@angular/common';
   styleUrl: './home-cliente.css',
 })
 export class HomeCliente {
-
-  mobileMenuOpen = false;
-  profileMenuOpen = false;
-
-  toggleMobileMenu() {
-    this.mobileMenuOpen = !this.mobileMenuOpen;
-  }
-
-  toggleProfileMenu() {
-    this.profileMenuOpen = !this.profileMenuOpen;
-  }
 }

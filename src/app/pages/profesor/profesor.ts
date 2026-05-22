@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
-import { HomeProfesor } from '../../components/roles-contenido/profesor/home-profesor/home-profesor';
+import { NavbarProfesor } from '../../components/roles-contenido/profesor/navbar-profesor/navbar-profesor';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-profesor',
-  imports: [HomeProfesor],
+  imports: [NavbarProfesor, RouterOutlet],
   templateUrl: './profesor.html',
   styleUrl: './profesor.css',
 })

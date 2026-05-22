@@ -1,1 +1,54 @@
-<p>home-autoridad works!</p>
+<section class="mx-auto max-w-7xl px-4 py-10 lg:px-8 lg:py-16">
+  <div class="grid items-center gap-10 lg:grid-cols-2">
+
+    <!-- Texto -->
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-widest text-[#1B3A6B]/50">
+        Panel de autoridad
+      </p>
+      <h1 class="mt-3 text-3xl font-extrabold leading-tight text-[#1B3A6B] sm:text-4xl lg:text-5xl">
+        Bienvenido a
+        <span class="bg-gradient-to-r from-[#1B3A6B] to-[#3B6AAD] bg-clip-text text-transparent">
+          UCM Vinculación
+        </span>
+      </h1>
+      <p class="mt-6 max-w-xl text-lg leading-relaxed text-[#1B3A6B]/65">
+        Supervisa las iniciativas de vinculación con el medio, aprueba
+        solicitudes estratégicas y revisa los reportes de impacto regional.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a routerLink="/autoridad/ver-solicitudes"
+           class="rounded-xl bg-[#1B3A6B] px-7 py-3.5 text-sm font-semibold text-white
+                  shadow-lg transition hover:bg-[#16315b] hover:scale-[1.02] active:scale-[0.98]">
+          Revisar Solicitudes
+        </a>
+        <a routerLink="/autoridad/reportes"
+           class="rounded-xl border-2 border-[#1B3A6B]/20 px-7 py-3.5 text-sm font-semibold
+                  text-[#1B3A6B] transition hover:border-[#1B3A6B]/40 hover:bg-[#1B3A6B]/5">
+          Ver Reportes
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="rounded-2xl bg-amber-50 p-5 transition hover:scale-[1.02]">
+        <p class="text-sm font-medium text-amber-600">Solicitudes por aprobar</p>
+        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">8</h3>
+      </div>
+      <div class="rounded-2xl bg-emerald-50 p-5 transition hover:scale-[1.02]">
+        <p class="text-sm font-medium text-emerald-600">Solicitudes aprobadas</p>
+        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">34</h3>
+      </div>
+      <div class="rounded-2xl bg-rose-50 p-5 transition hover:scale-[1.02]">
+        <p class="text-sm font-medium text-rose-600">Solicitudes rechazadas</p>
+        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">5</h3>
+      </div>
+      <div class="rounded-2xl bg-sky-50 p-5 transition hover:scale-[1.02]">
+        <p class="text-sm font-medium text-sky-600">Convenios activos</p>
+        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">12</h3>
+      </div>
+    </div>
+
+  </div>
+</section>

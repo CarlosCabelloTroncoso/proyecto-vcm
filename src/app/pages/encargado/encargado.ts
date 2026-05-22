@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
-import { HomeEncargado } from '../../components/roles-contenido/encargado/home-encargado/home-encargado';
+import { NavbarEncargado } from '../../components/roles-contenido/encargado/navbar-encargado/navbar-encargado';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-encargado',
-  imports: [HomeEncargado],
+  imports: [NavbarEncargado, RouterOutlet],
   templateUrl: './encargado.html',
   styleUrl: './encargado.css',
 })

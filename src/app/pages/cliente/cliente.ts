@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
-import { HomeCliente } from '../../components/roles-contenido/cliente/home-cliente/home-cliente';
+import { NavbarCliente } from '../../components/roles-contenido/cliente/navbar-cliente/navbar-cliente';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-cliente',
-  imports: [HomeCliente],
+  imports: [NavbarCliente, RouterOutlet],
   templateUrl: './cliente.html',
   styleUrl: './cliente.css',
 })
