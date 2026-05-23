@@ -125,6 +125,7 @@ export const routes: Routes = [
       },
     ]
   },
+  //Autoridad
   {
   path: 'autoridad',
   component: Autoridad,
