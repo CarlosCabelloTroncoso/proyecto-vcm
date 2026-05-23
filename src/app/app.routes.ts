@@ -7,6 +7,7 @@ import { Profesor } from './pages/profesor/profesor';
 import { Gestor } from './pages/gestor/gestor';
 import { Encargado } from './pages/encargado/encargado';
 import { Autoridad } from './pages/autoridad/autoridad';
+import { Admin } from './pages/admin/admin';
 
 export const routes: Routes = [
 
@@ -148,5 +149,43 @@ export const routes: Routes = [
     },
   ]
 },
+{
+  path: 'admin',
+  component: Admin,
+  children: [
+    { path: '', redirectTo: 'inicio', pathMatch: 'full' },
+    {
+      path: 'inicio',
+      loadComponent: () => import('./components/roles-contenido/admin/home-admin/home-admin')
+        .then(m => m.HomeAdmin)
+    },
+    {
+      path: 'gestion-facultad',
+      loadComponent: () => import('./components/roles-contenido/admin/gestion-facultad/gestion-facultad')
+        .then(m => m.GestionFacultad)
+    },
+    {
+      path: 'gestion-carrera',
+      loadComponent: () => import('./components/roles-contenido/admin/gestion-carrera/gestion-carrera')
+        .then(m => m.GestionCarrera)
+    },
+        {
+      path: 'gestion-usuarios',
+      loadComponent: () => import('./components/roles-contenido/admin/gestion-usuario/gestion-usuario')
+        .then(m => m.GestionUsuario)
+    },
+        {
+      path: 'gestion-alumnos',
+      loadComponent: () => import('./components/roles-contenido/admin/gestion-alumno/gestion-alumno')
+        .then(m => m.GestionAlumno)
+    },
+        {
+      path: 'solicitudes',
+      loadComponent: () => import('./components/roles-contenido/admin/solicitudes/solicitudes')
+        .then(m => m.Solicitudes)
+    },
+  ]
+},
+
   {path: '**', redirectTo: ''},
 ]

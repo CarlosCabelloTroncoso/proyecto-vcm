@@ -1,1 +1,204 @@
-<p>home-admin works!</p>
+<section class="mx-auto max-w-7xl px-4 py-10 lg:px-8 lg:py-16">
+
+  <!-- Header -->
+  <div class="mb-10">
+    <p class="text-sm font-semibold uppercase tracking-widest text-[#1B3A6B]/50">
+      Panel de administración
+    </p>
+    <h1 class="mt-3 text-3xl font-extrabold leading-tight text-[#1B3A6B] sm:text-4xl">
+      Bienvenido,
+      <span class="bg-gradient-to-r from-[#1B3A6B] to-[#3B6AAD] bg-clip-text text-transparent">
+        Administrador
+      </span>
+    </h1>
+    <p class="mt-3 max-w-2xl text-base leading-relaxed text-[#1B3A6B]/60">
+      Monitorea la actividad del sistema en tiempo real.
+    </p>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 mb-10">
+    <div class="rounded-2xl bg-sky-50 p-4 transition hover:scale-[1.02]">
+      <p class="text-xs font-medium text-sky-600">Usuarios</p>
+      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">142</h3>
+    </div>
+    <div class="rounded-2xl bg-emerald-50 p-4 transition hover:scale-[1.02]">
+      <p class="text-xs font-medium text-emerald-600">Facultades</p>
+      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">8</h3>
+    </div>
+    <div class="rounded-2xl bg-violet-50 p-4 transition hover:scale-[1.02]">
+      <p class="text-xs font-medium text-violet-600">Carreras</p>
+      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">27</h3>
+    </div>
+    <div class="rounded-2xl bg-amber-50 p-4 transition hover:scale-[1.02]">
+      <p class="text-xs font-medium text-amber-600">Alumnos</p>
+      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">1.240</h3>
+    </div>
+    <div class="rounded-2xl bg-rose-50 p-4 transition hover:scale-[1.02]">
+      <p class="text-xs font-medium text-rose-600">Solicitudes</p>
+      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">89</h3>
+    </div>
+  </div>
+
+  <!-- Console Log Table -->
+  <div class="rounded-2xl border border-[#1B3A6B]/10 bg-[#0E1F38] shadow-lg overflow-hidden">
+
+    <!-- Console header -->
+    <div class="flex items-center justify-between border-b border-white/10 px-5 py-3">
+      <div class="flex items-center gap-3">
+        <div class="flex gap-1.5">
+          <span class="h-3 w-3 rounded-full bg-red-500/80"></span>
+          <span class="h-3 w-3 rounded-full bg-amber-400/80"></span>
+          <span class="h-3 w-3 rounded-full bg-emerald-400/80"></span>
+        </div>
+        <span class="text-xs font-mono font-medium text-white/50">
+          system-log — movimientos recientes
+        </span>
+      </div>
+      <span class="flex items-center gap-1.5 text-xs font-mono text-emerald-400/60">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        activo
+      </span>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm font-mono">
+        <thead>
+          <tr class="border-b border-white/10 text-left">
+            <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">
+              Movimiento
+            </th>
+            <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">
+              Tipo de usuario
+            </th>
+            <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">
+              Fecha de creación
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-white/5 transition hover:bg-white/5">
+            <td class="px-5 py-3.5 text-white/70">
+              Nuevo usuario registrado: <span class="text-sky-400">María González</span>
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="rounded bg-sky-500/20 px-2 py-0.5 text-xs font-semibold text-sky-400">Cliente</span>
+            </td>
+            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:45</td>
+          </tr>
+
+          <tr class="border-b border-white/5 transition hover:bg-white/5">
+            <td class="px-5 py-3.5 text-white/70">
+              Solicitud <span class="text-white/90">#SOL-2026-0147</span> creada
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="rounded bg-sky-500/20 px-2 py-0.5 text-xs font-semibold text-sky-400">Cliente</span>
+            </td>
+            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:42</td>
+          </tr>
+
+          <tr class="border-b border-white/5 transition hover:bg-white/5">
+            <td class="px-5 py-3.5 text-white/70">
+              Perfil actualizado: <span class="text-sky-400">Prof. Soto</span> — Campo: Teléfono
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="rounded bg-amber-500/20 px-2 py-0.5 text-xs font-semibold text-amber-400">Profesor</span>
+            </td>
+            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:38</td>
+          </tr>
+
+          <tr class="border-b border-white/5 transition hover:bg-white/5">
+            <td class="px-5 py-3.5 text-white/70">
+              Nueva carrera agregada: <span class="text-white/90">Ing. Civil Informática</span>
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="rounded bg-rose-500/20 px-2 py-0.5 text-xs font-semibold text-rose-400">Admin</span>
+            </td>
+            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:35</td>
+          </tr>
+
+          <tr class="border-b border-white/5 transition hover:bg-white/5">
+            <td class="px-5 py-3.5 text-white/70">
+              Solicitud <span class="text-white/90">#SOL-2026-0145</span> aprobada
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="rounded bg-violet-500/20 px-2 py-0.5 text-xs font-semibold text-violet-400">Autoridad</span>
+            </td>
+            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:30</td>
+          </tr>
+
+          <tr class="border-b border-white/5 transition hover:bg-white/5">
+            <td class="px-5 py-3.5 text-white/70">
+              Usuario eliminado: <span class="text-sky-400">Juan Pérez</span> — Cuenta duplicada
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="rounded bg-rose-500/20 px-2 py-0.5 text-xs font-semibold text-rose-400">Admin</span>
+            </td>
+            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:28</td>
+          </tr>
+
+          <tr class="border-b border-white/5 transition hover:bg-white/5">
+            <td class="px-5 py-3.5 text-white/70">
+              Solicitud <span class="text-white/90">#SOL-2026-0144</span> vinculada a
+              <span class="text-sky-400">Enfermería</span>
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="rounded bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-400">Gestor</span>
+            </td>
+            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:22</td>
+          </tr>
+
+          <tr class="border-b border-white/5 transition hover:bg-white/5">
+            <td class="px-5 py-3.5 text-white/70">
+              Rol cambiado: <span class="text-sky-400">Ana Fuentes</span> — Profesor → Encargado
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="rounded bg-rose-500/20 px-2 py-0.5 text-xs font-semibold text-rose-400">Admin</span>
+            </td>
+            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:18</td>
+          </tr>
+
+          <tr class="border-b border-white/5 transition hover:bg-white/5">
+            <td class="px-5 py-3.5 text-white/70">
+              Solicitud <span class="text-white/90">#SOL-2026-0142</span> rechazada — Documentación incompleta
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="rounded bg-cyan-500/20 px-2 py-0.5 text-xs font-semibold text-cyan-400">Encargado</span>
+            </td>
+            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:05</td>
+          </tr>
+
+          <tr class="border-b border-white/5 transition hover:bg-white/5">
+            <td class="px-5 py-3.5 text-white/70">
+              <span class="text-sky-400">156 alumnos</span> importados a carrera
+              <span class="text-white/90">Kinesiología</span>
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="rounded bg-rose-500/20 px-2 py-0.5 text-xs font-semibold text-rose-400">Admin</span>
+            </td>
+            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 22:58</td>
+          </tr>
+
+          <tr class="transition hover:bg-white/5">
+            <td class="px-5 py-3.5 text-white/70">
+              Backup automático completado — <span class="text-emerald-400">OK</span>
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="rounded bg-white/10 px-2 py-0.5 text-xs font-semibold text-white/50">Sistema</span>
+            </td>
+            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 22:50</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Console footer -->
+    <div class="border-t border-white/10 px-5 py-2.5 flex items-center justify-between">
+      <span class="text-xs font-mono text-white/30">11 movimientos registrados</span>
+      <span class="text-xs font-mono text-white/30">UCM VcM v1.0</span>
+    </div>
+
+  </div>
+
+</section>
