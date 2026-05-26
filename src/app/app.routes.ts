@@ -175,7 +175,7 @@ export const routes: Routes = [
         .then(m => m.GestionUsuario)
     },
         {
-      path: 'gestion-alumnos',
+      path: 'gestion-alumno',
       loadComponent: () => import('./components/roles-contenido/admin/gestion-alumno/gestion-alumno')
         .then(m => m.GestionAlumno)
     },
