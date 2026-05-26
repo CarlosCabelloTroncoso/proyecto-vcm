@@ -35,12 +35,29 @@ export class GestionUsuario {
     { id_usuario: 8, rut_usuario: '16.334.556-2', nombres_usuario: 'Felipe',   apellidos_usuario: 'Torres Alarcón', telefono_usuario: '+56 9 2211 9900', password_usuario: 'felipT@2',    is_active: false, fecha_creacion: '2026-05-01', id_rol: 6 },
   ];
 
+  /* ─── Meses del año ───────────────────────────────────────── */
+  readonly meses = [
+    { valor: '01', nombre: 'Enero'      },
+    { valor: '02', nombre: 'Febrero'    },
+    { valor: '03', nombre: 'Marzo'      },
+    { valor: '04', nombre: 'Abril'      },
+    { valor: '05', nombre: 'Mayo'       },
+    { valor: '06', nombre: 'Junio'      },
+    { valor: '07', nombre: 'Julio'      },
+    { valor: '08', nombre: 'Agosto'     },
+    { valor: '09', nombre: 'Septiembre' },
+    { valor: '10', nombre: 'Octubre'    },
+    { valor: '11', nombre: 'Noviembre'  },
+    { valor: '12', nombre: 'Diciembre'  },
+  ];
+
   /* ─── Búsqueda y filtros ───────────────────────────────────── */
   searchTerm   = '';
   filtroTipo   = '';   // '' | 'rol' | 'estado' | 'fecha'
   filtroRol    = '';
   filtroEstado = '';
-  filtroFecha  = '';
+  filtroAnio   = '';
+  filtroMes    = '';
 
   /* ─── Estado de modales ────────────────────────────────────── */
   mostrarModalForm     = false;
@@ -72,6 +89,23 @@ export class GestionUsuario {
     return `${d}/${m}/${y}`;
   }
 
+  /** Años únicos presentes en los datos, ordenados de más reciente a más antiguo */
+  get aniosDisponibles(): string[] {
+    return [...new Set(this.usuarios.map(u => u.fecha_creacion.slice(0, 4)))]
+      .sort()
+      .reverse();
+  }
+
+  /**
+   * Prefijo de fecha efectivo para el filtro:
+   *   solo año  → "2026"
+   *   año + mes → "2026-05"
+   */
+  private get filtroFechaEfectiva(): string {
+    if (!this.filtroAnio) return '';
+    return this.filtroMes ? `${this.filtroAnio}-${this.filtroMes}` : this.filtroAnio;
+  }
+
   /* ─── Lista filtrada ───────────────────────────────────────── */
   get usuariosFiltrados(): Usuario[] {
     let lista = [...this.usuarios];
@@ -85,19 +119,22 @@ export class GestionUsuario {
         u.telefono_usuario.includes(t)
       );
     }
-    if (this.filtroTipo === 'rol'    && this.filtroRol)    lista = lista.filter(u => u.id_rol === +this.filtroRol);
-    if (this.filtroTipo === 'estado' && this.filtroEstado !== '') lista = lista.filter(u => u.is_active === (this.filtroEstado === 'true'));
-    if (this.filtroTipo === 'fecha'  && this.filtroFecha)  lista = lista.filter(u => u.fecha_creacion.startsWith(this.filtroFecha));
+    if (this.filtroTipo === 'rol'    && this.filtroRol)
+      lista = lista.filter(u => u.id_rol === +this.filtroRol);
+    if (this.filtroTipo === 'estado' && this.filtroEstado !== '')
+      lista = lista.filter(u => u.is_active === (this.filtroEstado === 'true'));
+    if (this.filtroTipo === 'fecha'  && this.filtroFechaEfectiva)
+      lista = lista.filter(u => u.fecha_creacion.startsWith(this.filtroFechaEfectiva));
 
     return lista;
   }
 
   onCambiarFiltroTipo(): void {
-    this.filtroRol = this.filtroEstado = this.filtroFecha = '';
+    this.filtroRol = this.filtroEstado = this.filtroAnio = this.filtroMes = '';
   }
 
   limpiarFiltros(): void {
-    this.searchTerm = this.filtroTipo = this.filtroRol = this.filtroEstado = this.filtroFecha = '';
+    this.searchTerm = this.filtroTipo = this.filtroRol = this.filtroEstado = this.filtroAnio = this.filtroMes = '';
   }
 
   /* ─── Acciones CRUD ────────────────────────────────────────── */

@@ -92,14 +92,36 @@
     }
 
     @if (filtroTipo === 'fecha') {
-      <div class="min-w-[160px]">
-        <input
-          type="month"
-          [(ngModel)]="filtroFecha"
+      <!-- Año -->
+      <div class="min-w-[130px]">
+        <select
+          [(ngModel)]="filtroAnio"
+          (ngModelChange)="filtroMes = ''"
           class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-3 py-2.5 text-sm
                  text-[#1B3A6B] shadow-sm outline-none transition
-                 focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/20"/>
+                 focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/20">
+          <option value="">Todos los años</option>
+          @for (anio of aniosDisponibles; track anio) {
+            <option [value]="anio">{{ anio }}</option>
+          }
+        </select>
       </div>
+
+      <!-- Mes: aparece solo cuando hay un año seleccionado -->
+      @if (filtroAnio) {
+        <div class="min-w-[150px]">
+          <select
+            [(ngModel)]="filtroMes"
+            class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-3 py-2.5 text-sm
+                   text-[#1B3A6B] shadow-sm outline-none transition
+                   focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/20">
+            <option value="">Todos los meses</option>
+            @for (mes of meses; track mes.valor) {
+              <option [value]="mes.valor">{{ mes.nombre }}</option>
+            }
+          </select>
+        </div>
+      }
     }
 
     <!-- Limpiar filtros -->
