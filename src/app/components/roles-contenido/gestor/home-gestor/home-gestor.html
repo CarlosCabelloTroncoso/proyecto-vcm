@@ -13,38 +13,52 @@
         </span>
       </h1>
       <p class="mt-6 max-w-xl text-lg leading-relaxed text-[#1B3A6B]/65">
-        ¿Qué nuevas solicitudes habrán? Revisa las propuestas de la región
-        y vincúlalas con las carreras correspondientes.
+        Revisa las solicitudes de tu carrera, apruébalas para que el equipo académico
+        pueda comenzar a trabajar, o recházalas si no cumplen los criterios.
       </p>
-      <div class="mt-8 flex flex-wrap gap-3">
+      <div class="mt-8">
         <a routerLink="/gestor/ver-solicitudes"
-           class="rounded-xl bg-[#1B3A6B] px-7 py-3.5 text-sm font-semibold text-white
-                  shadow-lg transition hover:bg-[#16315b] hover:scale-[1.02] active:scale-[0.98]">
+           class="inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-7 py-3.5
+                  text-sm font-semibold text-white shadow-lg transition
+                  hover:bg-[#16315b] hover:scale-[1.02] active:scale-[0.98]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1
+                 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/>
+          </svg>
           Ver Solicitudes
-        </a>
-        <a routerLink="/gestor/vincular-solicitudes"
-           class="rounded-xl border-2 border-[#1B3A6B]/20 px-7 py-3.5 text-sm font-semibold
-                  text-[#1B3A6B] transition hover:border-[#1B3A6B]/40 hover:bg-[#1B3A6B]/5">
-          Vincular Solicitudes
         </a>
       </div>
     </div>
 
     <!-- Stats -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <div class="rounded-2xl bg-emerald-50 p-5 transition hover:scale-[1.02]">
-        <p class="text-sm font-medium text-emerald-600">Solicitudes aprobadas</p>
-        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">18</h3>
-      </div>
-      <div class="rounded-2xl bg-rose-50 p-5 transition hover:scale-[1.02]">
-        <p class="text-sm font-medium text-rose-600">Solicitudes rechazadas</p>
-        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">5</h3>
-      </div>
-      <div class="rounded-2xl bg-sky-50 p-5 transition hover:scale-[1.02]">
-        <p class="text-sm font-medium text-sky-600">Solicitudes vinculadas</p>
-        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">11</h3>
-      </div>
-    </div>
 
+      <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5 transition hover:scale-[1.02]">
+        <p class="text-sm font-semibold text-amber-600">Pendientes de revisión</p>
+        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">3</h3>
+        <p class="mt-1 text-xs text-amber-500/80">Esperan tu respuesta</p>
+      </div>
+
+      <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 transition hover:scale-[1.02]">
+        <p class="text-sm font-semibold text-emerald-600">Solicitudes aprobadas</p>
+        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">18</h3>
+        <p class="mt-1 text-xs text-emerald-500/80">Visibles al equipo académico</p>
+      </div>
+
+      <div class="rounded-2xl border border-red-200 bg-red-50 p-5 transition hover:scale-[1.02]">
+        <p class="text-sm font-semibold text-red-500">Solicitudes rechazadas</p>
+        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">5</h3>
+        <p class="mt-1 text-xs text-red-400/80">No cumplieron los criterios</p>
+      </div>
+
+      <div class="rounded-2xl border border-[#1B3A6B]/15 bg-[#1B3A6B]/[0.04] p-5 transition hover:scale-[1.02]">
+        <p class="text-sm font-semibold text-[#1B3A6B]/60">Total recibidas</p>
+        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">26</h3>
+        <p class="mt-1 text-xs text-[#1B3A6B]/40">En tu carrera asignada</p>
+      </div>
+
+    </div>
   </div>
 </section>

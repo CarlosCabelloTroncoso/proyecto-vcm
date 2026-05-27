@@ -81,11 +81,6 @@ export const routes: Routes = [
           loadComponent: () => import('./components/roles-contenido/gestor/ver-solicitudes/ver-solicitudes')
             .then(m=> m.VerSolicitudes)
       },
-            {
-          path: 'vincular-solicitudes',
-          loadComponent: () => import('./components/roles-contenido/gestor/vincular-solicitudes/vincular-solicitudes')
-            .then(m=> m.VincularSolicitudes)
-      },
     ]
   },
   //Encargado

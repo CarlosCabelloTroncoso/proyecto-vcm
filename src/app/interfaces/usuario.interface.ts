@@ -30,3 +30,8 @@ export interface EncargadoCarrera {
   id_usuario: number;
   id_carrera: number;
 }
+
+export interface ProfesorCarrera {
+  id_usuario: number;
+  id_carrera: number;
+}

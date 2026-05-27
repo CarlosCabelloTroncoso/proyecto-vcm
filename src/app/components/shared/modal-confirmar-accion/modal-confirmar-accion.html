@@ -1,0 +1,78 @@
+@if (visible) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+       (click)="cancelar.emit()">
+
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+    <!-- Panel -->
+    <div class="relative z-10 w-full max-w-sm rounded-2xl bg-white shadow-2xl"
+         (click)="$event.stopPropagation()">
+
+      <!-- Ícono dinámico según tipo -->
+      <div class="flex flex-col items-center px-8 pt-8 pb-2 text-center">
+
+        <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full
+                    {{ claseIconoFondo }}">
+
+          @switch (tipo) {
+
+            @case ('aprobar') {
+              <!-- Check verde -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 {{ claseIconoColor }}"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+            }
+
+            @case ('rechazar') {
+              <!-- X roja -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 {{ claseIconoColor }}"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            }
+
+            @default {
+              <!-- Info azul -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 {{ claseIconoColor }}"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/>
+              </svg>
+            }
+
+          }
+        </div>
+
+        <h2 class="text-lg font-bold text-[#1B3A6B]">{{ titulo }}</h2>
+
+        <p class="mt-2 text-sm text-[#1B3A6B]/60">{{ descripcion }}</p>
+
+        @if (nombreDestacado) {
+          <p class="mt-1 text-sm font-semibold text-[#1B3A6B]">
+            "{{ nombreDestacado }}"
+          </p>
+        }
+      </div>
+
+      <!-- Acciones -->
+      <div class="flex items-center gap-3 px-8 pb-8 pt-5">
+        <button type="button"
+                (click)="cancelar.emit()"
+                class="flex-1 rounded-xl border border-[#1B3A6B]/20 px-4 py-2.5 text-sm
+                       font-semibold text-[#1B3A6B]/70 transition
+                       hover:bg-[#1B3A6B]/5 active:scale-95">
+          {{ textoCancelar }}
+        </button>
+        <button type="button"
+                (click)="confirmar.emit()"
+                class="flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold text-white
+                       shadow transition active:scale-95 {{ claseBoton }}">
+          {{ textoConfirmar }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

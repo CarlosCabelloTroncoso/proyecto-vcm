@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Solicitud, EstadoSolicitud, Ciudad } from '../../../../interfaces/solicitud.interface';
 import { Carrera } from '../../../../interfaces/academico.interface';
+import { Archivo } from '../../../../interfaces/proyecto.interface';
 import { ModalDetalleSolicitud } from './modales/modal-detalle-solicitud/modal-detalle-solicitud';
 import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
 
@@ -66,6 +67,25 @@ export class MisSolicitudes implements OnInit {
     },
   ];
 
+  /* ─── Archivos adjuntos (mock global, filtrado por id_solicitud) ─ */
+  archivos: Archivo[] = [
+    {
+      id_archivo: 1, nombre_archivo: 'propuesta_vinculacion.pdf',
+      ruta_archivo: 'uploads/propuesta_vinculacion.pdf', tipo_archivo: 'pdf',
+      id_solicitud: 1, id_planteamiento: null, id_proyecto: null,
+    },
+    {
+      id_archivo: 2, nombre_archivo: 'estudio_ambiental.pdf',
+      ruta_archivo: 'uploads/estudio_ambiental.pdf', tipo_archivo: 'pdf',
+      id_solicitud: 3, id_planteamiento: null, id_proyecto: null,
+    },
+    {
+      id_archivo: 3, nombre_archivo: 'datos_contaminantes.xlsx',
+      ruta_archivo: 'uploads/datos_contaminantes.xlsx', tipo_archivo: 'xlsx',
+      id_solicitud: 3, id_planteamiento: null, id_proyecto: null,
+    },
+  ];
+
   /* ─── Meses ─────────────────────────────────────────────────── */
   readonly meses = [
     { valor: '01', nombre: 'Enero'      }, { valor: '02', nombre: 'Febrero'   },
@@ -98,16 +118,32 @@ export class MisSolicitudes implements OnInit {
     // Viene de crear-solicitud → agrega y abre detalle
     if (state?.nuevaSolicitud) {
       this.solicitudes = [state.nuevaSolicitud, ...this.solicitudes];
+      // Añadir archivos de la nueva solicitud
+      if (state?.archivos?.length) {
+        this.archivos = [...this.archivos, ...state.archivos];
+      }
       this.abrirDetalle(state.nuevaSolicitud);
     }
 
-    // Viene de editar-solicitud → actualiza la fila
+    // Viene de editar-solicitud → actualiza la fila y reemplaza sus archivos
     if (state?.solicitudEditada) {
       const idx = this.solicitudes.findIndex(
         s => s.id_solicitud === state.solicitudEditada.id_solicitud
       );
       if (idx !== -1) this.solicitudes[idx] = state.solicitudEditada;
+
+      // Reemplazar archivos: eliminar los viejos y agregar los nuevos
+      const idSolicitud = state.solicitudEditada.id_solicitud;
+      this.archivos = [
+        ...this.archivos.filter(a => a.id_solicitud !== idSolicitud),
+        ...(state?.archivos ?? []),
+      ];
     }
+  }
+
+  /* ─── Archivos por solicitud ────────────────────────────────── */
+  getArchivosDeSolicitud(idSolicitud: number): Archivo[] {
+    return this.archivos.filter(a => a.id_solicitud === idSolicitud);
   }
 
   /* ─── Helpers de presentación ───────────────────────────────── */
@@ -212,7 +248,11 @@ export class MisSolicitudes implements OnInit {
 
   abrirEditar(solicitud: Solicitud): void {
     this.router.navigate(['/cliente/crear-solicitud'], {
-      state: { modo: 'editar', solicitud }
+      state: {
+        modo: 'editar',
+        solicitud,
+        archivos: this.getArchivosDeSolicitud(solicitud.id_solicitud),
+      }
     });
   }
 
@@ -223,9 +263,9 @@ export class MisSolicitudes implements OnInit {
 
   onEliminarSolicitud(): void {
     if (this.solicitudAEliminar) {
-      this.solicitudes = this.solicitudes.filter(
-        s => s.id_solicitud !== this.solicitudAEliminar!.id_solicitud
-      );
+      const idSolicitud = this.solicitudAEliminar.id_solicitud;
+      this.solicitudes = this.solicitudes.filter(s => s.id_solicitud !== idSolicitud);
+      this.archivos    = this.archivos.filter(a => a.id_solicitud !== idSolicitud);
       this.solicitudAEliminar   = null;
       this.mostrarModalEliminar = false;
     }

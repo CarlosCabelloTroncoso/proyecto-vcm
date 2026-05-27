@@ -10,27 +10,42 @@
          (click)="$event.stopPropagation()">
 
       <!-- ── Header ───────────────────────────────────────────── -->
-      <div class="flex items-start justify-between gap-4 border-b border-[#1B3A6B]/10
-                  bg-[#1B3A6B] px-6 py-5">
+      <div class="flex items-start justify-between gap-4 bg-[#1B3A6B] px-6 py-5">
         <div class="min-w-0 flex-1">
-          <p class="text-xs font-semibold uppercase tracking-widest text-white/60">
+          <p class="text-xs font-semibold uppercase tracking-widest text-white/55">
             Solicitud #{{ solicitud.id_solicitud }}
           </p>
-          <h2 class="mt-0.5 truncate text-lg font-bold text-white"
+          <h2 class="mt-0.5 text-lg font-bold text-white leading-snug"
               [title]="solicitud.titulo_solicitud">
             {{ solicitud.titulo_solicitud }}
           </h2>
         </div>
-
-        <!-- Estado badge -->
-        <span class="mt-0.5 shrink-0 inline-flex rounded-full border px-3 py-1 text-xs font-semibold
-                     {{ getBadgeEstado(solicitud.id_estado) }}">
+        <!-- Badge estado -->
+        <span class="mt-0.5 shrink-0 inline-flex rounded-full border px-3 py-1
+                     text-xs font-semibold {{ getBadgeEstado(solicitud.id_estado) }}">
           {{ getNombreEstado(solicitud.id_estado) }}
         </span>
       </div>
 
       <!-- ── Cuerpo ────────────────────────────────────────────── -->
-      <div class="max-h-[65vh] overflow-y-auto px-6 py-5 space-y-5">
+      <div class="max-h-[62vh] overflow-y-auto px-6 py-5 space-y-5">
+
+        <!-- Cliente -->
+        <div class="flex items-center gap-3 rounded-xl border border-[#1B3A6B]/10
+                    bg-[#1B3A6B]/[0.03] px-4 py-3">
+          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full
+                      bg-[#1B3A6B] text-sm font-bold text-white">
+            {{ getInicialCliente(solicitud.id_usuario) }}
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/45">
+              Cliente
+            </p>
+            <p class="text-sm font-semibold text-[#1B3A6B]">
+              {{ getNombreCliente(solicitud.id_usuario) }}
+            </p>
+          </div>
+        </div>
 
         <!-- Descripción -->
         <div>
@@ -43,12 +58,11 @@
         </div>
 
         <!-- Grilla de datos -->
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3">
 
-          <!-- Carrera -->
           <div class="rounded-xl border border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.03] p-3.5">
             <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/45">
-              Carrera
+              Carrera solicitada
             </p>
             <p class="text-sm font-semibold text-[#1B3A6B]">
               {{ getNombreCarrera(solicitud.id_carrera) }}
@@ -58,7 +72,6 @@
             </p>
           </div>
 
-          <!-- Ciudad -->
           <div class="rounded-xl border border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.03] p-3.5">
             <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/45">
               Ciudad
@@ -68,7 +81,6 @@
             </p>
           </div>
 
-          <!-- Fecha de creación -->
           <div class="rounded-xl border border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.03] p-3.5">
             <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/45">
               Fecha de envío
@@ -78,7 +90,6 @@
             </p>
           </div>
 
-          <!-- Estado detallado -->
           <div class="rounded-xl border border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.03] p-3.5">
             <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/45">
               Estado actual
@@ -91,13 +102,13 @@
 
         </div>
 
-        <!-- ── Archivos adjuntos ──────────────────────────────── -->
+        <!-- Archivos adjuntos -->
         @if (archivos.length > 0) {
           <div>
             <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/50">
               Archivos adjuntos
-              <span class="ml-1 rounded-full bg-[#1B3A6B]/10 px-1.5 py-0.5 text-[10px] font-bold
-                           text-[#1B3A6B]/60">
+              <span class="ml-1 rounded-full bg-[#1B3A6B]/10 px-1.5 py-0.5
+                           text-[10px] font-bold text-[#1B3A6B]/60">
                 {{ archivos.length }}
               </span>
             </p>
@@ -105,13 +116,11 @@
               @for (archivo of archivos; track archivo.id_archivo) {
                 <li class="flex items-center gap-2.5 rounded-xl border border-[#1B3A6B]/10
                            bg-[#1B3A6B]/[0.02] px-3.5 py-2.5">
-
-                  <!-- Ícono según tipo -->
                   <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg
                               {{ getClaseIconoTipo(archivo.tipo_archivo) }}">
                     @switch (getTipoIcono(archivo.tipo_archivo)) {
                       @case ('pdf') {
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 h-[18px] w-[18px]"
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]"
                              fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                           <path stroke-linecap="round" stroke-linejoin="round"
                             d="M7 21h10a2 2 0 0 0 2-2V9.414a1 1 0 0 0-.293-.707l-5.414-5.414A1 1
@@ -153,14 +162,10 @@
                       }
                     }
                   </div>
-
-                  <!-- Nombre -->
                   <span class="min-w-0 flex-1 truncate text-sm text-[#1B3A6B]/80"
                         [title]="archivo.nombre_archivo">
                     {{ archivo.nombre_archivo }}
                   </span>
-
-                  <!-- Badge tipo -->
                   <span class="shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold uppercase
                                {{ getBadgeTipo(archivo.tipo_archivo) }}">
                     {{ archivo.tipo_archivo }}
@@ -170,30 +175,29 @@
             </ul>
           </div>
         } @else {
-          <!-- Sin archivos -->
           <div class="flex items-center gap-2.5 rounded-xl border border-[#1B3A6B]/10
                       bg-[#1B3A6B]/[0.02] px-4 py-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-[#1B3A6B]/30"
                  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round"
-                d="M15.172 7l-6.586 6.586a2 2 0 1 0 2.828 2.828l6.414-6.586a4 4 0 0 0-5.656-5.656l-6.415
-                   6.585a6 6 0 1 0 8.486 8.486L20.5 13"/>
+                d="M15.172 7l-6.586 6.586a2 2 0 1 0 2.828 2.828l6.414-6.586a4 4 0 0
+                   0-5.656-5.656l-6.415 6.585a6 6 0 1 0 8.486 8.486L20.5 13"/>
             </svg>
-            <p class="text-xs text-[#1B3A6B]/45">No hay archivos adjuntos en esta solicitud.</p>
+            <p class="text-xs text-[#1B3A6B]/45">Sin archivos adjuntos.</p>
           </div>
         }
 
-        <!-- Nota: no editable si no está pendiente -->
+        <!-- Nota informativa si ya fue procesada -->
         @if (solicitud.id_estado !== 1) {
           <div class="flex items-center gap-2.5 rounded-xl border border-[#1B3A6B]/15
                       bg-[#1B3A6B]/[0.04] px-4 py-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-[#1B3A6B]/50"
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-[#1B3A6B]/45"
                  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round"
-                d="M12 15v2m0-6v.01M5.636 5.636a9 9 0 1 1 12.728 12.728A9 9 0 0 1 5.636 5.636z"/>
+                d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/>
             </svg>
             <p class="text-xs text-[#1B3A6B]/60">
-              Esta solicitud ya no puede editarse porque su estado es
+              Esta solicitud ya fue procesada con estado
               <span class="font-semibold">{{ getNombreEstado(solicitud.id_estado) }}</span>.
             </p>
           </div>
@@ -202,33 +206,38 @@
       </div>
 
       <!-- ── Footer ────────────────────────────────────────────── -->
-      <div class="flex items-center justify-end gap-3 border-t border-[#1B3A6B]/10
+      <div class="flex items-center justify-end gap-2.5 border-t border-[#1B3A6B]/10
                   bg-[#1B3A6B]/[0.02] px-6 py-4">
 
-        <button
-          type="button"
-          (click)="onCerrar()"
-          class="rounded-xl border border-[#1B3A6B]/20 bg-white px-5 py-2.5 text-sm
-                 font-semibold text-[#1B3A6B]/70 shadow-sm transition
-                 hover:bg-[#1B3A6B]/5 hover:text-[#1B3A6B]">
+        <button type="button" (click)="onCerrar()"
+                class="rounded-xl border border-[#1B3A6B]/20 bg-white px-5 py-2.5 text-sm
+                       font-semibold text-[#1B3A6B]/70 shadow-sm transition
+                       hover:bg-[#1B3A6B]/5 hover:text-[#1B3A6B]">
           Cerrar
         </button>
 
-        <!-- Editar solo si está Pendiente -->
+        <!-- Acciones solo si está Pendiente -->
         @if (solicitud.id_estado === 1) {
-          <button
-            type="button"
-            (click)="onEditar()"
-            class="inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-5 py-2.5 text-sm
-                   font-semibold text-white shadow-sm transition
-                   hover:bg-[#1B3A6B]/85 active:scale-95">
+          <button type="button" (click)="onRechazar()"
+                  class="inline-flex items-center gap-2 rounded-xl border border-red-200
+                         bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-600
+                         shadow-sm transition hover:bg-red-100 active:scale-95">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828
-                   2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-            Editar solicitud
+            Rechazar
+          </button>
+
+          <button type="button" (click)="onAprobar()"
+                  class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5
+                         text-sm font-semibold text-white shadow-sm transition
+                         hover:bg-emerald-700 active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            Aprobar
           </button>
         }
 
@@ -236,6 +245,6 @@
     </div>
   </div>
 
-  <!-- Overlay oscuro -->
+  <!-- Overlay -->
   <div class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"></div>
 }

@@ -304,6 +304,7 @@
   [estados]="estados"
   [carreras]="carreras"
   [ciudades]="ciudades"
+  [archivos]="solicitudSeleccionada ? getArchivosDeSolicitud(solicitudSeleccionada.id_solicitud) : []"
   (cerrar)="cerrarModales()"
   (editar)="onEditarDesdDetalle($event)" />
 
