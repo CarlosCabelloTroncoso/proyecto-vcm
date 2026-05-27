@@ -1,1 +1,195 @@
-<p>crear-solicitud works!</p>
+<section class="mx-auto max-w-3xl px-4 py-10 lg:px-8 lg:py-12">
+
+  <!-- ══ ENCABEZADO ══════════════════════════════════════════════ -->
+  <div class="mb-8">
+    <!-- Breadcrumb -->
+    <div class="mb-3 flex items-center gap-2 text-xs text-[#1B3A6B]/50">
+      <a routerLink="/cliente/mis-solicitudes"
+         class="transition hover:text-[#1B3A6B]">Mis Solicitudes</a>
+      <span>/</span>
+      <span class="font-medium text-[#1B3A6B]">
+        {{ modo === 'crear' ? 'Nueva Solicitud' : 'Editar Solicitud' }}
+      </span>
+    </div>
+
+    <div class="flex items-start justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-widest text-[#1B3A6B]/50">
+          {{ modo === 'crear' ? 'Portal del cliente' : 'Modificar solicitud' }}
+        </p>
+        <h1 class="mt-1 text-2xl font-extrabold text-[#1B3A6B] sm:text-3xl">
+          {{ modo === 'crear' ? 'Nueva Solicitud' : 'Editar Solicitud' }}
+        </h1>
+        <p class="mt-1 text-sm text-[#1B3A6B]/60">
+          {{ modo === 'crear'
+              ? 'Completa los campos para enviar tu solicitud.'
+              : 'Modifica los campos que deseas actualizar.' }}
+        </p>
+      </div>
+
+      <!-- Badge modo editar -->
+      @if (modo === 'editar') {
+        <span class="inline-flex items-center gap-1.5 rounded-xl border border-amber-200
+                     bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828
+                 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/>
+          </svg>
+          Modo edición
+        </span>
+      }
+    </div>
+  </div>
+
+  <!-- ══ FORMULARIO ══════════════════════════════════════════════ -->
+  <form (ngSubmit)="onSubmit()" #f="ngForm"
+        class="overflow-hidden rounded-2xl border border-[#1B3A6B]/10 bg-white shadow-sm">
+
+    <div class="divide-y divide-[#1B3A6B]/8 px-6 py-6 sm:px-8 sm:py-8 space-y-6">
+
+      <!-- Título -->
+      <div class="pb-6">
+        <label class="mb-1.5 block text-sm font-semibold text-[#1B3A6B]">
+          Título de la solicitud
+          <span class="text-red-400">*</span>
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="form.titulo_solicitud"
+          name="titulo"
+          placeholder="Ej: Proyecto de vinculación comunitaria..."
+          maxlength="120"
+          class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2.5 text-sm
+                 text-[#1B3A6B] placeholder-[#1B3A6B]/35 shadow-sm outline-none transition
+                 focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15"/>
+        <p class="mt-1 text-right text-xs text-[#1B3A6B]/40">
+          {{ (form.titulo_solicitud?.length ?? 0) }} / 120
+        </p>
+      </div>
+
+      <!-- Descripción -->
+      <div class="pt-6 pb-6">
+        <label class="mb-1.5 block text-sm font-semibold text-[#1B3A6B]">
+          Descripción
+          <span class="text-red-400">*</span>
+        </label>
+        <textarea
+          [(ngModel)]="form.descripcion_solicitud"
+          name="descripcion"
+          rows="5"
+          placeholder="Describe el objetivo, contexto y necesidades de tu solicitud..."
+          maxlength="1000"
+          class="w-full resize-none rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2.5
+                 text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/35 shadow-sm outline-none transition
+                 focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15">
+        </textarea>
+        <p class="mt-1 text-right text-xs text-[#1B3A6B]/40">
+          {{ (form.descripcion_solicitud?.length ?? 0) }} / 1000
+        </p>
+      </div>
+
+      <!-- Carrera y Ciudad -->
+      <div class="pt-6 grid gap-5 sm:grid-cols-2">
+
+        <!-- Carrera -->
+        <div>
+          <label class="mb-1.5 block text-sm font-semibold text-[#1B3A6B]">
+            Carrera solicitada
+            <span class="text-red-400">*</span>
+          </label>
+          <select
+            [(ngModel)]="form.id_carrera"
+            name="carrera"
+            class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-3 py-2.5 text-sm
+                   text-[#1B3A6B] shadow-sm outline-none transition
+                   focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15">
+            <option [ngValue]="undefined" disabled>Selecciona una carrera</option>
+            @for (carrera of carreras; track carrera.id_carrera) {
+              <option [ngValue]="carrera.id_carrera">{{ carrera.nombre_carrera }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Ciudad -->
+        <div>
+          <label class="mb-1.5 block text-sm font-semibold text-[#1B3A6B]">
+            Ciudad
+            <span class="text-red-400">*</span>
+          </label>
+          <select
+            [(ngModel)]="form.id_ciudad"
+            name="ciudad"
+            class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-3 py-2.5 text-sm
+                   text-[#1B3A6B] shadow-sm outline-none transition
+                   focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15">
+            <option [ngValue]="undefined" disabled>Selecciona una ciudad</option>
+            @for (ciudad of ciudades; track ciudad.id_ciudad) {
+              <option [ngValue]="ciudad.id_ciudad">{{ ciudad.nombre_ciudad }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Info estado automático -->
+      @if (modo === 'crear') {
+        <div class="pt-6">
+          <div class="flex items-center gap-3 rounded-xl border border-amber-200
+                      bg-amber-50 px-4 py-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-500"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/>
+            </svg>
+            <p class="text-xs text-amber-700">
+              Tu solicitud será enviada con estado
+              <span class="font-semibold">Pendiente</span>
+              y podrás hacer seguimiento desde <span class="font-semibold">Mis Solicitudes</span>.
+            </p>
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <!-- ── Acciones ─────────────────────────────────────────── -->
+    <div class="flex items-center justify-end gap-3 border-t border-[#1B3A6B]/10
+                bg-[#1B3A6B]/[0.02] px-6 py-4 sm:px-8">
+
+      <button
+        type="button"
+        (click)="cancelar()"
+        class="rounded-xl border border-[#1B3A6B]/20 bg-white px-5 py-2.5 text-sm
+               font-semibold text-[#1B3A6B]/70 shadow-sm transition
+               hover:bg-[#1B3A6B]/5 hover:text-[#1B3A6B]">
+        Cancelar
+      </button>
+
+      <button
+        type="submit"
+        [disabled]="!formularioValido"
+        class="inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-6 py-2.5 text-sm
+               font-semibold text-white shadow-sm transition
+               hover:bg-[#1B3A6B]/85 active:scale-95
+               disabled:cursor-not-allowed disabled:opacity-40">
+
+        @if (modo === 'crear') {
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          Crear solicitud
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M5 13l4 4L19 7"/>
+          </svg>
+          Guardar cambios
+        }
+      </button>
+    </div>
+  </form>
+
+</section>
