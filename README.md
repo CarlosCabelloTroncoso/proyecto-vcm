@@ -7,12 +7,11 @@ Plataforma web para gestionar proyectos y solicitudes de vinculación con el med
 | Nombre | GitHub |
 |---|---|
 | Carlos Cabello Troncoso | [@CarlosCabelloTroncoso](https://github.com/CarlosCabelloTroncoso) |
-| Benjamin Oviedo Oviedo | [@B-oviedo] |
-| Francisco Sepúlveda Cáceres | [@franciscosepuca02-2002]|
-
+| Benjamin Oviedo Oviedo | [@B-oviedo](https://github.com/B-oviedo) |
+| Francisco Sepúlveda Cáceres | [@franciscosepuca02-2002](https://github.com/franciscosepuca02-2002) |
 ---
 
-## Stack Tecnológico
+## Stack Tecnológicos
 
 | Capa | Tecnología |
 |---|---|
