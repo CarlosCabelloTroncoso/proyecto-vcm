@@ -1,15 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ModalDetalleSolicitud } from '../../../shared/modal-detalle-solicitud/modal-detalle-solicitud';
 import { Solicitud, EstadoSolicitud, Ciudad } from '../../../../interfaces/solicitud.interface';
 import { Carrera } from '../../../../interfaces/academico.interface';
 import { Usuario, ProfesorCarrera } from '../../../../interfaces/usuario.interface';
 import { Archivo } from '../../../../interfaces/proyecto.interface';
-import { ModalDetalleGestor } from '../../gestor/ver-solicitudes/modales/modal-detalle-gestor/modal-detalle-gestor';
-
 @Component({
   selector: 'app-solicitudes',
-  imports: [CommonModule, FormsModule, ModalDetalleGestor],
+  imports: [CommonModule, FormsModule, ModalDetalleSolicitud],
   templateUrl: './solicitudes.html',
   styleUrl: './solicitudes.css',
 })

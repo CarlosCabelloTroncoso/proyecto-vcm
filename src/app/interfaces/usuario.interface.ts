@@ -16,16 +16,6 @@ export interface Usuario {
   id_rol: number;
 }
 
-export interface Profesor {
-  id_usuario: number;
-  titulo_academico: string;
-}
-
-export interface GestorVinculacion {
-  id_usuario: number;
-  id_carrera: number;
-}
-
 export interface EncargadoCarrera {
   id_usuario: number;
   id_carrera: number;

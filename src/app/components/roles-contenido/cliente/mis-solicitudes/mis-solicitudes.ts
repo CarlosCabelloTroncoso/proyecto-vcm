@@ -5,7 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { Solicitud, EstadoSolicitud, Ciudad } from '../../../../interfaces/solicitud.interface';
 import { Carrera } from '../../../../interfaces/academico.interface';
 import { Archivo } from '../../../../interfaces/proyecto.interface';
-import { ModalDetalleSolicitud } from './modales/modal-detalle-solicitud/modal-detalle-solicitud';
+import { ModalDetalleSolicitud } from '../../../shared/modal-detalle-solicitud/modal-detalle-solicitud';
 import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
 
 @Component({
@@ -52,7 +52,7 @@ export class MisSolicitudes implements OnInit {
   solicitudes: Solicitud[] = [
     {
       id_solicitud: 1, titulo_solicitud: 'Proyecto de vinculación comunitaria Maule',
-      descripcion_solicitud: 'Se solicita apoyo técnico para desarrollo de software comunitario en la región.',
+      descripcion_solicitud: 'Se solicita apoyo técnico para el desarrollo de una plataforma de software comunitario en la región del Maule, orientada a conectar organizaciones sociales, juntas de vecinos y voluntarios con profesionales y estudiantes universitarios que puedan contribuir con sus conocimientos en áreas como tecnología, salud, educación y medio ambiente. El sistema debe contemplar registro de usuarios, /gestión de proyectos colaborativos, seguimiento de avances y generación de reportes de impacto social. Se espera que la solución sea accesible desde dispositivos móviles y computadores de escritorio, con especial atención en la usabilidad para personas mayores y con escaso manejo tecnológico.',
       fecha_creacion_solicitud: '2025-01-10', id_estado: 1, id_usuario: 1, id_carrera: 1, id_ciudad: 1,
     },
     {

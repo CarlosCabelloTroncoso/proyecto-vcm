@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { VerSolicitudes } from './ver-solicitudes';
+import { ModalEliminarUsuario } from './modal-eliminar-usuario';
 
-describe('VerSolicitudes', () => {
-  let component: VerSolicitudes;
-  let fixture: ComponentFixture<VerSolicitudes>;
+describe('ModalEliminarUsuario', () => {
+  let component: ModalEliminarUsuario;
+  let fixture: ComponentFixture<ModalEliminarUsuario>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VerSolicitudes],
+      imports: [ModalEliminarUsuario],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(VerSolicitudes);
+    fixture = TestBed.createComponent(ModalEliminarUsuario);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

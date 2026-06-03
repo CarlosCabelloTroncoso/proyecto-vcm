@@ -1,15 +1,16 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ModalDetalleSolicitud } from '../../../shared/modal-detalle-solicitud/modal-detalle-solicitud';
+import { ModalConfirmarAccion } from '../../../shared/modal-confirmar-accion/modal-confirmar-accion';
 import { Solicitud, EstadoSolicitud, Ciudad } from '../../../../interfaces/solicitud.interface';
 import { Carrera } from '../../../../interfaces/academico.interface';
 import { Usuario, EncargadoCarrera } from '../../../../interfaces/usuario.interface';
-import { Archivo, PlanteamientoProyecto } from '../../../../interfaces/proyecto.interface';
-import { ModalDetalleGestor } from '../../gestor/ver-solicitudes/modales/modal-detalle-gestor/modal-detalle-gestor';
+import { Archivo } from '../../../../interfaces/proyecto.interface';
 
 @Component({
   selector: 'app-ver-solicitudes',
-  imports: [CommonModule, FormsModule, ModalDetalleGestor],
+  imports: [CommonModule, FormsModule, ModalDetalleSolicitud, ModalConfirmarAccion],
   templateUrl: './ver-solicitudes.html',
   styleUrl: './ver-solicitudes.css',
 })
@@ -58,15 +59,25 @@ export class VerSolicitudes {
     { id_usuario: 6, nombres_usuario: 'Daniela', apellidos_usuario: 'Tapia Rojas'     },
   ];
 
-  /* ─── Solicitudes aprobadas de la carrera del encargado ─────── */
+  /* ─── Solicitudes de la carrera del encargado ───────────────── */
   solicitudes: Solicitud[] = [
     {
-      id_solicitud: 11, titulo_solicitud: 'App móvil para servicios comunitarios',
+      id_solicitud: 1,  titulo_solicitud: 'App móvil para servicios comunitarios',
       descripcion_solicitud: 'Aplicación móvil para conectar organizaciones comunitarias con voluntarios y profesionales universitarios de la región.',
-      fecha_creacion_solicitud: '2025-02-15', id_estado: 3, id_usuario: 3, id_carrera: 1, id_ciudad: 2,
+      fecha_creacion_solicitud: '2025-02-15', id_estado: 1, id_usuario: 3, id_carrera: 1, id_ciudad: 2,
     },
     {
-      id_solicitud: 15, titulo_solicitud: 'Digitalización de trámites municipales Talca',
+      id_solicitud: 2,  titulo_solicitud: 'Sistema de gestión de residuos urbanos',
+      descripcion_solicitud: 'Plataforma para optimizar la recolección y clasificación de residuos sólidos en comunas de la región del Maule.',
+      fecha_creacion_solicitud: '2025-04-10', id_estado: 1, id_usuario: 2, id_carrera: 1, id_ciudad: 1,
+    },
+    {
+      id_solicitud: 3,  titulo_solicitud: 'Portal educativo para comunidades rurales',
+      descripcion_solicitud: 'Plataforma de acceso a contenidos educativos para estudiantes de zonas rurales con conectividad limitada.',
+      fecha_creacion_solicitud: '2025-05-22', id_estado: 1, id_usuario: 4, id_carrera: 1, id_ciudad: 5,
+    },
+    {
+      id_solicitud: 11, titulo_solicitud: 'Digitalización de trámites municipales Talca',
       descripcion_solicitud: 'Sistema integral para la digitalización de trámites y servicios ciudadanos de la municipalidad de Talca.',
       fecha_creacion_solicitud: '2024-08-12', id_estado: 3, id_usuario: 5, id_carrera: 1, id_ciudad: 1,
     },
@@ -75,40 +86,39 @@ export class VerSolicitudes {
       descripcion_solicitud: 'Plataforma web para la publicación y consulta de información pública de organismos municipales de la región del Maule.',
       fecha_creacion_solicitud: '2026-03-05', id_estado: 3, id_usuario: 6, id_carrera: 1, id_ciudad: 1,
     },
-  ];
-
-  /* ─── Planteamientos mock (para saber si una solicitud ya tiene) */
-  planteamientos: PlanteamientoProyecto[] = [
     {
-      id_planteamiento: 1,
-      titulo_planteamiento: 'Desarrollo de app comunitaria Maule',
-      descripcion_planteamiento: 'Planteamiento técnico para el desarrollo de la aplicación móvil comunitaria.',
-      tiempo_estimado_planteamiento: '6 meses',
-      id_carrera: 1,
-      id_solicitud: 11,
-      id_usuario: 20,
-      id_estado: 1,
+      id_solicitud: 7,  titulo_solicitud: 'Sistema de monitoreo de calidad del agua',
+      descripcion_solicitud: 'Red de sensores y plataforma de análisis de datos para el monitoreo de calidad del agua en cauces de la región.',
+      fecha_creacion_solicitud: '2024-11-03', id_estado: 4, id_usuario: 1, id_carrera: 1, id_ciudad: 3,
     },
   ];
 
   /* ─── Archivos adjuntos mock ────────────────────────────────── */
   archivos: Archivo[] = [
-    { id_archivo: 12, nombre_archivo: 'especificaciones_app.pdf', ruta_archivo: 'uploads/especificaciones_app.pdf', tipo_archivo: 'pdf', id_solicitud: 11, id_planteamiento: null, id_proyecto: null },
-    { id_archivo: 14, nombre_archivo: 'diagrama_portal.png',      ruta_archivo: 'uploads/diagrama_portal.png',      tipo_archivo: 'png', id_solicitud: 20, id_planteamiento: null, id_proyecto: null },
+    { id_archivo: 1, nombre_archivo: 'propuesta_app.pdf',         ruta_archivo: 'uploads/propuesta_app.pdf',         tipo_archivo: 'pdf',  id_solicitud: 1,  id_planteamiento: null, id_proyecto: null },
+    { id_archivo: 2, nombre_archivo: 'especificaciones_app.docx', ruta_archivo: 'uploads/especificaciones_app.docx', tipo_archivo: 'docx', id_solicitud: 1,  id_planteamiento: null, id_proyecto: null },
+    { id_archivo: 3, nombre_archivo: 'diagrama_portal.png',       ruta_archivo: 'uploads/diagrama_portal.png',       tipo_archivo: 'png',  id_solicitud: 20, id_planteamiento: null, id_proyecto: null },
   ];
 
-  /* ─── Búsqueda ──────────────────────────────────────────────── */
+  /* ─── Filtro activo y búsqueda ──────────────────────────────── */
+  filtroActivo: 'pendiente' | 'aprobada' | 'rechazada' = 'pendiente';
   searchTerm = '';
 
-  /* ─── Modal ─────────────────────────────────────────────────── */
+  /* ─── Estado modales ────────────────────────────────────────── */
   mostrarModalDetalle   = false;
+  mostrarModalAprobar   = false;
+  mostrarModalRechazar  = false;
   solicitudSeleccionada: Solicitud | null = null;
+  solicitudAccion:       Solicitud | null = null;
 
-  /* ─── Lista filtrada (aprobadas de su carrera) ──────────────── */
+  /* ─── Lista filtrada ────────────────────────────────────────── */
   get solicitudesFiltradas(): Solicitud[] {
+    const estadoId = { pendiente: 1, aprobada: 3, rechazada: 4 }[this.filtroActivo];
+
     let lista = this.solicitudes.filter(
-      s => s.id_carrera === this.encargadoActual.id_carrera && s.id_estado === 3
+      s => s.id_carrera === this.encargadoActual.id_carrera && s.id_estado === estadoId
     );
+
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
       lista = lista.filter(s =>
@@ -116,7 +126,17 @@ export class VerSolicitudes {
         this.getNombreCliente(s.id_usuario).toLowerCase().includes(t)
       );
     }
+
     return lista;
+  }
+
+  get contadorPorEstado(): Record<string, number> {
+    const base = this.solicitudes.filter(s => s.id_carrera === this.encargadoActual.id_carrera);
+    return {
+      pendiente: base.filter(s => s.id_estado === 1).length,
+      aprobada:  base.filter(s => s.id_estado === 3).length,
+      rechazada: base.filter(s => s.id_estado === 4).length,
+    };
   }
 
   /* ─── Helpers ───────────────────────────────────────────────── */
@@ -145,17 +165,13 @@ export class VerSolicitudes {
     return this.archivos.filter(a => a.id_solicitud === id);
   }
 
-  getPlanteamientoDeSolicitud(idSolicitud: number): PlanteamientoProyecto | undefined {
-    return this.planteamientos.find(p => p.id_solicitud === idSolicitud);
-  }
-
-  tienePlanteamiento(idSolicitud: number): boolean {
-    return this.planteamientos.some(p => p.id_solicitud === idSolicitud);
-  }
-
   getBadgeEstado(id: number): string {
     const mapa: Record<number, string> = {
+      1: 'bg-amber-100   text-amber-700   border-amber-200',
+      2: 'bg-sky-100     text-sky-700     border-sky-200',
       3: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+      4: 'bg-red-100     text-red-700     border-red-200',
+      5: 'bg-gray-100    text-gray-600    border-gray-200',
     };
     return mapa[id] ?? 'bg-gray-100 text-gray-500 border-gray-200';
   }
@@ -166,19 +182,49 @@ export class VerSolicitudes {
     return `${d}/${m}/${y}`;
   }
 
-  /* ─── Acciones ──────────────────────────────────────────────── */
+  /* ─── Acciones modal detalle ────────────────────────────────── */
   abrirDetalle(solicitud: Solicitud): void {
     this.solicitudSeleccionada = solicitud;
     this.mostrarModalDetalle   = true;
   }
 
-  cerrarModal(): void {
-    this.mostrarModalDetalle  = false;
+  cerrarDetalle(): void {
+    this.mostrarModalDetalle   = false;
     this.solicitudSeleccionada = null;
   }
 
-  verPlanteamiento(solicitud: Solicitud): void {
-    // TODO: navegar o abrir modal del planteamiento vinculado
-    console.log('Ver planteamiento de solicitud:', solicitud.id_solicitud);
+  /* ─── Acciones aprobar / rechazar ───────────────────────────── */
+  abrirAprobar(solicitud: Solicitud): void {
+    this.solicitudAccion     = solicitud;
+    this.mostrarModalAprobar = true;
+  }
+
+  abrirRechazar(solicitud: Solicitud): void {
+    this.solicitudAccion      = solicitud;
+    this.mostrarModalRechazar = true;
+  }
+
+  confirmarAprobar(): void {
+    if (this.solicitudAccion) {
+      const idx = this.solicitudes.findIndex(s => s.id_solicitud === this.solicitudAccion!.id_solicitud);
+      if (idx !== -1) this.solicitudes[idx] = { ...this.solicitudes[idx], id_estado: 3 };
+    }
+    this.mostrarModalAprobar = false;
+    this.solicitudAccion     = null;
+  }
+
+  confirmarRechazar(): void {
+    if (this.solicitudAccion) {
+      const idx = this.solicitudes.findIndex(s => s.id_solicitud === this.solicitudAccion!.id_solicitud);
+      if (idx !== -1) this.solicitudes[idx] = { ...this.solicitudes[idx], id_estado: 4 };
+    }
+    this.mostrarModalRechazar = false;
+    this.solicitudAccion      = null;
+  }
+
+  cancelarAccion(): void {
+    this.mostrarModalAprobar  = false;
+    this.mostrarModalRechazar = false;
+    this.solicitudAccion      = null;
   }
 }

@@ -1,0 +1,46 @@
+<!-- Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center px-4"
+     (click)="onCerrar()">
+
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+  <!-- Modal -->
+  <div class="relative w-full max-w-md rounded-2xl border border-[#1B3A6B]/10 bg-white shadow-2xl"
+       (click)="$event.stopPropagation()">
+
+    <!-- Content -->
+    <div class="px-6 py-8 text-center">
+
+      <!-- Icon -->
+      <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 mb-5">
+        <svg class="h-7 w-7 text-red-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+        </svg>
+      </div>
+
+      <h2 class="text-lg font-bold text-[#1B3A6B]">Eliminar usuario</h2>
+      <p class="mt-2 text-sm text-[#1B3A6B]/60">
+        ¿Estás seguro de que deseas eliminar a
+        <span class="font-semibold text-[#1B3A6B]">{{ usuario()?.nombre }}</span>?
+        Esta acción no se puede deshacer.
+      </p>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-center gap-3 border-t border-[#1B3A6B]/10 px-6 py-4">
+      <button (click)="onCerrar()"
+              class="rounded-xl border border-[#1B3A6B]/20 px-5 py-2.5 text-sm font-semibold
+                     text-[#1B3A6B] transition hover:bg-[#1B3A6B]/5 cursor-pointer">
+        Cancelar
+      </button>
+      <button (click)="onConfirmar()"
+              class="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white
+                     shadow-lg transition hover:bg-red-600 hover:scale-[1.02]
+                     active:scale-[0.98] cursor-pointer">
+        Sí, eliminar
+      </button>
+    </div>
+
+  </div>
+</div>

@@ -162,12 +162,12 @@
 </section>
 
 <!-- ══ MODAL: Detalle ══════════════════════════════════════════ -->
-<app-modal-detalle-gestor
+<app-modal-detalle-solicitud
   [visible]="mostrarModalDetalle"
   [solicitud]="solicitudSeleccionada"
   [estados]="estados"
   [carreras]="carreras"
   [ciudades]="ciudades"
-  [clientes]="clientes"
   [archivos]="solicitudSeleccionada ? getArchivosDeSolicitud(solicitudSeleccionada.id_solicitud) : []"
+  [nombreCliente]="solicitudSeleccionada ? getNombreCliente(solicitudSeleccionada.id_usuario) : ''"
   (cerrar)="cerrarModal()" />

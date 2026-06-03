@@ -4,7 +4,6 @@ import { Login } from './pages/login/login';
 import { Home } from './pages/home/home';
 import { Cliente } from './pages/cliente/cliente';
 import { Profesor } from './pages/profesor/profesor';
-import { Gestor } from './pages/gestor/gestor';
 import { Encargado } from './pages/encargado/encargado';
 import { Autoridad } from './pages/autoridad/autoridad';
 import { Admin } from './pages/admin/admin';
@@ -62,24 +61,6 @@ export const routes: Routes = [
         path: 'proyectos',
         loadComponent: () => import('./components/roles-contenido/profesor/proyectos/proyectos')
           .then(m=> m.Proyectos)
-      },
-    ]
-  },
-  //Gestor
-  {
-    path: 'gestor',
-    component: Gestor,
-    children:[
-      {path: '', redirectTo: 'inicio',pathMatch: 'full'},
-      {
-          path: 'inicio',
-          loadComponent: () => import('./components/roles-contenido/gestor/home-gestor/home-gestor')
-            .then(m=> m.HomeGestor)
-      },
-            {
-          path: 'ver-solicitudes',
-          loadComponent: () => import('./components/roles-contenido/gestor/ver-solicitudes/ver-solicitudes')
-            .then(m=> m.VerSolicitudes)
       },
     ]
   },
@@ -144,6 +125,7 @@ export const routes: Routes = [
     },
   ]
 },
+//admin
 {
   path: 'admin',
   component: Admin,

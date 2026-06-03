@@ -305,6 +305,7 @@
   [carreras]="carreras"
   [ciudades]="ciudades"
   [archivos]="solicitudSeleccionada ? getArchivosDeSolicitud(solicitudSeleccionada.id_solicitud) : []"
+  [permitirEditar]="true"
   (cerrar)="cerrarModales()"
   (editar)="onEditarDesdDetalle($event)" />
 

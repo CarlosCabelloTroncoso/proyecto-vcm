@@ -1,0 +1,86 @@
+<!-- Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center px-4"
+     (click)="onCerrar()">
+
+  <!-- Fondo oscuro -->
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+  <!-- Modal -->
+  <div class="relative w-full max-w-lg rounded-2xl border border-[#1B3A6B]/10 bg-white shadow-2xl"
+       (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-[#1B3A6B]/10 px-6 py-4">
+      <h2 class="text-lg font-bold text-[#1B3A6B]">
+        {{ esEdicion ? 'Editar usuario' : 'Crear usuario' }}
+      </h2>
+      <button (click)="onCerrar()"
+              class="rounded-lg p-1.5 text-[#1B3A6B]/40 transition hover:bg-[#1B3A6B]/5
+                     hover:text-[#1B3A6B] cursor-pointer">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="px-6 py-5 space-y-4" novalidate>
+
+      <!-- Nombre -->
+      <div>
+        <label for="nombre" class="block text-sm font-semibold text-[#1B3A6B]">Nombre completo</label>
+        <input id="nombre" type="text" formControlName="nombre"
+               placeholder="Ingrese nombre completo"
+               class="mt-1.5 w-full rounded-xl border border-[#1B3A6B]/15 bg-white px-4 py-2.5
+                      text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/30 outline-none transition
+                      focus:border-[#1B3A6B]/40 focus:ring-2 focus:ring-[#1B3A6B]/10" />
+        @if (form.controls['nombre'].touched && form.controls['nombre'].errors) {
+          <p class="mt-1 text-xs text-red-500">El nombre es obligatorio (mínimo 2 caracteres).</p>
+        }
+      </div>
+
+      <!-- RUT -->
+      <div>
+        <label for="rut" class="block text-sm font-semibold text-[#1B3A6B]">RUT</label>
+        <input id="rut" type="text" formControlName="rut"
+               placeholder="12.345.678-9"
+               class="mt-1.5 w-full rounded-xl border border-[#1B3A6B]/15 bg-white px-4 py-2.5
+                      text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/30 outline-none transition
+                      focus:border-[#1B3A6B]/40 focus:ring-2 focus:ring-[#1B3A6B]/10" />
+        @if (form.controls['rut'].touched && form.controls['rut'].errors) {
+          <p class="mt-1 text-xs text-red-500">El RUT es obligatorio.</p>
+        }
+      </div>
+
+      <!-- Correo -->
+      <div>
+        <label for="correo" class="block text-sm font-semibold text-[#1B3A6B]">Correo electrónico</label>
+        <input id="correo" type="email" formControlName="correo"
+               placeholder="correo@ucm.cl"
+               class="mt-1.5 w-full rounded-xl border border-[#1B3A6B]/15 bg-white px-4 py-2.5
+                      text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/30 outline-none transition
+                      focus:border-[#1B3A6B]/40 focus:ring-2 focus:ring-[#1B3A6B]/10" />
+        @if (form.controls['correo'].touched && form.controls['correo'].errors) {
+          <p class="mt-1 text-xs text-red-500">Ingrese un correo válido.</p>
+        }
+      </div>
+
+    </form>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-end gap-3 border-t border-[#1B3A6B]/10 px-6 py-4">
+      <button (click)="onCerrar()"
+              class="rounded-xl border border-[#1B3A6B]/20 px-5 py-2.5 text-sm font-semibold
+                     text-[#1B3A6B] transition hover:bg-[#1B3A6B]/5 cursor-pointer">
+        Cancelar
+      </button>
+      <button (click)="onSubmit()"
+              class="rounded-xl bg-[#1B3A6B] px-5 py-2.5 text-sm font-semibold text-white
+                     shadow-lg transition hover:bg-[#16315b] hover:scale-[1.02]
+                     active:scale-[0.98] cursor-pointer">
+        {{ esEdicion ? 'Guardar cambios' : 'Crear usuario' }}
+      </button>
+    </div>
+
+  </div>
+</div>
