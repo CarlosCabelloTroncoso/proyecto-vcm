@@ -34,6 +34,11 @@ export const routes: Routes = [
         loadComponent: () => import('./components/roles-contenido/cliente/crear-solicitud/crear-solicitud')
           .then(m => m.CrearSolicitud)
       },
+      {
+        path: 'perfil',
+        loadComponent: () => import('./components/shared/perfil/perfil')
+          .then(m => m.Perfil)
+      },
     ]
   },
   //Profesor
@@ -61,6 +66,11 @@ export const routes: Routes = [
         path: 'proyectos',
         loadComponent: () => import('./components/roles-contenido/profesor/proyectos/proyectos')
           .then(m=> m.Proyectos)
+      },
+      {
+        path: 'perfil',
+        loadComponent: () => import('./components/shared/perfil/perfil')
+          .then(m => m.Perfil)
       },
     ]
   },
@@ -100,6 +110,11 @@ export const routes: Routes = [
           loadComponent: () => import('./components/roles-contenido/encargado/reportes/reportes')
             .then(m=> m.Reportes)
       },
+      {
+        path: 'perfil',
+        loadComponent: () => import('./components/shared/perfil/perfil')
+          .then(m => m.Perfil)
+      },
     ]
   },
   //Autoridad
@@ -122,6 +137,11 @@ export const routes: Routes = [
       path: 'reportes',
       loadComponent: () => import('./components/roles-contenido/autoridad/reportes/reportes')
         .then(m => m.Reportes)
+    },
+    {
+      path: 'perfil',
+      loadComponent: () => import('./components/shared/perfil/perfil')
+        .then(m => m.Perfil)
     },
   ]
 },
@@ -160,6 +180,11 @@ export const routes: Routes = [
       path: 'solicitudes',
       loadComponent: () => import('./components/roles-contenido/admin/solicitudes/solicitudes')
         .then(m => m.Solicitudes)
+    },
+    {
+      path: 'perfil',
+      loadComponent: () => import('./components/shared/perfil/perfil')
+        .then(m => m.Perfil)
     },
   ]
 },
