@@ -1,1 +1,483 @@
-<p>planteamientos works!</p>
+<section class="mx-auto max-w-7xl px-4 py-10 lg:px-8 lg:py-12">
+
+  <!-- ══ ENCABEZADO ══════════════════════════════════════════════ -->
+  <div class="mb-8 flex items-start justify-between gap-4">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-widest text-[#1B3A6B]/50">
+        Portal del profesor
+      </p>
+      <h1 class="mt-1 text-2xl font-extrabold text-[#1B3A6B] sm:text-3xl">
+        Planteamientos
+      </h1>
+      <p class="mt-1 text-sm text-[#1B3A6B]/60">
+        Gestiona tus planteamientos para
+        <span class="font-semibold text-[#1B3A6B]">Ingeniería Civil Informática</span>.
+      </p>
+    </div>
+    <button type="button"
+            (click)="abrirCrear()"
+            class="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#1B3A6B]
+                   px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition
+                   hover:bg-[#16315b] active:scale-95">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+      </svg>
+      Crear Planteamiento
+    </button>
+  </div>
+
+  <!-- ══ FILTROS ═════════════════════════════════════════════════ -->
+  <div class="mb-5 flex flex-wrap items-center gap-2">
+
+    <button type="button"
+            (click)="filtroActivo = 'pendiente'"
+            [class]="filtroActivo === 'pendiente'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Pendientes
+      <span [class]="filtroActivo === 'pendiente'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700'">
+        {{ contadorPorEstado['pendiente'] }}
+      </span>
+    </button>
+
+    <button type="button"
+            (click)="filtroActivo = 'aprobado'"
+            [class]="filtroActivo === 'aprobado'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Aprobados
+      <span [class]="filtroActivo === 'aprobado'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-emerald-100 px-1.5 py-0.5 text-xs font-bold text-emerald-700'">
+        {{ contadorPorEstado['aprobado'] }}
+      </span>
+    </button>
+
+    <button type="button"
+            (click)="filtroActivo = 'rechazado'"
+            [class]="filtroActivo === 'rechazado'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Rechazados
+      <span [class]="filtroActivo === 'rechazado'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700'">
+        {{ contadorPorEstado['rechazado'] }}
+      </span>
+    </button>
+
+  </div>
+
+  <!-- ══ TABLA ════════════════════════════════════════════════════ -->
+  <div class="overflow-hidden rounded-2xl border border-[#1B3A6B]/10 bg-white shadow-sm">
+
+    @if (planteamientosFiltrados.length > 0) {
+
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[640px] border-collapse text-left text-sm">
+
+          <thead>
+            <tr class="border-b border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.04]">
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Título
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Solicitud vinculada
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Tiempo estimado
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Estado
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60 text-right">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-[#1B3A6B]/8">
+            @for (p of planteamientosFiltrados; track p.id_planteamiento) {
+              <tr class="transition hover:bg-[#1B3A6B]/[0.025]">
+
+                <td class="max-w-[200px] px-5 py-4">
+                  <p class="truncate font-medium text-[#1B3A6B]" [title]="p.titulo_planteamiento">
+                    {{ p.titulo_planteamiento }}
+                  </p>
+                </td>
+
+                <td class="max-w-[220px] px-5 py-4">
+                  <p class="truncate text-[#1B3A6B]/70" [title]="getTituloSolicitud(p.id_solicitud)">
+                    {{ getTituloSolicitud(p.id_solicitud) }}
+                  </p>
+                </td>
+
+                <td class="whitespace-nowrap px-5 py-4 text-[#1B3A6B]/65">
+                  {{ p.tiempo_estimado_planteamiento }}
+                </td>
+
+                <td class="px-5 py-4">
+                  <span class="inline-flex rounded-full border px-2.5 py-0.5
+                               text-xs font-semibold {{ getBadgeEstado(p.id_estado) }}">
+                    {{ getNombreEstado(p.id_estado) }}
+                  </span>
+                </td>
+
+                <td class="px-5 py-4">
+                  <div class="flex items-center justify-end gap-2">
+
+                    <!-- Ver detalles (siempre) -->
+                    <button type="button"
+                            (click)="abrirDetalle(p)"
+                            class="inline-flex items-center gap-1.5 rounded-lg border border-[#1B3A6B]/20
+                                   bg-white px-3 py-1.5 text-xs font-semibold text-[#1B3A6B] shadow-sm
+                                   transition hover:bg-[#1B3A6B] hover:text-white active:scale-95">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.477
+                             0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                      Ver
+                    </button>
+
+                    @if (p.id_estado === 1) {
+
+                      <button type="button"
+                              (click)="abrirEditar(p)"
+                              class="inline-flex items-center gap-1.5 rounded-lg border border-[#1B3A6B]/20
+                                     bg-white px-3 py-1.5 text-xs font-semibold text-[#1B3A6B] shadow-sm
+                                     transition hover:bg-[#1B3A6B] hover:text-white active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/>
+                        </svg>
+                        Editar
+                      </button>
+
+                      <button type="button"
+                              (click)="abrirEliminar(p)"
+                              class="inline-flex items-center gap-1.5 rounded-lg border border-red-200
+                                     bg-white px-3 py-1.5 text-xs font-semibold text-red-500 shadow-sm
+                                     transition hover:bg-red-500 hover:text-white active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3M3 7h18"/>
+                        </svg>
+                        Eliminar
+                      </button>
+
+                    }
+                  </div>
+                </td>
+
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="border-t border-[#1B3A6B]/8 bg-[#1B3A6B]/[0.02] px-5 py-3">
+        <p class="text-xs text-[#1B3A6B]/45">
+          {{ planteamientosFiltrados.length }}
+          planteamiento{{ planteamientosFiltrados.length !== 1 ? 's' : '' }}
+          encontrado{{ planteamientosFiltrados.length !== 1 ? 's' : '' }}
+        </p>
+      </div>
+
+    } @else {
+
+      <div class="flex flex-col items-center justify-center px-6 py-20 text-center">
+        <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1B3A6B]/[0.06]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#1B3A6B]/30"
+               fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1
+                 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/>
+          </svg>
+        </div>
+        <p class="mt-4 text-base font-semibold text-[#1B3A6B]/60">Sin planteamientos</p>
+        <p class="mt-1 text-sm text-[#1B3A6B]/40">
+          No hay planteamientos en este estado.
+        </p>
+      </div>
+
+    }
+  </div>
+
+</section>
+
+<!-- ══ MODAL: Crear / Editar ═══════════════════════════════════ -->
+@if (mostrarModalForm) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+    <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-[#1B3A6B]/10 px-6 py-4">
+        <h2 class="text-base font-bold text-[#1B3A6B]">
+          {{ modoEdicion ? 'Editar planteamiento' : 'Crear planteamiento' }}
+        </h2>
+        <button type="button" (click)="cerrarModalForm()"
+                class="rounded-lg p-1.5 text-[#1B3A6B]/40 transition hover:bg-[#1B3A6B]/8 hover:text-[#1B3A6B]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="max-h-[70vh] space-y-4 overflow-y-auto px-6 py-5">
+
+        <!-- Solicitud vinculada -->
+        <div>
+          <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+            Solicitud vinculada <span class="text-red-400">*</span>
+          </label>
+          <select [(ngModel)]="formData.id_solicitud"
+                  class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-3.5 py-2.5 text-sm
+                         text-[#1B3A6B] shadow-sm outline-none transition
+                         focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15">
+            <option [ngValue]="undefined" disabled>Seleccionar solicitud aprobada…</option>
+            @for (sol of solicitudesAprobadas; track sol.id_solicitud) {
+              <option [ngValue]="sol.id_solicitud">{{ sol.titulo_solicitud }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Título -->
+        <div>
+          <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+            Título <span class="text-red-400">*</span>
+          </label>
+          <input type="text"
+                 [(ngModel)]="formData.titulo_planteamiento"
+                 placeholder="Nombre del planteamiento…"
+                 class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-3.5 py-2.5 text-sm
+                        text-[#1B3A6B] placeholder-[#1B3A6B]/40 shadow-sm outline-none transition
+                        focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15"/>
+        </div>
+
+        <!-- Descripción -->
+        <div>
+          <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+            Descripción <span class="text-red-400">*</span>
+          </label>
+          <textarea [(ngModel)]="formData.descripcion_planteamiento"
+                    rows="7"
+                    maxlength="1000"
+                    placeholder="Describe el objetivo, contexto y alcance del planteamiento…"
+                    class="w-full resize-none rounded-xl border border-[#1B3A6B]/20 bg-white px-3.5 py-2.5
+                           text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/40 shadow-sm outline-none transition
+                           focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15">
+          </textarea>
+          <p class="mt-1 text-right text-xs text-[#1B3A6B]/40">
+            {{ (formData.descripcion_planteamiento?.length ?? 0) }} / 1000
+          </p>
+        </div>
+
+        <!-- Tiempo estimado -->
+        <div>
+          <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+            Tiempo estimado <span class="text-red-400">*</span>
+          </label>
+          <input type="text"
+                 [(ngModel)]="formData.tiempo_estimado_planteamiento"
+                 placeholder="Ej: 3 meses…"
+                 class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-3.5 py-2.5 text-sm
+                        text-[#1B3A6B] placeholder-[#1B3A6B]/40 shadow-sm outline-none transition
+                        focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15"/>
+        </div>
+
+        <!-- Archivos adjuntos -->
+        <div>
+          <div class="mb-1.5 flex items-center justify-between">
+            <label class="text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+              Archivos adjuntos
+              <span class="ml-1 text-xs font-normal normal-case text-[#1B3A6B]/40">(opcional)</span>
+            </label>
+            @if (archivosAdjuntos.length > 0) {
+              <span class="text-xs text-[#1B3A6B]/50">
+                {{ archivosAdjuntos.length }} archivo{{ archivosAdjuntos.length !== 1 ? 's' : '' }}
+              </span>
+            }
+          </div>
+          <p class="mb-2 text-xs text-[#1B3A6B]/45">
+            PDF, Word, Excel, imágenes · Máx. {{ TAMANO_MAX_MB }} MB por archivo
+          </p>
+
+          <!-- Zona drag-drop -->
+          <div (dragover)="onDragOver($event)"
+               (dragleave)="onDragLeave()"
+               (drop)="onDrop($event)"
+               (click)="fileInput.click()"
+               [class]="'cursor-pointer select-none rounded-xl border-2 border-dashed px-5 py-6 text-center transition ' +
+                        (arrastrandoArchivo
+                          ? 'border-[#1B3A6B]/50 bg-[#1B3A6B]/[0.05]'
+                          : 'border-[#1B3A6B]/20 bg-white hover:border-[#1B3A6B]/30 hover:bg-[#1B3A6B]/[0.02]')">
+            <input #fileInput type="file" multiple hidden
+                   accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp,.txt"
+                   (change)="onFileChange($event)"/>
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 class="mx-auto h-8 w-8 text-[#1B3A6B]/25 transition"
+                 [class.text-[#1B3A6B]/50]="arrastrandoArchivo"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M7 16a4 4 0 0 1-.88-7.903A5 5 0 1 1 15.9 6L16 6a5 5 0 0 1 1 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <p class="mt-2 text-sm text-[#1B3A6B]/60">
+              @if (arrastrandoArchivo) {
+                <span class="font-semibold text-[#1B3A6B]">Suelta aquí los archivos</span>
+              } @else {
+                Arrastra archivos aquí o
+                <span class="font-semibold text-[#1B3A6B] underline underline-offset-2">selecciona</span>
+              }
+            </p>
+          </div>
+
+          <!-- Errores -->
+          @if (errorArchivos.length > 0) {
+            <ul class="mt-2 space-y-0.5">
+              @for (err of errorArchivos; track err) {
+                <li class="flex items-start gap-1.5 text-xs text-red-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="mt-px h-3.5 w-3.5 shrink-0"
+                       fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0
+                         1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  </svg>
+                  {{ err }}
+                </li>
+              }
+            </ul>
+          }
+
+          <!-- Lista archivos -->
+          @if (archivosAdjuntos.length > 0) {
+            <ul class="mt-3 space-y-2">
+              @for (entry of archivosAdjuntos; track entry.archivo.id_archivo; let i = $index) {
+                <li class="flex items-center gap-3 rounded-xl border border-[#1B3A6B]/10
+                           bg-[#1B3A6B]/[0.02] px-3.5 py-2.5">
+                  <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg
+                              {{ getClaseIconoTipo(entry.archivo.tipo_archivo) }}">
+                    @switch (getTipoIcono(entry.archivo.tipo_archivo)) {
+                      @case ('pdf') {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M7 21h10a2 2 0 0 0 2-2V9.414a1 1 0 0 0-.293-.707l-5.414-5.414A1 1
+                               0 0 0 12.586 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"/>
+                        </svg>
+                      }
+                      @case ('word') {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1
+                               .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/>
+                        </svg>
+                      }
+                      @case ('excel') {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 10h18M3 14h18M10 3v18M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0
+                               0 1-3 3H6a3 3 0 0 1-3-3V6z"/>
+                        </svg>
+                      }
+                      @case ('imagen') {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2 1.586-1.586a2 2
+                               0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0
+                               0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/>
+                        </svg>
+                      }
+                      @default {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M7 21h10a2 2 0 0 0 2-2V9.414a1 1 0 0 0-.293-.707l-5.414-5.414A1 1
+                               0 0 0 12.586 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"/>
+                        </svg>
+                      }
+                    }
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-medium text-[#1B3A6B]"
+                       [title]="entry.archivo.nombre_archivo">
+                      {{ entry.archivo.nombre_archivo }}
+                    </p>
+                    <p class="text-xs text-[#1B3A6B]/45">
+                      @if (entry.file) {
+                        {{ formatearTamano(entry.file.size) }}
+                      } @else {
+                        Archivo existente
+                      }
+                    </p>
+                  </div>
+                  <span class="shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold uppercase
+                               {{ getBadgeTipo(entry.archivo.tipo_archivo) }}">
+                    {{ entry.archivo.tipo_archivo }}
+                  </span>
+                  <button type="button" (click)="eliminarArchivo(i)"
+                          class="ml-1 shrink-0 rounded-lg p-1.5 text-[#1B3A6B]/35 transition
+                                 hover:bg-red-50 hover:text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 border-t border-[#1B3A6B]/10 px-6 py-4">
+        <button type="button" (click)="cerrarModalForm()"
+                class="rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold
+                       text-[#1B3A6B]/70 transition hover:bg-[#1B3A6B]/5">
+          Cancelar
+        </button>
+        <button type="button"
+                (click)="guardar()"
+                [disabled]="!formValido()"
+                class="rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm
+                       transition hover:bg-[#16315b] active:scale-95
+                       disabled:cursor-not-allowed disabled:opacity-40">
+          {{ modoEdicion ? 'Guardar cambios' : 'Crear planteamiento' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ══ MODAL: Detalle ══════════════════════════════════════════ -->
+<app-modal-detalle-planteamiento
+  [visible]="mostrarModalDetalle"
+  [planteamiento]="planteamientoDetalle"
+  [estadosPlanteamiento]="estadosPlanteamiento"
+  [solicitudesAprobadas]="solicitudesAprobadas"
+  [archivos]="[]"
+  (cerrar)="cerrarDetalle()" />
+
+<!-- ══ MODAL: Confirmar Eliminar ═══════════════════════════════ -->
+<app-modal-confirmar
+  [visible]="mostrarModalEliminar"
+  titulo="Eliminar planteamiento"
+  [nombreDestacado]="planteamientoEliminar?.titulo_planteamiento ?? ''"
+  descripcion="¿Estás seguro? Esta acción no se puede deshacer."
+  textoConfirmar="Sí, eliminar"
+  (confirmar)="confirmarEliminar()"
+  (cancelar)="cerrarEliminar()" />

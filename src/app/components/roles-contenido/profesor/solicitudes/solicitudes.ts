@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ModalDetalleSolicitud } from '../../../shared/modal-detalle-solicitud/modal-detalle-solicitud';
 import { Solicitud, EstadoSolicitud, Ciudad } from '../../../../interfaces/solicitud.interface';
 import { Carrera } from '../../../../interfaces/academico.interface';
@@ -13,6 +14,8 @@ import { Archivo } from '../../../../interfaces/proyecto.interface';
   styleUrl: './solicitudes.css',
 })
 export class Solicitudes {
+
+  constructor(private router: Router) {}
 
   /* ─── Sesión mock: profesor asignado a ICI ─────────────────── */
   readonly profesorActual: ProfesorCarrera = { id_usuario: 20, id_carrera: 1 };
@@ -155,7 +158,8 @@ export class Solicitudes {
   }
 
   realizarPlanteamiento(solicitud: Solicitud): void {
-    // TODO: navegar al formulario de planteamiento con la solicitud como contexto
-    console.log('Realizar planteamiento para:', solicitud.id_solicitud);
+    this.router.navigate(['/profesor/planteamientos'], {
+      queryParams: { solicitudId: solicitud.id_solicitud },
+    });
   }
 }
