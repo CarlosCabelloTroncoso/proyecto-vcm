@@ -2,14 +2,14 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ModalDetallePlanteamiento } from '../../../shared/modal-detalle-planteamiento/modal-detalle-planteamiento';
-import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
+import { ModalConfirmarAccion } from '../../../shared/modal-confirmar-accion/modal-confirmar-accion';
 import { PlanteamientoProyecto, EstadoPlanteamiento, Archivo } from '../../../../interfaces/proyecto.interface';
 import { Solicitud } from '../../../../interfaces/solicitud.interface';
 import { EncargadoCarrera } from '../../../../interfaces/usuario.interface';
 
 @Component({
   selector: 'app-gestion-planteamiento',
-  imports: [CommonModule, FormsModule, ModalDetallePlanteamiento, ModalConfirmar],
+  imports: [CommonModule, FormsModule, ModalDetallePlanteamiento, ModalConfirmarAccion],
   templateUrl: './gestion-planteamiento.html',
   styleUrl: './gestion-planteamiento.css',
 })

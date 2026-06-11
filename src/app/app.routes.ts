@@ -68,6 +68,11 @@ export const routes: Routes = [
           .then(m=> m.Proyectos)
       },
       {
+        path: 'proyecto/:id',
+        loadComponent: () => import('./components/roles-contenido/profesor/proyecto-detalle/proyecto-detalle')
+          .then(m=> m.ProyectoDetalle)
+      },
+      {
         path: 'perfil',
         loadComponent: () => import('./components/shared/perfil/perfil')
           .then(m => m.Perfil)
@@ -99,6 +104,11 @@ export const routes: Routes = [
           path: 'gestion-proyecto',
           loadComponent: () => import('./components/roles-contenido/encargado/gestion-proyecto/gestion-proyecto')
             .then(m=> m.GestionProyecto)
+      },
+      {
+          path: 'proyecto/:id',
+          loadComponent: () => import('./components/roles-contenido/encargado/proyecto-detalle/proyecto-detalle')
+            .then(m=> m.ProyectoDetalleEncargado)
       },
       {
           path: 'alumnos',

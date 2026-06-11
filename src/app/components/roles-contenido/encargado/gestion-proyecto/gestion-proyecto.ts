@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { PlanteamientoProyecto, EstadoPlanteamiento } from '../../../../interfaces/proyecto.interface';
 import { Solicitud } from '../../../../interfaces/solicitud.interface';
 import { ModalDetallePlanteamiento } from '../../../shared/modal-detalle-planteamiento/modal-detalle-planteamiento';
@@ -21,7 +22,7 @@ interface ProyectoVista {
 
 @Component({
   selector: 'app-gestion-proyecto',
-  imports: [CommonModule, FormsModule, ModalDetallePlanteamiento],
+  imports: [CommonModule, FormsModule, RouterLink, ModalDetallePlanteamiento],
   templateUrl: './gestion-proyecto.html',
   styleUrl: './gestion-proyecto.css',
 })

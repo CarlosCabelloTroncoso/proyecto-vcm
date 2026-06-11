@@ -226,8 +226,9 @@
   (cerrar)="cerrarDetalle()" />
 
 <!-- ══ MODAL: Confirmar Aprobar ════════════════════════════════ -->
-<app-modal-confirmar
+<app-modal-confirmar-accion
   [visible]="mostrarModalAprobar"
+  tipo="aprobar"
   titulo="Aprobar planteamiento"
   [nombreDestacado]="planteamientoAccion?.titulo_planteamiento ?? ''"
   descripcion="¿Estás seguro de que deseas aprobar este planteamiento?"
@@ -236,8 +237,9 @@
   (cancelar)="cancelarAccion()" />
 
 <!-- ══ MODAL: Confirmar Rechazar ═══════════════════════════════ -->
-<app-modal-confirmar
+<app-modal-confirmar-accion
   [visible]="mostrarModalRechazar"
+  tipo="rechazar"
   titulo="Rechazar planteamiento"
   [nombreDestacado]="planteamientoAccion?.titulo_planteamiento ?? ''"
   descripcion="¿Estás seguro de que deseas rechazar este planteamiento?"

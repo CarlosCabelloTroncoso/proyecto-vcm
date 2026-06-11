@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Archivo } from '../../../../interfaces/proyecto.interface';
 
 interface ProyectoVista {
@@ -27,7 +28,7 @@ interface ArchivoEntry {
 
 @Component({
   selector: 'app-proyectos',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './proyectos.html',
   styleUrl: './proyectos.css',
 })
