@@ -1,1 +1,244 @@
-<p>gestion-proyecto works!</p>
+<section class="mx-auto max-w-7xl px-4 py-10 lg:px-8 lg:py-12">
+
+  <!-- ══ ENCABEZADO ══════════════════════════════════════════════ -->
+  <div class="mb-8">
+    <p class="text-xs font-semibold uppercase tracking-widest text-[#1B3A6B]/50">
+      Portal del encargado
+    </p>
+    <h1 class="mt-1 text-2xl font-extrabold text-[#1B3A6B] sm:text-3xl">
+      Gestión de Proyectos
+    </h1>
+    <p class="mt-1 text-sm text-[#1B3A6B]/60">
+      Visualiza y administra el estado de los proyectos de
+      <span class="font-semibold text-[#1B3A6B]">Ingeniería Civil Informática</span>.
+    </p>
+  </div>
+
+  <!-- ══ FILTROS ═════════════════════════════════════════════════ -->
+  <div class="mb-5 flex flex-wrap items-center gap-2">
+
+    <button type="button"
+            (click)="filtroActivo = 'disponible'"
+            [class]="filtroActivo === 'disponible'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Disponibles
+      <span [class]="filtroActivo === 'disponible'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-emerald-100 px-1.5 py-0.5 text-xs font-bold text-emerald-700'">
+        {{ contadorPorEstado['disponible'] }}
+      </span>
+    </button>
+
+    <button type="button"
+            (click)="filtroActivo = 'en_proceso'"
+            [class]="filtroActivo === 'en_proceso'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      En proceso
+      <span [class]="filtroActivo === 'en_proceso'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-700'">
+        {{ contadorPorEstado['en_proceso'] }}
+      </span>
+    </button>
+
+    <button type="button"
+            (click)="filtroActivo = 'pausado'"
+            [class]="filtroActivo === 'pausado'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Pausados
+      <span [class]="filtroActivo === 'pausado'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700'">
+        {{ contadorPorEstado['pausado'] }}
+      </span>
+    </button>
+
+    <button type="button"
+            (click)="filtroActivo = 'atrasado'"
+            [class]="filtroActivo === 'atrasado'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Atrasados
+      <span [class]="filtroActivo === 'atrasado'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-orange-100 px-1.5 py-0.5 text-xs font-bold text-orange-600'">
+        {{ contadorPorEstado['atrasado'] }}
+      </span>
+    </button>
+
+    <button type="button"
+            (click)="filtroActivo = 'finalizado'"
+            [class]="filtroActivo === 'finalizado'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Finalizados
+      <span [class]="filtroActivo === 'finalizado'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-teal-100 px-1.5 py-0.5 text-xs font-bold text-teal-700'">
+        {{ contadorPorEstado['finalizado'] }}
+      </span>
+    </button>
+
+    <button type="button"
+            (click)="filtroActivo = 'cancelado'"
+            [class]="filtroActivo === 'cancelado'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Cancelados
+      <span [class]="filtroActivo === 'cancelado'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-500'">
+        {{ contadorPorEstado['cancelado'] }}
+      </span>
+    </button>
+
+  </div>
+
+  <!-- ══ TABLA ════════════════════════════════════════════════════ -->
+  <div class="overflow-hidden rounded-2xl border border-[#1B3A6B]/10 bg-white shadow-sm">
+
+    @if (proyectosFiltrados.length > 0) {
+
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[640px] border-collapse text-left text-sm">
+
+          <thead>
+            <tr class="border-b border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.04]">
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Título
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Planteamiento origen
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Solicitud origen
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Tiempo estimado
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Estado
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60 text-right">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-[#1B3A6B]/8">
+            @for (p of proyectosFiltrados; track p.id) {
+              <tr class="transition hover:bg-[#1B3A6B]/[0.025]">
+
+                <td class="max-w-[180px] px-5 py-4">
+                  <p class="truncate font-medium text-[#1B3A6B]" [title]="p.titulo">
+                    {{ p.titulo }}
+                  </p>
+                </td>
+
+                <td class="max-w-[180px] px-5 py-4">
+                  <p class="truncate text-[#1B3A6B]/70" [title]="p.planteamiento_origen">
+                    {{ p.planteamiento_origen }}
+                  </p>
+                </td>
+
+                <td class="max-w-[200px] px-5 py-4">
+                  <p class="truncate text-[#1B3A6B]/70" [title]="p.solicitud_origen">
+                    {{ p.solicitud_origen }}
+                  </p>
+                </td>
+
+                <td class="whitespace-nowrap px-5 py-4 text-[#1B3A6B]/65">
+                  {{ p.tiempo_estimado }}
+                </td>
+
+                <td class="px-5 py-4">
+                  <span class="inline-flex rounded-full border px-2.5 py-0.5
+                               text-xs font-semibold {{ getBadgeEstado(p.estado) }}">
+                    {{ getNombreEstado(p.estado) }}
+                  </span>
+                </td>
+
+                <td class="px-5 py-4">
+                  <div class="flex items-center justify-end gap-2">
+
+                    <!-- Ver planteamiento (solo en Disponibles) -->
+                    @if (p.estado === 'disponible') {
+                      <button type="button"
+                              (click)="abrirDetalle(p)"
+                              class="inline-flex items-center gap-1.5 rounded-lg border border-[#1B3A6B]/20
+                                     bg-white px-3 py-1.5 text-xs font-semibold text-[#1B3A6B] shadow-sm
+                                     transition hover:bg-[#1B3A6B] hover:text-white active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.477
+                               0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        Ver
+                      </button>
+                    }
+
+                    <!-- Cambiar estado (estados no terminales ni disponible) -->
+                    @if (!esTerminal(p.estado) && p.estado !== 'disponible') {
+                      <select (change)="cambiarEstado(p, $event)"
+                              class="rounded-lg border border-[#1B3A6B]/20 bg-white px-2.5 py-1.5 text-xs
+                                     font-semibold text-[#1B3A6B] shadow-sm outline-none transition
+                                     hover:border-[#1B3A6B]/40 focus:border-[#1B3A6B]/50
+                                     focus:ring-2 focus:ring-[#1B3A6B]/15 cursor-pointer">
+                        <option value="" selected disabled>Cambiar estado…</option>
+                        @for (op of getOpcionesEstado(p.estado); track op.key) {
+                          <option [value]="op.key">{{ op.label }}</option>
+                        }
+                      </select>
+                    }
+
+                  </div>
+                </td>
+
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="border-t border-[#1B3A6B]/8 bg-[#1B3A6B]/[0.02] px-5 py-3">
+        <p class="text-xs text-[#1B3A6B]/45">
+          {{ proyectosFiltrados.length }}
+          proyecto{{ proyectosFiltrados.length !== 1 ? 's' : '' }}
+          encontrado{{ proyectosFiltrados.length !== 1 ? 's' : '' }}
+        </p>
+      </div>
+
+    } @else {
+
+      <div class="flex flex-col items-center justify-center px-6 py-20 text-center">
+        <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1B3A6B]/[0.06]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#1B3A6B]/30"
+               fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z
+                 M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </div>
+        <p class="mt-4 text-base font-semibold text-[#1B3A6B]/60">Sin proyectos</p>
+        <p class="mt-1 text-sm text-[#1B3A6B]/40">
+          No hay proyectos en este estado.
+        </p>
+      </div>
+
+    }
+  </div>
+
+</section>
+
+<!-- ══ MODAL: Detalle del planteamiento ════════════════════════ -->
+<app-modal-detalle-planteamiento
+  [visible]="mostrarModalDetalle"
+  [planteamiento]="planteamientoDetalle"
+  [estadosPlanteamiento]="estadosPlanteamiento"
+  [solicitudesAprobadas]="solicitudesReferencia"
+  [archivos]="[]"
+  (cerrar)="cerrarDetalle()" />
