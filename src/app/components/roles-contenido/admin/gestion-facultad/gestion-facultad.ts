@@ -1,9 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Facultad } from '../../../../interfaces/academico.interface';
 import { ModalFacultadForm } from './modales/modal-facultad-form/modal-facultad-form';
 import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
+import { AuthService } from '../../../../core/services/auth.service';
+import { DataService } from '../../../../core/services/data.service';
+import { CatalogService } from '../../../../core/services/catalog.service';
 
 @Component({
   selector: 'app-gestion-facultad',
@@ -11,17 +14,19 @@ import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar'
   templateUrl: './gestion-facultad.html',
   styleUrl: './gestion-facultad.css',
 })
-export class GestionFacultad {
+export class GestionFacultad implements OnInit {
+
+  constructor(private dataService: DataService, private catalog: CatalogService) {}
+
+  async ngOnInit(): Promise<void> {
+    await this.catalog.load();
+    const facultadesRes = await this.dataService.getAll<any>('facultad', { select: `*`, filters: { is_active: true } });
+    if (facultadesRes.data) this.facultades = facultadesRes.data;
+  }
+
 
   /* ─── Datos mock ───────────────────────────────────────────── */
-  facultades: Facultad[] = [
-    { id_facultad: 1, nombre_facultad: 'Facultad de Ingeniería',           etiqueta_facultad: 'ING'   },
-    { id_facultad: 2, nombre_facultad: 'Facultad de Ciencias de la Salud', etiqueta_facultad: 'SALUD' },
-    { id_facultad: 3, nombre_facultad: 'Facultad de Ciencias Jurídicas',   etiqueta_facultad: 'DER'   },
-    { id_facultad: 4, nombre_facultad: 'Facultad de Ciencias Económicas',  etiqueta_facultad: 'ECON'  },
-    { id_facultad: 5, nombre_facultad: 'Facultad de Educación',            etiqueta_facultad: 'EDU'   },
-    { id_facultad: 6, nombre_facultad: 'Facultad de Ciencias Básicas',     etiqueta_facultad: 'CIEN'  },
-  ];
+  facultades: Facultad[] = [];
 
   /* ─── Búsqueda y filtros ───────────────────────────────────── */
   searchTerm     = '';
@@ -94,26 +99,22 @@ export class GestionFacultad {
     this.mostrarModalEliminar = true;
   }
 
-  onGuardarFacultad(datos: Partial<Facultad>): void {
-    if (this.modoEdicion) {
-      const idx = this.facultades.findIndex(f => f.id_facultad === datos.id_facultad);
-      if (idx !== -1) this.facultades[idx] = datos as Facultad;
+  async onGuardarFacultad(datos: Partial<Facultad>): Promise<void> {
+    if (this.modoEdicion && datos.id_facultad) {
+      await this.dataService.update('facultad', datos.id_facultad, datos, 'id_facultad');
     } else {
-      const nuevoId = this.facultades.length
-        ? Math.max(...this.facultades.map(f => f.id_facultad)) + 1
-        : 1;
-      this.facultades.push({ ...datos, id_facultad: nuevoId } as Facultad);
+      await this.dataService.create('facultad', datos);
     }
     this.mostrarModalForm = false;
+    await this.ngOnInit();
   }
 
-  onEliminarFacultad(): void {
+  async onEliminarFacultad(): Promise<void> {
     if (this.facultadAEliminar) {
-      this.facultades = this.facultades.filter(
-        f => f.id_facultad !== this.facultadAEliminar!.id_facultad
-      );
+      await this.dataService.softDelete('facultad', this.facultadAEliminar.id_facultad, 'id_facultad');
       this.facultadAEliminar    = null;
       this.mostrarModalEliminar = false;
+      await this.ngOnInit();
     }
   }
 

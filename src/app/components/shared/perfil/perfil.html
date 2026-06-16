@@ -1,21 +1,17 @@
 <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
   <div class="w-full max-w-md bg-white rounded-2xl shadow-lg overflow-hidden">
 
+    @if (usuario) {
     <!-- Header -->
     <div class="bg-[#1B3A6B] px-8 py-10 flex flex-col items-center gap-4">
-      @if (usuario.foto) {
-        <img [src]="usuario.foto" alt="Foto de perfil"
-             class="h-24 w-24 rounded-full border-4 border-white/30 object-cover" />
-      } @else {
-        <div class="h-24 w-24 rounded-full border-4 border-white/30 bg-white/20
-                    flex items-center justify-center text-white text-3xl font-bold">
-          {{ iniciales }}
-        </div>
-      }
+      <div class="h-24 w-24 rounded-full border-4 border-white/30 bg-white/20
+                  flex items-center justify-center text-white text-3xl font-bold">
+        {{ iniciales }}
+      </div>
 
       <div class="text-center">
         <h1 class="text-xl font-bold text-white">
-          {{ usuario.nombre }} {{ usuario.apellido }}
+          {{ usuario.nombres_usuario }} {{ usuario.apellidos_usuario }}
         </h1>
         @if (esRolInterno) {
           <span class="mt-2 inline-block rounded-full bg-white/20 px-4 py-1
@@ -33,12 +29,13 @@
         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1B3A6B]/10 shrink-0">
           <svg class="h-5 w-5 text-[#1B3A6B]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                  d="M10 6H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-5
+                     m-4 0V5a2 2 0 1 1 4 0v1m-4 0a2 2 0 1 0 4 0m-5 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
           </svg>
         </div>
         <div>
-          <p class="text-xs text-gray-400 font-medium">Correo</p>
-          <p class="text-sm text-gray-800 font-semibold">{{ usuario.correo }}</p>
+          <p class="text-xs text-gray-400 font-medium">RUT</p>
+          <p class="text-sm text-gray-800 font-semibold">{{ usuario.rut_usuario }}</p>
         </div>
       </div>
 
@@ -51,7 +48,7 @@
         </div>
         <div>
           <p class="text-xs text-gray-400 font-medium">Teléfono</p>
-          <p class="text-sm text-gray-800 font-semibold">{{ usuario.telefono }}</p>
+          <p class="text-sm text-gray-800 font-semibold">{{ usuario.telefono_usuario || 'No registrado' }}</p>
         </div>
       </div>
 
@@ -64,10 +61,13 @@
         </div>
         <div>
           <p class="text-xs text-gray-400 font-medium">Nombre completo</p>
-          <p class="text-sm text-gray-800 font-semibold">{{ usuario.nombre }} {{ usuario.apellido }}</p>
+          <p class="text-sm text-gray-800 font-semibold">{{ usuario.nombres_usuario }} {{ usuario.apellidos_usuario }}</p>
         </div>
       </div>
 
     </div>
+    } @else {
+      <div class="px-8 py-12 text-center text-gray-400">Cargando perfil...</div>
+    }
   </div>
 </div>

@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DataService } from '../../../../core/services/data.service';
+import { CatalogService } from '../../../../core/services/catalog.service';
 import { Usuario, Rol } from '../../../../interfaces/usuario.interface';
 import { ModalUsuarioForm } from './modales/modal-usuario-form/modal-usuario-form';
 import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
@@ -11,7 +13,7 @@ import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar'
   templateUrl: './gestion-usuario.html',
   styleUrl: './gestion-usuario.css',
 })
-export class GestionUsuario {
+export class GestionUsuario implements OnInit {
 
   /* ─── Roles ────────────────────────────────────────────────── */
   roles: Rol[] = [
@@ -24,16 +26,15 @@ export class GestionUsuario {
   ];
 
   /* ─── Datos mock ───────────────────────────────────────────── */
-  usuarios: Usuario[] = [
-    { id_usuario: 1, rut_usuario: '12.345.678-9', nombres_usuario: 'María',    apellidos_usuario: 'González López', telefono_usuario: '+56 9 1234 5678', password_usuario: 'maria2026!',  is_active: true,  fecha_creacion: '2026-01-15', id_rol: 3 },
-    { id_usuario: 2, rut_usuario: '9.876.543-2',  nombres_usuario: 'Juan',     apellidos_usuario: 'Pérez Soto',     telefono_usuario: '+56 9 8765 4321', password_usuario: 'jpSoto#99',   is_active: false, fecha_creacion: '2026-02-20', id_rol: 6 },
-    { id_usuario: 3, rut_usuario: '15.112.233-K', nombres_usuario: 'Ana',      apellidos_usuario: 'Fuentes Rojas',  telefono_usuario: '+56 9 3322 1100', password_usuario: 'anaF@ucm1',   is_active: true,  fecha_creacion: '2026-03-05', id_rol: 4 },
-    { id_usuario: 4, rut_usuario: '8.001.002-3',  nombres_usuario: 'Carlos',   apellidos_usuario: 'Soto Muñoz',     telefono_usuario: '+56 9 5544 3322', password_usuario: 'carloS$2026', is_active: true,  fecha_creacion: '2026-01-28', id_rol: 1 },
-    { id_usuario: 5, rut_usuario: '17.445.667-8', nombres_usuario: 'Patricia', apellidos_usuario: 'Morales Díaz',   telefono_usuario: '+56 9 7711 2233', password_usuario: 'Paty.mor!',   is_active: false, fecha_creacion: '2026-04-10', id_rol: 2 },
-    { id_usuario: 6, rut_usuario: '14.223.445-6', nombres_usuario: 'Rodrigo',  apellidos_usuario: 'Vega Castillo',  telefono_usuario: '+56 9 6699 8877', password_usuario: 'rvega2026',   is_active: true,  fecha_creacion: '2026-02-14', id_rol: 5 },
-    { id_usuario: 7, rut_usuario: '11.998.001-7', nombres_usuario: 'Camila',   apellidos_usuario: 'Herrera Núñez',  telefono_usuario: '+56 9 4433 6655', password_usuario: 'cami#her7',   is_active: true,  fecha_creacion: '2026-03-22', id_rol: 3 },
-    { id_usuario: 8, rut_usuario: '16.334.556-2', nombres_usuario: 'Felipe',   apellidos_usuario: 'Torres Alarcón', telefono_usuario: '+56 9 2211 9900', password_usuario: 'felipT@2',    is_active: false, fecha_creacion: '2026-05-01', id_rol: 6 },
-  ];
+  usuarios: Usuario[] = [];
+
+  constructor(private dataService: DataService, private catalog: CatalogService) {}
+
+  async ngOnInit(): Promise<void> {
+    await this.catalog.load();
+    const res = await this.dataService.getAll<any>('usuario', { select: '*, rol(nombre_rol)', filters: { is_active: true } });
+    if (res.data) this.usuarios = res.data;
+  }
 
   /* ─── Meses del año ───────────────────────────────────────── */
   readonly meses = [
@@ -156,7 +157,7 @@ export class GestionUsuario {
   }
 
   /** Recibe los datos emitidos por ModalUsuarioForm */
-  onGuardarUsuario(datos: Partial<Usuario>): void {
+  async onGuardarUsuario(datos: Partial<Usuario>): Promise<void> {
     if (this.modoEdicion) {
       const idx = this.usuarios.findIndex(u => u.id_usuario === datos.id_usuario);
       if (idx !== -1) this.usuarios[idx] = datos as Usuario;

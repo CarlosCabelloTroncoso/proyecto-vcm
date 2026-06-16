@@ -5,4 +5,6 @@ export interface Log {
   tabla_afectada: string;
   descripcion: string;
   fecha: string;
+  // Relaciones
+  usuario?: { nombres_usuario: string; apellidos_usuario: string };
 }

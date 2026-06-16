@@ -1,10 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Solicitud, EstadoSolicitud, Ciudad } from '../../../../interfaces/solicitud.interface';
 import { Carrera } from '../../../../interfaces/academico.interface';
 import { ModalSolicitudForm } from './modales/modal-solicitud-form/modal-solicitud-form';
 import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
+import { AuthService } from '../../../../core/services/auth.service';
+import { DataService } from '../../../../core/services/data.service';
+import { CatalogService } from '../../../../core/services/catalog.service';
 
 @Component({
   selector: 'app-solicitudes',
@@ -12,93 +15,31 @@ import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar'
   templateUrl: './solicitudes.html',
   styleUrl: './solicitudes.css',
 })
-export class Solicitudes {
+export class Solicitudes implements OnInit {
+
+  constructor(private dataService: DataService, private catalog: CatalogService) {}
+
+  async ngOnInit(): Promise<void> {
+    await this.catalog.load();
+    this.estados = this.catalog.estados;
+    this.carreras = this.catalog.carreras;
+    this.ciudades = this.catalog.ciudades;
+    const solicitudesRes = await this.dataService.getAll<any>('solicitud', { select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`, filters: { is_active: true } });
+    if (solicitudesRes.data) this.solicitudes = solicitudesRes.data;
+  }
+
 
   /* ─── Estados de solicitud ─────────────────────────────────── */
-  estados: EstadoSolicitud[] = [
-    { id_estado: 1, nombre_estado: 'Pendiente',   descripcion_estado: 'En espera de revisión'   },
-    { id_estado: 2, nombre_estado: 'En revisión', descripcion_estado: 'Siendo evaluada'          },
-    { id_estado: 3, nombre_estado: 'Aprobada',    descripcion_estado: 'Solicitud aceptada'       },
-    { id_estado: 4, nombre_estado: 'Rechazada',   descripcion_estado: 'Solicitud no aceptada'    },
-    { id_estado: 5, nombre_estado: 'Cerrada',     descripcion_estado: 'Proceso finalizado'       },
-  ];
+  estados: EstadoSolicitud[] = [];
 
   /* ─── Carreras de referencia ───────────────────────────────── */
-  carreras: Carrera[] = [
-    { id_carrera: 1,  nombre_carrera: 'Ingeniería Civil Informática', etiqueta_carrera: 'ICI',  id_facultad: 1 },
-    { id_carrera: 2,  nombre_carrera: 'Ingeniería Civil Industrial',  etiqueta_carrera: 'ICIV', id_facultad: 1 },
-    { id_carrera: 3,  nombre_carrera: 'Ingeniería Civil Biomédica',   etiqueta_carrera: 'ICBM', id_facultad: 1 },
-    { id_carrera: 4,  nombre_carrera: 'Enfermería',                   etiqueta_carrera: 'ENF',  id_facultad: 2 },
-    { id_carrera: 5,  nombre_carrera: 'Kinesiología',                 etiqueta_carrera: 'KIN',  id_facultad: 2 },
-    { id_carrera: 6,  nombre_carrera: 'Derecho',                      etiqueta_carrera: 'DER',  id_facultad: 3 },
-    { id_carrera: 7,  nombre_carrera: 'Administración de Empresas',   etiqueta_carrera: 'ADM',  id_facultad: 4 },
-    { id_carrera: 8,  nombre_carrera: 'Contador Auditor',             etiqueta_carrera: 'CA',   id_facultad: 4 },
-    { id_carrera: 9,  nombre_carrera: 'Pedagogía en Matemáticas',     etiqueta_carrera: 'PEM',  id_facultad: 5 },
-    { id_carrera: 10, nombre_carrera: 'Bioquímica',                   etiqueta_carrera: 'BQM',  id_facultad: 6 },
-  ];
+  carreras: Carrera[] = [];
 
   /* ─── Ciudades de referencia ───────────────────────────────── */
-  ciudades: Ciudad[] = [
-    { id_ciudad: 1, nombre_ciudad: 'Talca'      },
-    { id_ciudad: 2, nombre_ciudad: 'Santiago'   },
-    { id_ciudad: 3, nombre_ciudad: 'Concepción' },
-    { id_ciudad: 4, nombre_ciudad: 'Rancagua'   },
-    { id_ciudad: 5, nombre_ciudad: 'Curicó'     },
-  ];
+  ciudades: Ciudad[] = [];
 
   /* ─── Datos mock ───────────────────────────────────────────── */
-  solicitudes: Solicitud[] = [
-    {
-      id_solicitud: 1, titulo_solicitud: 'Proyecto de vinculación comunitaria Maule',
-      descripcion_solicitud: 'Se solicita apoyo técnico para desarrollo de software comunitario en la región.',
-      fecha_creacion_solicitud: '2025-01-10', id_estado: 1, id_usuario: 3, id_carrera: 1, id_ciudad: 1,
-    },
-    {
-      id_solicitud: 2, titulo_solicitud: 'Asesoría en gestión empresarial PYME',
-      descripcion_solicitud: 'Consultoría para mejorar procesos internos y estructura organizacional de empresa local.',
-      fecha_creacion_solicitud: '2025-01-22', id_estado: 2, id_usuario: 7, id_carrera: 7, id_ciudad: 2,
-    },
-    {
-      id_solicitud: 3, titulo_solicitud: 'Estudio de impacto ambiental sector norte',
-      descripcion_solicitud: 'Análisis de contaminantes en zona industrial de la región del Biobío.',
-      fecha_creacion_solicitud: '2024-02-05', id_estado: 3, id_usuario: 1, id_carrera: 3, id_ciudad: 3,
-    },
-    {
-      id_solicitud: 4, titulo_solicitud: 'Diagnóstico de salud rural en Curicó',
-      descripcion_solicitud: 'Evaluación de condiciones de salud en comunidades rurales del área sur.',
-      fecha_creacion_solicitud: '2024-02-18', id_estado: 4, id_usuario: 5, id_carrera: 4, id_ciudad: 5,
-    },
-    {
-      id_solicitud: 5, titulo_solicitud: 'Programa de kinesiología preventiva adultos',
-      descripcion_solicitud: 'Plan de atención fisioterapéutica para adultos mayores de la comunidad.',
-      fecha_creacion_solicitud: '2026-03-01', id_estado: 1, id_usuario: 2, id_carrera: 5, id_ciudad: 1,
-    },
-    {
-      id_solicitud: 6, titulo_solicitud: 'Taller jurídico para microempresarios',
-      descripcion_solicitud: 'Capacitación legal sobre normativa comercial vigente y derechos del consumidor.',
-      fecha_creacion_solicitud: '2023-03-14', id_estado: 2, id_usuario: 6, id_carrera: 6, id_ciudad: 4,
-    },
-    {
-      id_solicitud: 7, titulo_solicitud: 'Análisis financiero cooperativa agrícola',
-      descripcion_solicitud: 'Revisión contable y propuesta de mejora financiera para cooperativa del Maule.',
-      fecha_creacion_solicitud: '2026-04-03', id_estado: 5, id_usuario: 4, id_carrera: 8, id_ciudad: 5,
-    },
-    {
-      id_solicitud: 8, titulo_solicitud: 'Desarrollo de app móvil para ONG local',
-      descripcion_solicitud: 'Diseño y programación de aplicación de gestión y coordinación social.',
-      fecha_creacion_solicitud: '2023-04-20', id_estado: 3, id_usuario: 8, id_carrera: 1, id_ciudad: 2,
-    },
-    {
-      id_solicitud: 9, titulo_solicitud: 'Investigación bioquímica en residuos mineros',
-      descripcion_solicitud: 'Estudio de composición química de efluentes industriales provenientes de la minería.',
-      fecha_creacion_solicitud: '2026-05-08', id_estado: 1, id_usuario: 3, id_carrera: 10, id_ciudad: 3,
-    },
-    {
-      id_solicitud: 10, titulo_solicitud: 'Apoyo pedagógico en zonas vulnerables',
-      descripcion_solicitud: 'Programa de reforzamiento en matemáticas y lenguaje en escuelas rurales de la región.',
-      fecha_creacion_solicitud: '2026-05-15', id_estado: 2, id_usuario: 7, id_carrera: 9, id_ciudad: 1,
-    },
-  ];
+  solicitudes: Solicitud[] = [];
 
   /* ─── Meses del año ───────────────────────────────────────── */
   readonly meses = [
@@ -143,8 +84,9 @@ export class Solicitudes {
     return this.carreras.find(c => c.id_carrera === id_carrera)?.etiqueta_carrera ?? '—';
   }
 
-  getNombreCiudad(id_ciudad: number): string {
-    return this.ciudades.find(c => c.id_ciudad === id_ciudad)?.nombre_ciudad ?? '—';
+  getNombreCiudad(id: number | null | undefined): string {
+    if (!id) return "—";
+    return this.ciudades.find(c => c.id_ciudad === id)?.nombre_ciudad ?? '—';
   }
 
   getBadgeEstado(id_estado: number): string {
@@ -208,7 +150,7 @@ export class Solicitudes {
         s.descripcion_solicitud.toLowerCase().includes(t)  ||
         this.getNombreCarrera(s.id_carrera).toLowerCase().includes(t) ||
         this.getNombreEstado(s.id_estado).toLowerCase().includes(t)   ||
-        this.getNombreCiudad(s.id_ciudad).toLowerCase().includes(t)
+        this.getNombreCiudad(s.id_ciudad ?? 0).toLowerCase().includes(t)
       );
     }
 
@@ -241,17 +183,15 @@ export class Solicitudes {
     this.mostrarModalEliminar = true;
   }
 
-  onGuardarSolicitud(datos: Partial<Solicitud>): void {
+  async onGuardarSolicitud(datos: Partial<Solicitud>): Promise<void> {
     const idx = this.solicitudes.findIndex(s => s.id_solicitud === datos.id_solicitud);
     if (idx !== -1) this.solicitudes[idx] = datos as Solicitud;
     this.mostrarModalForm = false;
   }
 
-  onEliminarSolicitud(): void {
+  async onEliminarSolicitud(): Promise<void> {
     if (this.solicitudAEliminar) {
-      this.solicitudes = this.solicitudes.filter(
-        s => s.id_solicitud !== this.solicitudAEliminar!.id_solicitud
-      );
+      await this.dataService.softDelete('solicitud', this.solicitudAEliminar!.id_solicitud, 'id_solicitud');
       this.solicitudAEliminar   = null;
       this.mostrarModalEliminar = false;
     }

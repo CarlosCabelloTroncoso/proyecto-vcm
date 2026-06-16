@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,48 +7,30 @@ import { Solicitud, EstadoSolicitud, Ciudad } from '../../../../interfaces/solic
 import { Carrera } from '../../../../interfaces/academico.interface';
 import { Usuario, ProfesorCarrera } from '../../../../interfaces/usuario.interface';
 import { Archivo } from '../../../../interfaces/proyecto.interface';
+import { AuthService } from '../../../../core/services/auth.service';
+import { DataService } from '../../../../core/services/data.service';
+import { CatalogService } from '../../../../core/services/catalog.service';
 @Component({
   selector: 'app-solicitudes',
   imports: [CommonModule, FormsModule, ModalDetalleSolicitud],
   templateUrl: './solicitudes.html',
   styleUrl: './solicitudes.css',
 })
-export class Solicitudes {
+export class Solicitudes implements OnInit {
 
-  constructor(private router: Router) {}
+  constructor(
+    private dataService: DataService,
+    private catalog: CatalogService,private router: Router) {}
 
   /* ─── Sesión mock: profesor asignado a ICI ─────────────────── */
-  readonly profesorActual: ProfesorCarrera = { id_usuario: 20, id_carrera: 1 };
+  // Carrera del profesor filtrada via RLS
 
   /* ─── Catálogos ────────────────────────────────────────────── */
-  estados: EstadoSolicitud[] = [
-    { id_estado: 1, nombre_estado: 'Pendiente',   descripcion_estado: 'En espera de revisión'  },
-    { id_estado: 2, nombre_estado: 'En revisión', descripcion_estado: 'Siendo evaluada'         },
-    { id_estado: 3, nombre_estado: 'Aprobada',    descripcion_estado: 'Solicitud aceptada'      },
-    { id_estado: 4, nombre_estado: 'Rechazada',   descripcion_estado: 'No cumple los criterios' },
-    { id_estado: 5, nombre_estado: 'Cerrada',     descripcion_estado: 'Proceso finalizado'      },
-  ];
+  estados: EstadoSolicitud[] = [];
 
-  carreras: Carrera[] = [
-    { id_carrera: 1,  nombre_carrera: 'Ingeniería Civil Informática', etiqueta_carrera: 'ICI',  id_facultad: 1 },
-    { id_carrera: 2,  nombre_carrera: 'Ingeniería Civil Industrial',  etiqueta_carrera: 'ICIV', id_facultad: 1 },
-    { id_carrera: 3,  nombre_carrera: 'Ingeniería Civil Biomédica',   etiqueta_carrera: 'ICBM', id_facultad: 1 },
-    { id_carrera: 4,  nombre_carrera: 'Enfermería',                   etiqueta_carrera: 'ENF',  id_facultad: 2 },
-    { id_carrera: 5,  nombre_carrera: 'Kinesiología',                 etiqueta_carrera: 'KIN',  id_facultad: 2 },
-    { id_carrera: 6,  nombre_carrera: 'Derecho',                      etiqueta_carrera: 'DER',  id_facultad: 3 },
-    { id_carrera: 7,  nombre_carrera: 'Administración de Empresas',   etiqueta_carrera: 'ADM',  id_facultad: 4 },
-    { id_carrera: 8,  nombre_carrera: 'Contador Auditor',             etiqueta_carrera: 'CA',   id_facultad: 4 },
-    { id_carrera: 9,  nombre_carrera: 'Pedagogía en Matemáticas',     etiqueta_carrera: 'PEM',  id_facultad: 5 },
-    { id_carrera: 10, nombre_carrera: 'Bioquímica',                   etiqueta_carrera: 'BQM',  id_facultad: 6 },
-  ];
+  carreras: Carrera[] = [];
 
-  ciudades: Ciudad[] = [
-    { id_ciudad: 1, nombre_ciudad: 'Talca'      },
-    { id_ciudad: 2, nombre_ciudad: 'Santiago'   },
-    { id_ciudad: 3, nombre_ciudad: 'Concepción' },
-    { id_ciudad: 4, nombre_ciudad: 'Rancagua'   },
-    { id_ciudad: 5, nombre_ciudad: 'Curicó'     },
-  ];
+  ciudades: Ciudad[] = [];
 
   /* ─── Clientes mock ─────────────────────────────────────────── */
   clientes: Pick<Usuario, 'id_usuario' | 'nombres_usuario' | 'apellidos_usuario'>[] = [
@@ -61,29 +43,10 @@ export class Solicitudes {
   ];
 
   /* ─── Solicitudes aprobadas de la carrera del profesor ──────── */
-  solicitudes: Solicitud[] = [
-    {
-      id_solicitud: 11, titulo_solicitud: 'App móvil para servicios comunitarios',
-      descripcion_solicitud: 'Aplicación móvil para conectar organizaciones comunitarias con voluntarios y profesionales universitarios de la región.',
-      fecha_creacion_solicitud: '2025-02-15', id_estado: 3, id_usuario: 3, id_carrera: 1, id_ciudad: 2,
-    },
-    {
-      id_solicitud: 15, titulo_solicitud: 'Digitalización de trámites municipales Talca',
-      descripcion_solicitud: 'Sistema integral para la digitalización de trámites y servicios ciudadanos de la municipalidad de Talca.',
-      fecha_creacion_solicitud: '2024-08-12', id_estado: 3, id_usuario: 5, id_carrera: 1, id_ciudad: 1,
-    },
-    {
-      id_solicitud: 20, titulo_solicitud: 'Portal de transparencia ciudadana',
-      descripcion_solicitud: 'Plataforma web para la publicación y consulta de información pública de organismos municipales de la región del Maule.',
-      fecha_creacion_solicitud: '2026-03-05', id_estado: 3, id_usuario: 6, id_carrera: 1, id_ciudad: 1,
-    },
-  ];
+  solicitudes: Solicitud[] = [];
 
   /* ─── Archivos adjuntos mock ────────────────────────────────── */
-  archivos: Archivo[] = [
-    { id_archivo: 12, nombre_archivo: 'especificaciones_app.pdf',    ruta_archivo: 'uploads/especificaciones_app.pdf',    tipo_archivo: 'pdf',  id_solicitud: 11, id_planteamiento: null, id_proyecto: null },
-    { id_archivo: 14, nombre_archivo: 'diagrama_portal.png',         ruta_archivo: 'uploads/diagrama_portal.png',         tipo_archivo: 'png',  id_solicitud: 20, id_planteamiento: null, id_proyecto: null },
-  ];
+  archivos: Archivo[] = [];
 
   /* ─── Búsqueda ──────────────────────────────────────────────── */
   searchTerm = '';
@@ -95,7 +58,7 @@ export class Solicitudes {
   /* ─── Lista filtrada (solo aprobadas de su carrera) ─────────── */
   get solicitudesFiltradas(): Solicitud[] {
     let lista = this.solicitudes.filter(
-      s => s.id_carrera === this.profesorActual.id_carrera && s.id_estado === 3
+      s => s.id_estado === 3
     );
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
@@ -105,6 +68,15 @@ export class Solicitudes {
       );
     }
     return lista;
+  }
+
+  async ngOnInit(): Promise<void> {
+    await this.catalog.load();
+    this.estados = this.catalog.estados;
+    this.carreras = this.catalog.carreras;
+    this.ciudades = this.catalog.ciudades;
+    const solicitudesRes = await this.dataService.getAll<any>('solicitud', { select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`, filters: { is_active: true } });
+    if (solicitudesRes.data) this.solicitudes = solicitudesRes.data;
   }
 
   /* ─── Helpers ───────────────────────────────────────────────── */
@@ -125,7 +97,8 @@ export class Solicitudes {
     return this.carreras.find(c => c.id_carrera === id)?.etiqueta_carrera ?? '—';
   }
 
-  getNombreCiudad(id: number): string {
+  getNombreCiudad(id: number | null | undefined): string {
+    if (!id) return "—";
     return this.ciudades.find(c => c.id_ciudad === id)?.nombre_ciudad ?? '—';
   }
 

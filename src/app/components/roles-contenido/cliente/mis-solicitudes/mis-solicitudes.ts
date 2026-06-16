@@ -7,6 +7,9 @@ import { Carrera } from '../../../../interfaces/academico.interface';
 import { Archivo } from '../../../../interfaces/proyecto.interface';
 import { ModalDetalleSolicitud } from '../../../shared/modal-detalle-solicitud/modal-detalle-solicitud';
 import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
+import { AuthService } from '../../../../core/services/auth.service';
+import { DataService } from '../../../../core/services/data.service';
+import { CatalogService } from '../../../../core/services/catalog.service';
 
 @Component({
   selector: 'app-mis-solicitudes',
@@ -17,74 +20,19 @@ import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar'
 export class MisSolicitudes implements OnInit {
 
   /* ─── Estados de solicitud ─────────────────────────────────── */
-  estados: EstadoSolicitud[] = [
-    { id_estado: 1, nombre_estado: 'Pendiente',   descripcion_estado: 'En espera de revisión' },
-    { id_estado: 2, nombre_estado: 'En revisión', descripcion_estado: 'Siendo evaluada'        },
-    { id_estado: 3, nombre_estado: 'Aprobada',    descripcion_estado: 'Solicitud aceptada'     },
-    { id_estado: 4, nombre_estado: 'Rechazada',   descripcion_estado: 'Solicitud no aceptada'  },
-    { id_estado: 5, nombre_estado: 'Cerrada',     descripcion_estado: 'Proceso finalizado'     },
-  ];
+  estados: EstadoSolicitud[] = [];
 
   /* ─── Carreras ──────────────────────────────────────────────── */
-  carreras: Carrera[] = [
-    { id_carrera: 1,  nombre_carrera: 'Ingeniería Civil Informática', etiqueta_carrera: 'ICI',  id_facultad: 1 },
-    { id_carrera: 2,  nombre_carrera: 'Ingeniería Civil Industrial',  etiqueta_carrera: 'ICIV', id_facultad: 1 },
-    { id_carrera: 3,  nombre_carrera: 'Ingeniería Civil Biomédica',   etiqueta_carrera: 'ICBM', id_facultad: 1 },
-    { id_carrera: 4,  nombre_carrera: 'Enfermería',                   etiqueta_carrera: 'ENF',  id_facultad: 2 },
-    { id_carrera: 5,  nombre_carrera: 'Kinesiología',                 etiqueta_carrera: 'KIN',  id_facultad: 2 },
-    { id_carrera: 6,  nombre_carrera: 'Derecho',                      etiqueta_carrera: 'DER',  id_facultad: 3 },
-    { id_carrera: 7,  nombre_carrera: 'Administración de Empresas',   etiqueta_carrera: 'ADM',  id_facultad: 4 },
-    { id_carrera: 8,  nombre_carrera: 'Contador Auditor',             etiqueta_carrera: 'CA',   id_facultad: 4 },
-    { id_carrera: 9,  nombre_carrera: 'Pedagogía en Matemáticas',     etiqueta_carrera: 'PEM',  id_facultad: 5 },
-    { id_carrera: 10, nombre_carrera: 'Bioquímica',                   etiqueta_carrera: 'BQM',  id_facultad: 6 },
-  ];
+  carreras: Carrera[] = [];
 
   /* ─── Ciudades ──────────────────────────────────────────────── */
-  ciudades: Ciudad[] = [
-    { id_ciudad: 1, nombre_ciudad: 'Talca'      },
-    { id_ciudad: 2, nombre_ciudad: 'Santiago'   },
-    { id_ciudad: 3, nombre_ciudad: 'Concepción' },
-    { id_ciudad: 4, nombre_ciudad: 'Rancagua'   },
-    { id_ciudad: 5, nombre_ciudad: 'Curicó'     },
-  ];
+  ciudades: Ciudad[] = [];
 
   /* ─── Datos mock del cliente (id_usuario: 1) ───────────────── */
-  solicitudes: Solicitud[] = [
-    {
-      id_solicitud: 1, titulo_solicitud: 'Proyecto de vinculación comunitaria Maule',
-      descripcion_solicitud: 'Se solicita apoyo técnico para el desarrollo de una plataforma de software comunitario en la región del Maule, orientada a conectar organizaciones sociales, juntas de vecinos y voluntarios con profesionales y estudiantes universitarios que puedan contribuir con sus conocimientos en áreas como tecnología, salud, educación y medio ambiente. El sistema debe contemplar registro de usuarios, /gestión de proyectos colaborativos, seguimiento de avances y generación de reportes de impacto social. Se espera que la solución sea accesible desde dispositivos móviles y computadores de escritorio, con especial atención en la usabilidad para personas mayores y con escaso manejo tecnológico.',
-      fecha_creacion_solicitud: '2025-01-10', id_estado: 1, id_usuario: 1, id_carrera: 1, id_ciudad: 1,
-    },
-    {
-      id_solicitud: 3, titulo_solicitud: 'Estudio de impacto ambiental sector norte',
-      descripcion_solicitud: 'Análisis de contaminantes en zona industrial de la región del Biobío.',
-      fecha_creacion_solicitud: '2024-02-05', id_estado: 3, id_usuario: 1, id_carrera: 3, id_ciudad: 3,
-    },
-    {
-      id_solicitud: 9, titulo_solicitud: 'Investigación bioquímica en residuos mineros',
-      descripcion_solicitud: 'Estudio de composición química de efluentes industriales provenientes de la minería.',
-      fecha_creacion_solicitud: '2026-05-08', id_estado: 2, id_usuario: 1, id_carrera: 10, id_ciudad: 3,
-    },
-  ];
+  solicitudes: Solicitud[] = [];
 
-  /* ─── Archivos adjuntos (mock global, filtrado por id_solicitud) ─ */
-  archivos: Archivo[] = [
-    {
-      id_archivo: 1, nombre_archivo: 'propuesta_vinculacion.pdf',
-      ruta_archivo: 'uploads/propuesta_vinculacion.pdf', tipo_archivo: 'pdf',
-      id_solicitud: 1, id_planteamiento: null, id_proyecto: null,
-    },
-    {
-      id_archivo: 2, nombre_archivo: 'estudio_ambiental.pdf',
-      ruta_archivo: 'uploads/estudio_ambiental.pdf', tipo_archivo: 'pdf',
-      id_solicitud: 3, id_planteamiento: null, id_proyecto: null,
-    },
-    {
-      id_archivo: 3, nombre_archivo: 'datos_contaminantes.xlsx',
-      ruta_archivo: 'uploads/datos_contaminantes.xlsx', tipo_archivo: 'xlsx',
-      id_solicitud: 3, id_planteamiento: null, id_proyecto: null,
-    },
-  ];
+    /* Los archivos se cargan por solicitud desde Supabase */
+  archivos: any[] = [];
 
   /* ─── Meses ─────────────────────────────────────────────────── */
   readonly meses = [
@@ -110,7 +58,9 @@ export class MisSolicitudes implements OnInit {
   solicitudSeleccionada: Solicitud | null = null;
   solicitudAEliminar:   Solicitud | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+    private dataService: DataService,
+    private catalog: CatalogService,private router: Router) {}
 
   ngOnInit(): void {
     const state = history.state;
@@ -159,7 +109,8 @@ export class MisSolicitudes implements OnInit {
     return this.carreras.find(c => c.id_carrera === id)?.etiqueta_carrera ?? '—';
   }
 
-  getNombreCiudad(id: number): string {
+  getNombreCiudad(id: number | null | undefined): string {
+    if (!id) return "—";
     return this.ciudades.find(c => c.id_ciudad === id)?.nombre_ciudad ?? '—';
   }
 
@@ -217,7 +168,7 @@ export class MisSolicitudes implements OnInit {
         s.descripcion_solicitud.toLowerCase().includes(t) ||
         this.getNombreCarrera(s.id_carrera).toLowerCase().includes(t) ||
         this.getNombreEstado(s.id_estado).toLowerCase().includes(t)   ||
-        this.getNombreCiudad(s.id_ciudad).toLowerCase().includes(t)
+        this.getNombreCiudad(s.id_ciudad ?? 0).toLowerCase().includes(t)
       );
     }
 
@@ -261,7 +212,7 @@ export class MisSolicitudes implements OnInit {
     this.mostrarModalEliminar = true;
   }
 
-  onEliminarSolicitud(): void {
+  async onEliminarSolicitud(): Promise<void> {
     if (this.solicitudAEliminar) {
       const idSolicitud = this.solicitudAEliminar.id_solicitud;
       this.solicitudes = this.solicitudes.filter(s => s.id_solicitud !== idSolicitud);

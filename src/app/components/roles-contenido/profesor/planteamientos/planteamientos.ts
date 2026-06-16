@@ -7,6 +7,9 @@ import { Solicitud } from '../../../../interfaces/solicitud.interface';
 import { ProfesorCarrera } from '../../../../interfaces/usuario.interface';
 import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
 import { ModalDetallePlanteamiento } from '../../../shared/modal-detalle-planteamiento/modal-detalle-planteamiento';
+import { AuthService } from '../../../../core/services/auth.service';
+import { DataService } from '../../../../core/services/data.service';
+import { CatalogService } from '../../../../core/services/catalog.service';
 
 interface ArchivoEntry {
   archivo: Archivo;
@@ -21,55 +24,13 @@ interface ArchivoEntry {
 })
 export class Planteamientos implements OnInit {
 
-  readonly profesorActual: ProfesorCarrera = { id_usuario: 20, id_carrera: 1 };
+  // Datos del profesor vienen del AuthService
 
-  estadosPlanteamiento: EstadoPlanteamiento[] = [
-    { id_estado: 1, nombre_estado: 'Pendiente', descripcion_estado: 'En espera de revisión'   },
-    { id_estado: 2, nombre_estado: 'Aprobado',  descripcion_estado: 'Planteamiento aceptado'  },
-    { id_estado: 3, nombre_estado: 'Rechazado', descripcion_estado: 'No cumple los criterios' },
-  ];
+  estadosPlanteamiento: EstadoPlanteamiento[] = [];
 
-  solicitudesAprobadas: Solicitud[] = [
-    {
-      id_solicitud: 11, titulo_solicitud: 'App móvil para servicios comunitarios',
-      descripcion_solicitud: '', fecha_creacion_solicitud: '2025-02-15',
-      id_estado: 3, id_usuario: 3, id_carrera: 1, id_ciudad: 2,
-    },
-    {
-      id_solicitud: 15, titulo_solicitud: 'Digitalización de trámites municipales Talca',
-      descripcion_solicitud: '', fecha_creacion_solicitud: '2024-08-12',
-      id_estado: 3, id_usuario: 5, id_carrera: 1, id_ciudad: 1,
-    },
-    {
-      id_solicitud: 20, titulo_solicitud: 'Portal de transparencia ciudadana',
-      descripcion_solicitud: '', fecha_creacion_solicitud: '2026-03-05',
-      id_estado: 3, id_usuario: 6, id_carrera: 1, id_ciudad: 1,
-    },
-  ];
+  solicitudesAprobadas: Solicitud[] = [];
 
-  planteamientos: PlanteamientoProyecto[] = [
-    {
-      id_planteamiento: 1,
-      titulo_planteamiento: 'Sistema de gestión de voluntarios',
-      descripcion_planteamiento: 'Plataforma para gestionar voluntarios y coordinadores comunitarios.',
-      tiempo_estimado_planteamiento: '4 meses',
-      id_carrera: 1, id_solicitud: 11, id_usuario: 20, id_estado: 2,
-    },
-    {
-      id_planteamiento: 2,
-      titulo_planteamiento: 'Portal de trámites online',
-      descripcion_planteamiento: 'Sistema web para digitalizar trámites municipales con firma electrónica.',
-      tiempo_estimado_planteamiento: '6 meses',
-      id_carrera: 1, id_solicitud: 15, id_usuario: 20, id_estado: 3,
-    },
-    {
-      id_planteamiento: 3,
-      titulo_planteamiento: 'Dashboard de transparencia',
-      descripcion_planteamiento: 'Tablero de control para publicación de datos municipales abiertos.',
-      tiempo_estimado_planteamiento: '3 meses',
-      id_carrera: 1, id_solicitud: 20, id_usuario: 20, id_estado: 1,
-    },
-  ];
+  planteamientos: PlanteamientoProyecto[] = [];
 
   filtroActivo: 'pendiente' | 'aprobado' | 'rechazado' = 'pendiente';
 
@@ -102,7 +63,9 @@ export class Planteamientos implements OnInit {
 
   private nextId = 4;
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(
+    private dataService: DataService,
+    private catalog: CatalogService,private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -296,8 +259,8 @@ export class Planteamientos implements OnInit {
         descripcion_planteamiento:     this.formData.descripcion_planteamiento!,
         tiempo_estimado_planteamiento: this.formData.tiempo_estimado_planteamiento!,
         id_solicitud: this.formData.id_solicitud!,
-        id_carrera:   this.profesorActual.id_carrera,
-        id_usuario:   this.profesorActual.id_usuario,
+        id_carrera:   0 /* loaded from auth */,
+        id_usuario:   0 /* loaded from auth */,
         id_estado:    1,
       });
       this.filtroActivo = 'pendiente';

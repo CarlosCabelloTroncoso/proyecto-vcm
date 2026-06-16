@@ -1,9 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Carrera, Facultad } from '../../../../interfaces/academico.interface';
 import { ModalCarreraForm } from './modales/modal-carrera-form/modal-carrera-form';
 import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
+import { AuthService } from '../../../../core/services/auth.service';
+import { DataService } from '../../../../core/services/data.service';
+import { CatalogService } from '../../../../core/services/catalog.service';
 
 @Component({
   selector: 'app-gestion-carrera',
@@ -11,31 +14,23 @@ import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar'
   templateUrl: './gestion-carrera.html',
   styleUrl: './gestion-carrera.css',
 })
-export class GestionCarrera {
+export class GestionCarrera implements OnInit {
+
+  constructor(private dataService: DataService, private catalog: CatalogService) {}
+
+  async ngOnInit(): Promise<void> {
+    await this.catalog.load();
+    this.facultades = this.catalog.facultades;
+    const carrerasRes = await this.dataService.getAll<any>('carrera', { select: `*, facultad(nombre_facultad, etiqueta_facultad)`, filters: { is_active: true } });
+    if (carrerasRes.data) this.carreras = carrerasRes.data;
+  }
+
 
   /* ─── Facultades de referencia ─────────────────────────────── */
-  facultades: Facultad[] = [
-    { id_facultad: 1, nombre_facultad: 'Facultad de Ingeniería',           etiqueta_facultad: 'ING'   },
-    { id_facultad: 2, nombre_facultad: 'Facultad de Ciencias de la Salud', etiqueta_facultad: 'SALUD' },
-    { id_facultad: 3, nombre_facultad: 'Facultad de Ciencias Jurídicas',   etiqueta_facultad: 'DER'   },
-    { id_facultad: 4, nombre_facultad: 'Facultad de Ciencias Económicas',  etiqueta_facultad: 'ECON'  },
-    { id_facultad: 5, nombre_facultad: 'Facultad de Educación',            etiqueta_facultad: 'EDU'   },
-    { id_facultad: 6, nombre_facultad: 'Facultad de Ciencias Básicas',     etiqueta_facultad: 'CIEN'  },
-  ];
+  facultades: Facultad[] = [];
 
   /* ─── Datos mock ───────────────────────────────────────────── */
-  carreras: Carrera[] = [
-    { id_carrera: 1,  nombre_carrera: 'Ingeniería Civil Informática', etiqueta_carrera: 'ICI',  id_facultad: 1 },
-    { id_carrera: 2,  nombre_carrera: 'Ingeniería Civil Industrial',  etiqueta_carrera: 'ICIV', id_facultad: 1 },
-    { id_carrera: 3,  nombre_carrera: 'Ingeniería Civil Biomédica',   etiqueta_carrera: 'ICBM', id_facultad: 1 },
-    { id_carrera: 4,  nombre_carrera: 'Enfermería',                   etiqueta_carrera: 'ENF',  id_facultad: 2 },
-    { id_carrera: 5,  nombre_carrera: 'Kinesiología',                 etiqueta_carrera: 'KIN',  id_facultad: 2 },
-    { id_carrera: 6,  nombre_carrera: 'Derecho',                      etiqueta_carrera: 'DER',  id_facultad: 3 },
-    { id_carrera: 7,  nombre_carrera: 'Administración de Empresas',   etiqueta_carrera: 'ADM',  id_facultad: 4 },
-    { id_carrera: 8,  nombre_carrera: 'Contador Auditor',             etiqueta_carrera: 'CA',   id_facultad: 4 },
-    { id_carrera: 9,  nombre_carrera: 'Pedagogía en Matemáticas',     etiqueta_carrera: 'PEM',  id_facultad: 5 },
-    { id_carrera: 10, nombre_carrera: 'Bioquímica',                   etiqueta_carrera: 'BQM',  id_facultad: 6 },
-  ];
+  carreras: Carrera[] = [];
 
   /* ─── Búsqueda y filtros ───────────────────────────────────── */
   searchTerm     = '';
@@ -126,24 +121,19 @@ export class GestionCarrera {
     this.mostrarModalEliminar = true;
   }
 
-  onGuardarCarrera(datos: Partial<Carrera>): void {
-    if (this.modoEdicion) {
-      const idx = this.carreras.findIndex(c => c.id_carrera === datos.id_carrera);
-      if (idx !== -1) this.carreras[idx] = datos as Carrera;
+  async onGuardarCarrera(datos: Partial<Carrera>): Promise<void> {
+    if (this.modoEdicion && datos.id_carrera) {
+      await this.dataService.update('carrera', datos.id_carrera, datos, 'id_carrera');
     } else {
-      const nuevoId = this.carreras.length
-        ? Math.max(...this.carreras.map(c => c.id_carrera)) + 1
-        : 1;
-      this.carreras.push({ ...datos, id_carrera: nuevoId } as Carrera);
+      await this.dataService.create('carrera', datos);
     }
     this.mostrarModalForm = false;
+    await this.ngOnInit();
   }
 
-  onEliminarCarrera(): void {
+  async onEliminarCarrera(): Promise<void> {
     if (this.carreraAEliminar) {
-      this.carreras = this.carreras.filter(
-        c => c.id_carrera !== this.carreraAEliminar!.id_carrera
-      );
+      await this.dataService.softDelete('carrera', this.carreraAEliminar!.id_carrera, 'id_carrera');
       this.carreraAEliminar     = null;
       this.mostrarModalEliminar = false;
     }

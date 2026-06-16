@@ -1,32 +1,33 @@
 import { Injectable } from '@angular/core';
+import { AuthService, UsuarioVCM } from '../core/services/auth.service';
+import { Usuario as UsuarioInterface } from '../interfaces/usuario.interface';
 
-export interface Usuario {
-  nombre: string;
-  apellido: string;
-  correo: string;
-  telefono: string;
-  foto: string;
-  rol: string;
-}
+// Re-export for backward compatibility
+export type Usuario = UsuarioInterface;
+export type { UsuarioVCM };
 
-export const ROLES_INTERNOS = ['admin', 'encargado', 'profesor', 'autoridad', 'gestor'];
+export const ROLES_INTERNOS = ['admin', 'gestor_vinculacion', 'profesor', 'autoridad'];
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  private usuario: Usuario = {
-    nombre: 'Juan',
-    apellido: 'Pérez',
-    correo: 'juan.perez@ucm.cl',
-    telefono: '+56 9 1234 5678',
-    foto: '',
-    rol: 'encargado'
-  };
 
-  getUsuario(): Usuario {
-    return this.usuario;
+  constructor(private auth: AuthService) {}
+
+  getUsuario(): UsuarioVCM | null {
+    return this.auth.usuario();
+  }
+
+  getRol(): string | null {
+    return this.auth.userRole();
   }
 
   esRolInterno(): boolean {
-    return ROLES_INTERNOS.includes(this.usuario.rol);
+    const rol = this.auth.userRole();
+    return rol ? ROLES_INTERNOS.includes(rol) : false;
+  }
+
+  getNombreCompleto(): string {
+    const u = this.auth.usuario();
+    return u ? `${u.nombres_usuario} ${u.apellidos_usuario}` : '';
   }
 }

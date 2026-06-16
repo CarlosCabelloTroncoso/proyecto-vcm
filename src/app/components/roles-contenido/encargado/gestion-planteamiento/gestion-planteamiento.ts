@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ModalDetallePlanteamiento } from '../../../shared/modal-detalle-planteamiento/modal-detalle-planteamiento';
@@ -6,6 +6,9 @@ import { ModalConfirmarAccion } from '../../../shared/modal-confirmar-accion/mod
 import { PlanteamientoProyecto, EstadoPlanteamiento, Archivo } from '../../../../interfaces/proyecto.interface';
 import { Solicitud } from '../../../../interfaces/solicitud.interface';
 import { EncargadoCarrera } from '../../../../interfaces/usuario.interface';
+import { AuthService } from '../../../../core/services/auth.service';
+import { DataService } from '../../../../core/services/data.service';
+import { CatalogService } from '../../../../core/services/catalog.service';
 
 @Component({
   selector: 'app-gestion-planteamiento',
@@ -13,57 +16,25 @@ import { EncargadoCarrera } from '../../../../interfaces/usuario.interface';
   templateUrl: './gestion-planteamiento.html',
   styleUrl: './gestion-planteamiento.css',
 })
-export class GestionPlanteamiento {
+export class GestionPlanteamiento implements OnInit {
 
-  readonly encargadoActual: EncargadoCarrera = { id_usuario: 10, id_carrera: 1 };
+  constructor(private dataService: DataService, private catalog: CatalogService) {}
 
-  estadosPlanteamiento: EstadoPlanteamiento[] = [
-    { id_estado: 1, nombre_estado: 'Pendiente', descripcion_estado: 'En espera de revisión'   },
-    { id_estado: 2, nombre_estado: 'Aprobado',  descripcion_estado: 'Planteamiento aceptado'  },
-    { id_estado: 3, nombre_estado: 'Rechazado', descripcion_estado: 'No cumple los criterios' },
-  ];
+  async ngOnInit(): Promise<void> {
+    await this.catalog.load();
+    this.estadosPlanteamiento = this.catalog.estadosPlanteamiento;
+    const planteamientosRes = await this.dataService.getAll<any>('planteamiento_proyecto', { select: `*, estado_planteamiento(nombre_estado), carrera(nombre_carrera), solicitud(titulo_solicitud), usuario(nombres_usuario, apellidos_usuario)`, filters: { is_active: true } });
+    if (planteamientosRes.data) this.planteamientos = planteamientosRes.data;
+  }
 
-  solicitudesAprobadas: Solicitud[] = [
-    {
-      id_solicitud: 11, titulo_solicitud: 'App móvil para servicios comunitarios',
-      descripcion_solicitud: '', fecha_creacion_solicitud: '2025-02-15',
-      id_estado: 3, id_usuario: 3, id_carrera: 1, id_ciudad: 2,
-    },
-    {
-      id_solicitud: 15, titulo_solicitud: 'Digitalización de trámites municipales Talca',
-      descripcion_solicitud: '', fecha_creacion_solicitud: '2024-08-12',
-      id_estado: 3, id_usuario: 5, id_carrera: 1, id_ciudad: 1,
-    },
-    {
-      id_solicitud: 20, titulo_solicitud: 'Portal de transparencia ciudadana',
-      descripcion_solicitud: '', fecha_creacion_solicitud: '2026-03-05',
-      id_estado: 3, id_usuario: 6, id_carrera: 1, id_ciudad: 1,
-    },
-  ];
 
-  planteamientos: PlanteamientoProyecto[] = [
-    {
-      id_planteamiento: 1,
-      titulo_planteamiento: 'Sistema de gestión de voluntarios',
-      descripcion_planteamiento: 'Plataforma para gestionar voluntarios y coordinadores comunitarios.',
-      tiempo_estimado_planteamiento: '4 meses',
-      id_carrera: 1, id_solicitud: 11, id_usuario: 20, id_estado: 2,
-    },
-    {
-      id_planteamiento: 2,
-      titulo_planteamiento: 'Portal de trámites online',
-      descripcion_planteamiento: 'Sistema web para digitalizar trámites municipales con firma electrónica.',
-      tiempo_estimado_planteamiento: '6 meses',
-      id_carrera: 1, id_solicitud: 15, id_usuario: 20, id_estado: 3,
-    },
-    {
-      id_planteamiento: 3,
-      titulo_planteamiento: 'Dashboard de transparencia',
-      descripcion_planteamiento: 'Tablero de control para publicación de datos municipales abiertos.',
-      tiempo_estimado_planteamiento: '3 meses',
-      id_carrera: 1, id_solicitud: 20, id_usuario: 20, id_estado: 1,
-    },
-  ];
+  // Carrera del gestor filtrada via RLS
+
+  estadosPlanteamiento: EstadoPlanteamiento[] = [];
+
+  solicitudesAprobadas: Solicitud[] = [];
+
+  planteamientos: PlanteamientoProyecto[] = [];
 
   archivos: Archivo[] = [];
 
@@ -80,7 +51,7 @@ export class GestionPlanteamiento {
   get planteamientosFiltrados(): PlanteamientoProyecto[] {
     const idEstado = this.filtroActivo === 'pendiente' ? 1 : this.filtroActivo === 'aprobado' ? 2 : 3;
     let lista = this.planteamientos.filter(
-      p => p.id_carrera === this.encargadoActual.id_carrera && p.id_estado === idEstado
+      p => p.id_estado === idEstado
     );
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
@@ -93,7 +64,7 @@ export class GestionPlanteamiento {
   }
 
   get contadorPorEstado(): Record<string, number> {
-    const todos = this.planteamientos.filter(p => p.id_carrera === this.encargadoActual.id_carrera);
+    const todos = [...this.planteamientos];
     return {
       pendiente: todos.filter(p => p.id_estado === 1).length,
       aprobado:  todos.filter(p => p.id_estado === 2).length,

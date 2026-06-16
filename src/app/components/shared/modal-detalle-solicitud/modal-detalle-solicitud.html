@@ -64,7 +64,7 @@
               Ciudad
             </p>
             <p class="text-sm font-semibold text-[#1B3A6B]">
-              {{ getNombreCiudad(solicitud.id_ciudad) }}
+              {{ solicitud.id_ciudad ? getNombreCiudad(solicitud.id_ciudad) : "N/A" }}
             </p>
           </div>
 

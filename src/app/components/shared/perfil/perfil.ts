@@ -1,6 +1,16 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { UserService, Usuario, ROLES_INTERNOS } from '../../../services/user.service';
+import { AuthService } from '../../../core/services/auth.service';
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: 'Administrador',
+  gestor_vinculacion: 'Encargado de Vinculación',
+  profesor: 'Profesor',
+  autoridad: 'Autoridad',
+  cliente: 'Cliente'
+};
+
+const ROLES_INTERNOS = ['admin', 'gestor_vinculacion', 'profesor', 'autoridad'];
 
 @Component({
   selector: 'app-perfil',
@@ -9,26 +19,25 @@ import { UserService, Usuario, ROLES_INTERNOS } from '../../../services/user.ser
   styleUrl: './perfil.css'
 })
 export class Perfil {
-  private userService = inject(UserService);
+  auth = inject(AuthService);
 
-  usuario: Usuario = this.userService.getUsuario();
+  get usuario() {
+    return this.auth.usuario();
+  }
 
   get esRolInterno(): boolean {
-    return ROLES_INTERNOS.includes(this.usuario.rol);
+    const rol = this.auth.userRole();
+    return rol ? ROLES_INTERNOS.includes(rol) : false;
   }
 
   get rolLabel(): string {
-    const labels: Record<string, string> = {
-      admin: 'Administrador',
-      encargado: 'Encargado de Carrera',
-      profesor: 'Profesor',
-      autoridad: 'Autoridad',
-      gestor: 'Gestor'
-    };
-    return labels[this.usuario.rol] ?? this.usuario.rol;
+    const rol = this.auth.userRole();
+    return rol ? (ROLE_LABELS[rol] ?? rol) : '';
   }
 
   get iniciales(): string {
-    return `${this.usuario.nombre.charAt(0)}${this.usuario.apellido.charAt(0)}`.toUpperCase();
+    const u = this.usuario;
+    if (!u) return '??';
+    return `${u.nombres_usuario.charAt(0)}${u.apellidos_usuario.charAt(0)}`.toUpperCase();
   }
 }

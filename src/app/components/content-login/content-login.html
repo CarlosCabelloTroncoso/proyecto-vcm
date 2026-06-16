@@ -27,7 +27,14 @@
         Iniciar sesión
       </h2>
 
-      <form class="space-y-5">
+      <!-- Mensaje de error -->
+      @if (errorMsg()) {
+        <div class="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          {{ errorMsg() }}
+        </div>
+      }
+
+      <div class="space-y-5">
 
         <!-- Correo -->
         <div>
@@ -45,6 +52,7 @@
               </svg>
             </span>
             <input id="email" type="email" placeholder="correo@ucm.cl"
+                   [(ngModel)]="email"
                    class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white py-2.5 pl-9 pr-4
                           text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/35 outline-none shadow-sm
                           transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15" />
@@ -73,6 +81,8 @@
               </svg>
             </span>
             <input id="password" type="password" placeholder="••••••••"
+                   [(ngModel)]="password"
+                   (keyup.enter)="onLogin()"
                    class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white py-2.5 pl-9 pr-4
                           text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/35 outline-none shadow-sm
                           transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15" />
@@ -80,13 +90,16 @@
         </div>
 
         <!-- Botón submit -->
-        <button type="submit"
+        <button type="button"
+                (click)="onLogin()"
+                [disabled]="isLoading()"
                 class="mt-2 w-full rounded-xl bg-[#1B3A6B] py-2.5 text-sm font-semibold
-                       text-white shadow-sm transition hover:bg-[#1B3A6B]/85 active:scale-[0.98]">
-          Iniciar sesión
+                       text-white shadow-sm transition hover:bg-[#1B3A6B]/85 active:scale-[0.98]
+                       disabled:opacity-60 disabled:cursor-not-allowed">
+          {{ isLoading() ? 'Ingresando...' : 'Iniciar sesión' }}
         </button>
 
-      </form>
+      </div>
 
       <!-- Divider y registro -->
       <div class="mt-6 flex items-center gap-3">

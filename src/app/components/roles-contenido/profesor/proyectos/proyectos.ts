@@ -1,8 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Archivo } from '../../../../interfaces/proyecto.interface';
+import { AuthService } from '../../../../core/services/auth.service';
+import { DataService } from '../../../../core/services/data.service';
+import { CatalogService } from '../../../../core/services/catalog.service';
 
 interface ProyectoVista {
   id: number;
@@ -32,7 +35,18 @@ interface ArchivoEntry {
   templateUrl: './proyectos.html',
   styleUrl: './proyectos.css',
 })
-export class Proyectos {
+export class Proyectos implements OnInit {
+  estadosProyecto: any[] = [];
+
+  constructor(private dataService: DataService, private catalog: CatalogService) {}
+
+  async ngOnInit(): Promise<void> {
+    await this.catalog.load();
+    this.estadosProyecto = this.catalog.estadosProyecto;
+    const proyectosRes = await this.dataService.getAll<any>('proyecto', { select: `*, estado_proyecto(nombre_estado), planteamiento_proyecto(titulo_planteamiento, id_carrera, id_solicitud, carrera(nombre_carrera), solicitud(titulo_solicitud))`, filters: { is_active: true } });
+    if (proyectosRes.data) this.proyectos = proyectosRes.data;
+  }
+
 
   filtroActivo: 'aprobado' | 'en_proceso' | 'pausado' | 'cancelado' | 'finalizado' | 'atrasado' = 'aprobado';
 

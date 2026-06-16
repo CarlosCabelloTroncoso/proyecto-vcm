@@ -27,11 +27,23 @@
         Crear una cuenta
       </h2>
 
-      <form class="space-y-4">
+      <!-- Mensajes -->
+      @if (errorMsg()) {
+        <div class="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          {{ errorMsg() }}
+        </div>
+      }
+
+      @if (successMsg()) {
+        <div class="mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+          {{ successMsg() }}
+        </div>
+      }
+
+      <div class="space-y-4">
 
         <!-- Fila 1: RUT + Teléfono -->
         <div class="grid grid-cols-2 gap-4">
-
           <div>
             <label for="rut"
                    class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
@@ -46,7 +58,8 @@
                        m-4 0V5a2 2 0 1 1 4 0v1m-4 0a2 2 0 1 0 4 0m-5 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
                 </svg>
               </span>
-              <input id="rut" type="text" placeholder="12.345.678-9"
+              <input id="rut" type="text" placeholder="12345678K"
+                     [(ngModel)]="rut"
                      class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white py-2.5 pl-9 pr-4
                             text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/35 outline-none shadow-sm
                             transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15" />
@@ -68,24 +81,24 @@
                        l4.493 1.498A1 1 0 0 1 21 15.72V19a2 2 0 0 1-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                 </svg>
               </span>
-              <input id="telefono" type="tel" placeholder="+56 9 1234 5678"
+              <input id="telefono" type="tel" placeholder="+56912345678"
+                     [(ngModel)]="telefono"
                      class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white py-2.5 pl-9 pr-4
                             text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/35 outline-none shadow-sm
                             transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15" />
             </div>
           </div>
-
         </div>
 
         <!-- Fila 2: Nombres + Apellidos -->
         <div class="grid grid-cols-2 gap-4">
-
           <div>
             <label for="nombres"
                    class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
               Nombres
             </label>
             <input id="nombres" type="text" placeholder="Juan"
+                   [(ngModel)]="nombres"
                    class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2.5
                           text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/35 outline-none shadow-sm
                           transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15" />
@@ -97,14 +110,14 @@
               Apellidos
             </label>
             <input id="apellidos" type="text" placeholder="Pérez"
+                   [(ngModel)]="apellidos"
                    class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2.5
                           text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/35 outline-none shadow-sm
                           transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15" />
           </div>
-
         </div>
 
-        <!-- Fila 3: Correo (ancho completo) -->
+        <!-- Fila 3: Correo -->
         <div>
           <label for="email"
                  class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
@@ -120,6 +133,7 @@
               </svg>
             </span>
             <input id="email" type="email" placeholder="correo@ucm.cl"
+                   [(ngModel)]="email"
                    class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white py-2.5 pl-9 pr-4
                           text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/35 outline-none shadow-sm
                           transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15" />
@@ -128,7 +142,6 @@
 
         <!-- Fila 4: Contraseña + Confirmar -->
         <div class="grid grid-cols-2 gap-4">
-
           <div>
             <label for="password"
                    class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
@@ -144,6 +157,7 @@
                 </svg>
               </span>
               <input id="password" type="password" placeholder="••••••••"
+                     [(ngModel)]="password"
                      class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white py-2.5 pl-9 pr-4
                             text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/35 outline-none shadow-sm
                             transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15" />
@@ -165,22 +179,26 @@
                 </svg>
               </span>
               <input id="confirmPassword" type="password" placeholder="••••••••"
+                     [(ngModel)]="confirmPassword"
+                     (keyup.enter)="onRegistro()"
                      class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white py-2.5 pl-9 pr-4
                             text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/35 outline-none shadow-sm
                             transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15" />
             </div>
           </div>
-
         </div>
 
         <!-- Botón submit -->
-        <button type="submit"
+        <button type="button"
+                (click)="onRegistro()"
+                [disabled]="isLoading()"
                 class="mt-2 w-full rounded-xl bg-[#1B3A6B] py-2.5 text-sm font-semibold
-                       text-white shadow-sm transition hover:bg-[#1B3A6B]/85 active:scale-[0.98]">
-          Crear cuenta
+                       text-white shadow-sm transition hover:bg-[#1B3A6B]/85 active:scale-[0.98]
+                       disabled:opacity-60 disabled:cursor-not-allowed">
+          {{ isLoading() ? 'Creando cuenta...' : 'Crear cuenta' }}
         </button>
 
-      </form>
+      </div>
 
       <!-- Divider e ir al login -->
       <div class="mt-6 flex items-center gap-3">

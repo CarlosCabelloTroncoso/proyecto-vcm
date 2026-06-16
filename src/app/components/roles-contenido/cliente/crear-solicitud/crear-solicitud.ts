@@ -5,6 +5,9 @@ import { Router, RouterModule } from '@angular/router';
 import { Solicitud, Ciudad } from '../../../../interfaces/solicitud.interface';
 import { Carrera } from '../../../../interfaces/academico.interface';
 import { Archivo } from '../../../../interfaces/proyecto.interface';
+import { AuthService } from '../../../../core/services/auth.service';
+import { DataService } from '../../../../core/services/data.service';
+import { CatalogService } from '../../../../core/services/catalog.service';
 
 /** Par interno: metadatos del archivo + referencia al File nativo (si es nuevo). */
 interface ArchivoEntry {
@@ -25,26 +28,9 @@ export class CrearSolicitud implements OnInit {
   solicitudOriginal: Solicitud | null = null;
 
   /* ─── Datos de referencia ──────────────────────────────────── */
-  carreras: Carrera[] = [
-    { id_carrera: 1,  nombre_carrera: 'Ingeniería Civil Informática', etiqueta_carrera: 'ICI',  id_facultad: 1 },
-    { id_carrera: 2,  nombre_carrera: 'Ingeniería Civil Industrial',  etiqueta_carrera: 'ICIV', id_facultad: 1 },
-    { id_carrera: 3,  nombre_carrera: 'Ingeniería Civil Biomédica',   etiqueta_carrera: 'ICBM', id_facultad: 1 },
-    { id_carrera: 4,  nombre_carrera: 'Enfermería',                   etiqueta_carrera: 'ENF',  id_facultad: 2 },
-    { id_carrera: 5,  nombre_carrera: 'Kinesiología',                 etiqueta_carrera: 'KIN',  id_facultad: 2 },
-    { id_carrera: 6,  nombre_carrera: 'Derecho',                      etiqueta_carrera: 'DER',  id_facultad: 3 },
-    { id_carrera: 7,  nombre_carrera: 'Administración de Empresas',   etiqueta_carrera: 'ADM',  id_facultad: 4 },
-    { id_carrera: 8,  nombre_carrera: 'Contador Auditor',             etiqueta_carrera: 'CA',   id_facultad: 4 },
-    { id_carrera: 9,  nombre_carrera: 'Pedagogía en Matemáticas',     etiqueta_carrera: 'PEM',  id_facultad: 5 },
-    { id_carrera: 10, nombre_carrera: 'Bioquímica',                   etiqueta_carrera: 'BQM',  id_facultad: 6 },
-  ];
+  carreras: Carrera[] = [];
 
-  ciudades: Ciudad[] = [
-    { id_ciudad: 1, nombre_ciudad: 'Talca'      },
-    { id_ciudad: 2, nombre_ciudad: 'Santiago'   },
-    { id_ciudad: 3, nombre_ciudad: 'Concepción' },
-    { id_ciudad: 4, nombre_ciudad: 'Rancagua'   },
-    { id_ciudad: 5, nombre_ciudad: 'Curicó'     },
-  ];
+  ciudades: Ciudad[] = [];
 
   /* ─── Formulario ───────────────────────────────────────────── */
   form: Partial<Solicitud> = {
