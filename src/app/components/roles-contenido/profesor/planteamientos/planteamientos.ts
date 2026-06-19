@@ -61,8 +61,6 @@ export class Planteamientos implements OnInit {
   mostrarModalEliminar = false;
   planteamientoEliminar: PlanteamientoProyecto | null = null;
 
-  private nextId = 4;
-
   constructor(
     private dataService: DataService,
     private catalog: CatalogService,
@@ -85,7 +83,7 @@ export class Planteamientos implements OnInit {
         }),
         this.dataService.getAll<any>('solicitud', {
           select: 'id_solicitud, titulo_solicitud',
-          filters: { is_active: true },
+          filters: { id_estado: 2, is_active: true },
         }),
       ]);
       if (planRes.data) this.planteamientos.set(planRes.data as PlanteamientoProyecto[]);
@@ -264,30 +262,42 @@ export class Planteamientos implements OnInit {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
     if (!this.formValido()) return;
+    const u = this.auth.usuario();
+    if (!u) return;
 
     if (this.modoEdicion && this.planteamientoEditando) {
-      const actualizado = {
-        ...this.planteamientoEditando,
-        ...this.formData,
-      } as PlanteamientoProyecto;
-      this.planteamientos.update(lista =>
-        lista.map(p => p.id_planteamiento === actualizado.id_planteamiento ? actualizado : p)
+      const { data } = await this.dataService.update<PlanteamientoProyecto>(
+        'planteamiento_proyecto',
+        this.planteamientoEditando.id_planteamiento,
+        {
+          titulo_planteamiento:          this.formData.titulo_planteamiento!,
+          descripcion_planteamiento:     this.formData.descripcion_planteamiento!,
+          tiempo_estimado_planteamiento: this.formData.tiempo_estimado_planteamiento!,
+          id_solicitud:                  this.formData.id_solicitud!,
+        },
+        'id_planteamiento'
       );
+      if (data) {
+        this.planteamientos.update(lista =>
+          lista.map(p => p.id_planteamiento === data.id_planteamiento ? { ...p, ...data } : p)
+        );
+      }
     } else {
-      const nuevo: PlanteamientoProyecto = {
-        id_planteamiento:              this.nextId++,
+      const { data } = await this.dataService.create<PlanteamientoProyecto>('planteamiento_proyecto', {
         titulo_planteamiento:          this.formData.titulo_planteamiento!,
         descripcion_planteamiento:     this.formData.descripcion_planteamiento!,
         tiempo_estimado_planteamiento: this.formData.tiempo_estimado_planteamiento!,
-        id_solicitud: this.formData.id_solicitud!,
-        id_carrera:   0 /* loaded from auth */,
-        id_usuario:   0 /* loaded from auth */,
-        id_estado:    1,
-      };
-      this.planteamientos.update(lista => [...lista, nuevo]);
-      this.filtroActivo = 'pendiente';
+        id_solicitud:                  this.formData.id_solicitud!,
+        id_carrera:                    u.profesor?.id_carrera ?? 0,
+        id_usuario:                    u.id_usuario,
+        id_estado:                     1,
+      });
+      if (data) {
+        this.planteamientos.update(lista => [...lista, data]);
+        this.filtroActivo = 'pendiente';
+      }
     }
     this.cerrarModalForm();
   }
@@ -302,12 +312,26 @@ export class Planteamientos implements OnInit {
     this.planteamientoEliminar = null;
   }
 
-  confirmarEliminar(): void {
+  async confirmarEliminar(): Promise<void> {
     if (!this.planteamientoEliminar) return;
+    const id = this.planteamientoEliminar.id_planteamiento;
+    await this.dataService.softDelete('planteamiento_proyecto', id, 'id_planteamiento');
     this.planteamientos.update(lista =>
-      lista.filter(p => p.id_planteamiento !== this.planteamientoEliminar!.id_planteamiento)
+      lista.filter(p => p.id_planteamiento !== id)
     );
     this.cerrarEliminar();
+  }
+
+  irACrearProyecto(p: PlanteamientoProyecto): void {
+    this.router.navigate(['/profesor/proyectos'], {
+      state: {
+        abrirCrearProyecto: true,
+        planteamiento: {
+          id_planteamiento:     p.id_planteamiento,
+          titulo_planteamiento: p.titulo_planteamiento,
+        },
+      },
+    });
   }
 
   formValido(): boolean {

@@ -108,9 +108,10 @@ export class GestionPlanteamiento implements OnInit {
     this.mostrarModalAprobar  = true;
   }
 
-  confirmarAprobar(): void {
+  async confirmarAprobar(): Promise<void> {
     if (!this.planteamientoAccion) return;
     const id = this.planteamientoAccion.id_planteamiento;
+    await this.dataService.update('planteamiento_proyecto', id, { id_estado: 2 }, 'id_planteamiento');
     this.planteamientos.update(lista =>
       lista.map(p => p.id_planteamiento === id ? { ...p, id_estado: 2 } : p)
     );
@@ -122,9 +123,10 @@ export class GestionPlanteamiento implements OnInit {
     this.mostrarModalRechazar = true;
   }
 
-  confirmarRechazar(): void {
+  async confirmarRechazar(): Promise<void> {
     if (!this.planteamientoAccion) return;
     const id = this.planteamientoAccion.id_planteamiento;
+    await this.dataService.update('planteamiento_proyecto', id, { id_estado: 3 }, 'id_planteamiento');
     this.planteamientos.update(lista =>
       lista.map(p => p.id_planteamiento === id ? { ...p, id_estado: 3 } : p)
     );

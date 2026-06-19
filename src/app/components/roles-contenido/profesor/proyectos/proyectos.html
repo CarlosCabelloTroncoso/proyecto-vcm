@@ -10,25 +10,35 @@
         Proyectos
       </h1>
       <p class="mt-1 text-sm text-[#1B3A6B]/60">
-        Gestiona los proyectos vinculados a tus planteamientos aprobados para
-        <span class="font-semibold text-[#1B3A6B]">Ingeniería Civil Informática</span>.
+        Gestiona los proyectos vinculados a tus planteamientos aprobados.
       </p>
     </div>
+    <button type="button"
+            (click)="abrirCrear()"
+            class="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#1B3A6B]
+                   px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition
+                   hover:bg-[#16315b] active:scale-95">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+      </svg>
+      Crear Proyecto
+    </button>
   </div>
 
   <!-- ══ FILTROS ═════════════════════════════════════════════════ -->
   <div class="mb-5 flex flex-wrap items-center gap-2">
 
     <button type="button"
-            (click)="filtroActivo = 'aprobado'"
-            [class]="filtroActivo === 'aprobado'
+            (click)="filtroActivo = 'disponible'"
+            [class]="filtroActivo === 'disponible'
               ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
               : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
       Disponibles
-      <span [class]="filtroActivo === 'aprobado'
+      <span [class]="filtroActivo === 'disponible'
         ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
         : 'rounded-full bg-emerald-100 px-1.5 py-0.5 text-xs font-bold text-emerald-700'">
-        {{ contadorPorEstado['aprobado'] }}
+        {{ contadorPorEstado['disponible'] }}
       </span>
     </button>
 
@@ -116,7 +126,7 @@
                 Solicitud vinculada
               </th>
               <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
-                @if (filtroActivo === 'aprobado')                                        { Tiempo estimado }
+                @if (filtroActivo === 'disponible')                                        { Tiempo estimado }
                 @if (filtroActivo === 'en_proceso' || filtroActivo === 'pausado' || filtroActivo === 'atrasado') { Fecha inicio }
                 @if (filtroActivo === 'finalizado' || filtroActivo === 'cancelado')      { Fecha término }
               </th>
@@ -150,7 +160,7 @@
                 </td>
 
                 <td class="whitespace-nowrap px-5 py-4 text-[#1B3A6B]/65">
-                  @if (filtroActivo === 'aprobado')                                        { {{ p.tiempo_estimado }} }
+                  @if (filtroActivo === 'disponible')                                        { {{ p.tiempo_estimado }} }
                   @if (filtroActivo === 'en_proceso' || filtroActivo === 'pausado' || filtroActivo === 'atrasado') { {{ p.fecha_inicio ?? '—' }} }
                   @if (filtroActivo === 'finalizado' || filtroActivo === 'cancelado')      { {{ p.fecha_termino ?? '—' }} }
                 </td>
@@ -179,10 +189,10 @@
                       Ver detalles
                     </a>
 
-                    <!-- Crear Proyecto (solo en aprobados) -->
-                    @if (filtroActivo === 'aprobado') {
+                    <!-- Crear Proyecto (solo en disponibles) -->
+                    @if (filtroActivo === 'disponible') {
                       <button type="button"
-                              (click)="abrirCrear(p)"
+                              (click)="abrirCrear({ id_planteamiento: p.id_planteamiento, titulo_planteamiento: p.titulo })"
                               class="inline-flex items-center gap-1.5 rounded-lg bg-[#1B3A6B]
                                      px-3 py-1.5 text-xs font-semibold text-white shadow-sm
                                      transition hover:bg-[#16315b] active:scale-95">
@@ -271,7 +281,7 @@
                      .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/>
               </svg>
               <span class="flex-1 text-sm font-medium text-emerald-800">
-                {{ planteamientoPreseleccionado.titulo }}
+                {{ planteamientoPreseleccionado.titulo_planteamiento }}
               </span>
               <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
                 Aprobado
@@ -284,24 +294,11 @@
                            text-[#1B3A6B] shadow-sm outline-none transition
                            focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15">
               <option [ngValue]="undefined" disabled>Seleccionar planteamiento aprobado…</option>
-              @for (p of planteamientosDisponibles; track p.id) {
-                <option [ngValue]="p.id">{{ p.titulo }}</option>
+              @for (p of planteamientosDisponibles; track p.id_planteamiento) {
+                <option [ngValue]="p.id_planteamiento">{{ p.titulo_planteamiento }}</option>
               }
             </select>
           }
-        </div>
-
-        <!-- ── Título del proyecto ── -->
-        <div>
-          <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
-            Título del proyecto <span class="text-red-400">*</span>
-          </label>
-          <input type="text"
-                 [(ngModel)]="formProyecto.titulo_proyecto"
-                 placeholder="Nombre del proyecto…"
-                 class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-3.5 py-2.5 text-sm
-                        text-[#1B3A6B] placeholder-[#1B3A6B]/40 shadow-sm outline-none transition
-                        focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15"/>
         </div>
 
         <!-- ── Fechas ── -->

@@ -133,7 +133,9 @@ export class GestionCarrera implements OnInit {
 
   async onEliminarCarrera(): Promise<void> {
     if (this.carreraAEliminar) {
-      await this.dataService.softDelete('carrera', this.carreraAEliminar!.id_carrera, 'id_carrera');
+      const id = this.carreraAEliminar.id_carrera;
+      await this.dataService.softDelete('carrera', id, 'id_carrera');
+      this.carreras.update(lista => lista.filter(c => c.id_carrera !== id));
       this.carreraAEliminar     = null;
       this.mostrarModalEliminar = false;
     }

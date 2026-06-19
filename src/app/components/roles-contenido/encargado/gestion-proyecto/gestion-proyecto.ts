@@ -111,11 +111,17 @@ export class GestionProyecto implements OnInit {
     return this.ESTADOS_ASIGNABLES.filter(e => e.key !== estadoActual);
   }
 
-  cambiarEstado(proyecto: ProyectoVista, event: Event): void {
+  async cambiarEstado(proyecto: ProyectoVista, event: Event): Promise<void> {
     const select = event.target as HTMLSelectElement;
     const nuevoEstado = select.value as EstadoProyectoKey;
     if (!nuevoEstado) return;
-    proyecto.estado = nuevoEstado;
+    const idEstado = this.catalog.getIdEstadoProyecto(this.getNombreEstado(nuevoEstado));
+    if (idEstado) {
+      await this.dataService.update('proyecto', proyecto.id, { id_estado: idEstado }, 'id_proyecto');
+      this.proyectos.update(lista =>
+        lista.map(p => p.id === proyecto.id ? { ...p, estado: nuevoEstado } : p)
+      );
+    }
     select.value = '';
   }
 

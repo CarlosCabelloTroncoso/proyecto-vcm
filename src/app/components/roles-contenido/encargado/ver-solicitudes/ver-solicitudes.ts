@@ -154,22 +154,24 @@ export class VerSolicitudes implements OnInit {
     this.mostrarModalRechazar = true;
   }
 
-  confirmarAprobar(): void {
+  async confirmarAprobar(): Promise<void> {
     if (this.solicitudAccion) {
       const id = this.solicitudAccion.id_solicitud;
+      await this.dataService.update('solicitud', id, { id_estado: 2 }, 'id_solicitud');
       this.solicitudes.update(lista =>
-        lista.map(s => s.id_solicitud === id ? { ...s, id_estado: 3 } : s)
+        lista.map(s => s.id_solicitud === id ? { ...s, id_estado: 2 } : s)
       );
     }
     this.mostrarModalAprobar = false;
     this.solicitudAccion     = null;
   }
 
-  confirmarRechazar(): void {
+  async confirmarRechazar(): Promise<void> {
     if (this.solicitudAccion) {
       const id = this.solicitudAccion.id_solicitud;
+      await this.dataService.update('solicitud', id, { id_estado: 3 }, 'id_solicitud');
       this.solicitudes.update(lista =>
-        lista.map(s => s.id_solicitud === id ? { ...s, id_estado: 4 } : s)
+        lista.map(s => s.id_solicitud === id ? { ...s, id_estado: 3 } : s)
       );
     }
     this.mostrarModalRechazar = false;

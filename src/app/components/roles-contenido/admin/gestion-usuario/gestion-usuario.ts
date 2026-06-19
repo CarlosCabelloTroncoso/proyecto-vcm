@@ -3,10 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../../../core/services/data.service';
 import { CatalogService } from '../../../../core/services/catalog.service';
+import { SupabaseService } from '../../../../core/services/supabase.service';
 import { Usuario, Rol } from '../../../../interfaces/usuario.interface';
 import { Carrera } from '../../../../interfaces/academico.interface';
 import { ModalUsuarioForm } from './modales/modal-usuario-form/modal-usuario-form';
 import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
+
+type UsuarioForm = Partial<Usuario> & { id_carrera?: number };
 
 @Component({
   selector: 'app-gestion-usuario',
@@ -33,6 +36,7 @@ export class GestionUsuario implements OnInit {
   constructor(
     private dataService: DataService,
     private catalog: CatalogService,
+    private supabaseService: SupabaseService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -219,29 +223,60 @@ export class GestionUsuario implements OnInit {
   }
 
   /** Recibe los datos emitidos por ModalUsuarioForm */
-  async onGuardarUsuario(datos: Partial<Usuario>): Promise<void> {
-    if (this.modoEdicion) {
-      this.usuarios.update(lista =>
-        lista.map(u => u.id_usuario === datos.id_usuario ? datos as Usuario : u)
-      );
-    } else {
-      const nuevoId = this.usuarios().length
-        ? Math.max(...this.usuarios().map(u => u.id_usuario)) + 1
-        : 1;
-      const nuevo = {
-        ...datos,
-        id_usuario:     nuevoId,
-        fecha_creacion: new Date().toISOString().split('T')[0],
-      } as Usuario;
-      this.usuarios.update(lista => [...lista, nuevo]);
+  async onGuardarUsuario(datos: UsuarioForm): Promise<void> {
+    const sb = this.supabaseService.client;
+
+    if (this.modoEdicion && datos.id_usuario) {
+      const idUsuario  = datos.id_usuario;
+      const nuevoRolId = datos.id_rol!;
+      const nuevoRol   = this.todosLosRoles.find(r => r.id_rol === nuevoRolId)?.nombre_rol;
+      const viejoRol   = this.todosLosRoles.find(r => r.id_rol === this.usuarioEnEdicion.id_rol)?.nombre_rol;
+
+      // 1. Actualizar datos base del usuario
+      await this.dataService.update('usuario', idUsuario, {
+        nombres_usuario:   datos.nombres_usuario,
+        apellidos_usuario: datos.apellidos_usuario,
+        telefono_usuario:  datos.telefono_usuario,
+        id_rol:            nuevoRolId,
+      }, 'id_usuario');
+
+      // 2. Desactivar tabla de rol anterior si cambió
+      if (viejoRol !== nuevoRol) {
+        if (viejoRol === 'profesor')
+          await sb.from('profesor').update({ is_active: false }).eq('id_usuario', idUsuario);
+        if (viejoRol === 'encargado')
+          await sb.from('gestor_vinculacion_carrera').update({ is_active: false }).eq('id_usuario', idUsuario);
+      }
+
+      // 3. Activar / actualizar tabla del nuevo rol
+      if (nuevoRol === 'profesor' && datos.id_carrera) {
+        await sb.from('profesor').upsert(
+          { id_usuario: idUsuario, id_carrera: datos.id_carrera, is_active: true },
+          { onConflict: 'id_usuario' }
+        );
+      } else if (nuevoRol === 'encargado' && datos.id_carrera) {
+        await sb.from('gestor_vinculacion_carrera').upsert(
+          { id_usuario: idUsuario, id_carrera: datos.id_carrera, is_active: true },
+          { onConflict: 'id_usuario' }
+        );
+      }
+
+      // 4. Recargar para reflejar cambios reales
+      await this.ngOnInit();
+
+    } else if (!this.modoEdicion) {
+      // Crear usuario: solo se puede desde auth (requiere email/password)
+      // Por ahora se deja como pendiente de implementación completa
     }
+
     this.mostrarModalForm = false;
   }
 
   /** Confirmación del ModalConfirmar */
-  onEliminarUsuario(): void {
+  async onEliminarUsuario(): Promise<void> {
     if (this.usuarioAEliminar) {
       const id = this.usuarioAEliminar.id_usuario;
+      await this.dataService.softDelete('usuario', id, 'id_usuario');
       this.usuarios.update(lista => lista.filter(u => u.id_usuario !== id));
       this.usuarioAEliminar    = null;
       this.mostrarModalEliminar = false;

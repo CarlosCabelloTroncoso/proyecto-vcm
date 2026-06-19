@@ -6,16 +6,18 @@ import { Archivo } from '../../../../interfaces/proyecto.interface';
 import { AuthService } from '../../../../core/services/auth.service';
 import { DataService } from '../../../../core/services/data.service';
 import { CatalogService } from '../../../../core/services/catalog.service';
+import { SupabaseService } from '../../../../core/services/supabase.service';
 
 interface ProyectoVista {
   id: number;
+  id_planteamiento: number;
   titulo: string;
   planteamiento_origen: string;
   solicitud_origen: string;
   tiempo_estimado: string;
   fecha_inicio?: string;
   fecha_termino?: string;
-  estado: 'aprobado' | 'en_proceso' | 'pausado' | 'cancelado' | 'finalizado' | 'atrasado';
+  estado: 'disponible' | 'en_proceso' | 'pausado' | 'cancelado' | 'finalizado' | 'atrasado';
 }
 
 interface AlumnoVista {
@@ -38,18 +40,36 @@ interface ArchivoEntry {
 export class Proyectos implements OnInit {
   estadosProyecto: any[] = [];
 
-  constructor(private dataService: DataService, private catalog: CatalogService) {}
+  constructor(
+    private dataService: DataService,
+    private catalog: CatalogService,
+    private auth: AuthService,
+    private supabaseService: SupabaseService,
+  ) {}
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
     this.estadosProyecto = this.catalog.estadosProyecto();
-    const proyectosRes = await this.dataService.getAll<any>('proyecto', {
-      select: `*, estado_proyecto(nombre_estado), planteamiento_proyecto(titulo_planteamiento, tiempo_estimado_planteamiento, id_carrera, id_solicitud, solicitud(titulo_solicitud), carrera(nombre_carrera))`,
-      filters: { is_active: true },
-    });
+
+    const [proyectosRes, planteamientosRes, alumnosRes] = await Promise.all([
+      this.dataService.getAll<any>('proyecto', {
+        select: `*, estado_proyecto(nombre_estado), planteamiento_proyecto(id_planteamiento, titulo_planteamiento, tiempo_estimado_planteamiento, id_carrera, id_solicitud, solicitud(titulo_solicitud), carrera(nombre_carrera))`,
+        filters: { is_active: true },
+      }),
+      this.dataService.getAll<any>('planteamiento_proyecto', {
+        select: 'id_planteamiento, titulo_planteamiento',
+        filters: { id_estado: 2, is_active: true },
+      }),
+      this.dataService.getAll<any>('alumno_voluntario', {
+        select: 'id_alumno, rut_alumno, nombres_alumno, apellidos_alumno',
+        filters: { is_active: true },
+      }),
+    ]);
+
     if (proyectosRes.data) {
       const mapped = proyectosRes.data.map((p: any): ProyectoVista => ({
         id:                   p.id_proyecto,
+        id_planteamiento:     p.id_planteamiento,
         titulo:               p.planteamiento_proyecto?.titulo_planteamiento ?? `Proyecto #${p.id_proyecto}`,
         planteamiento_origen: p.planteamiento_proyecto?.titulo_planteamiento ?? '—',
         solicitud_origen:     p.planteamiento_proyecto?.solicitud?.titulo_solicitud ?? '—',
@@ -60,42 +80,53 @@ export class Proyectos implements OnInit {
                                 .toLowerCase().replace(/ /g, '_') as ProyectoVista['estado'],
       }));
       this.proyectos.set(mapped);
-      // Auto-seleccionar primer tab con datos si el tab actual está vacío
       if (mapped.length > 0 && !mapped.some(p => p.estado === this.filtroActivo)) {
         this.filtroActivo = mapped[0].estado;
       }
     }
+
+    if (planteamientosRes.data) {
+      this.planteamientosAprobados.set(planteamientosRes.data);
+    }
+
+    if (alumnosRes.data) {
+      this.alumnosDisponibles = alumnosRes.data.map((a: any): AlumnoVista => ({
+        id:     a.id_alumno,
+        rut:    a.rut_alumno,
+        nombre: `${a.nombres_alumno} ${a.apellidos_alumno}`,
+      }));
+    }
+
+    // Navegación desde planteamientos con planteamiento preseleccionado
+    const state = history.state;
+    if (state?.abrirCrearProyecto && state?.planteamiento) {
+      history.replaceState({}, '');
+      this.abrirCrear(state.planteamiento);
+    }
   }
 
 
-  filtroActivo: 'aprobado' | 'en_proceso' | 'pausado' | 'cancelado' | 'finalizado' | 'atrasado' = 'aprobado';
+  filtroActivo: ProyectoVista['estado'] = 'disponible';
 
   proyectos = signal<ProyectoVista[]>([]);
 
+  planteamientosAprobados = signal<{ id_planteamiento: number; titulo_planteamiento: string }[]>([]);
+
   // ── Modal Crear Proyecto ──────────────────────────────────────
   mostrarModalCrear = false;
-  planteamientoPreseleccionado: ProyectoVista | null = null;
+  planteamientoPreseleccionado: { id_planteamiento: number; titulo_planteamiento: string } | null = null;
   alumnoSeleccionadoId: number | undefined = undefined;
 
   formProyecto: {
     id_planteamiento: number | undefined;
-    titulo_proyecto: string;
     fecha_inicio: string;
     fecha_termino: string;
-  } = { id_planteamiento: undefined, titulo_proyecto: '', fecha_inicio: '', fecha_termino: '' };
+  } = { id_planteamiento: undefined, fecha_inicio: '', fecha_termino: '' };
 
   alumnosSeleccionados: AlumnoVista[] = [];
   readonly MAX_ALUMNOS = 5;
 
-  alumnosDisponibles: AlumnoVista[] = [
-    { id: 1, rut: '20.123.456-7', nombre: 'Martina González López'  },
-    { id: 2, rut: '20.234.567-8', nombre: 'Diego Muñoz Carrasco'    },
-    { id: 3, rut: '19.876.543-2', nombre: 'Sofía Reyes Bustamante'  },
-    { id: 4, rut: '21.345.678-9', nombre: 'Tomás Vargas Mora'       },
-    { id: 5, rut: '20.456.789-K', nombre: 'Valentina Castro Pino'   },
-    { id: 6, rut: '19.234.567-1', nombre: 'Matías Herrera Ojeda'    },
-    { id: 7, rut: '21.567.890-3', nombre: 'Isidora Rojas Fuentes'   },
-  ];
+  alumnosDisponibles: AlumnoVista[] = [];
 
   archivosProyecto: ArchivoEntry[] = [];
   arrastrandoArchivo = false;
@@ -120,7 +151,7 @@ export class Proyectos implements OnInit {
 
   get contadorPorEstado(): Record<string, number> {
     return {
-      aprobado:   this.proyectos().filter(p => p.estado === 'aprobado').length,
+      disponible: this.proyectos().filter(p => p.estado === 'disponible').length,
       en_proceso: this.proyectos().filter(p => p.estado === 'en_proceso').length,
       pausado:    this.proyectos().filter(p => p.estado === 'pausado').length,
       cancelado:  this.proyectos().filter(p => p.estado === 'cancelado').length,
@@ -129,8 +160,8 @@ export class Proyectos implements OnInit {
     };
   }
 
-  get planteamientosDisponibles(): ProyectoVista[] {
-    return this.proyectos().filter(p => p.estado === 'aprobado');
+  get planteamientosDisponibles(): { id_planteamiento: number; titulo_planteamiento: string }[] {
+    return this.planteamientosAprobados();
   }
 
   get alumnosDisponiblesParaAgregar(): AlumnoVista[] {
@@ -141,7 +172,7 @@ export class Proyectos implements OnInit {
 
   getBadgeEstado(estado: string): string {
     const mapa: Record<string, string> = {
-      aprobado:   'bg-emerald-100 text-emerald-700 border-emerald-200',
+      disponible: 'bg-emerald-100 text-emerald-700 border-emerald-200',
       en_proceso: 'bg-blue-100 text-blue-700 border-blue-200',
       pausado:    'bg-amber-100 text-amber-700 border-amber-200',
       cancelado:  'bg-red-100 text-red-500 border-red-200',
@@ -153,7 +184,7 @@ export class Proyectos implements OnInit {
 
   getNombreEstado(estado: string): string {
     const mapa: Record<string, string> = {
-      aprobado:   'Aprobado',
+      disponible: 'Disponible',
       en_proceso: 'En proceso',
       pausado:    'Pausado',
       cancelado:  'Cancelado',
@@ -165,11 +196,10 @@ export class Proyectos implements OnInit {
 
   // ── Modal ─────────────────────────────────────────────────────
 
-  abrirCrear(p?: ProyectoVista): void {
+  abrirCrear(p?: { id_planteamiento: number; titulo_planteamiento: string }): void {
     this.planteamientoPreseleccionado = p ?? null;
     this.formProyecto = {
-      id_planteamiento: p?.id,
-      titulo_proyecto:  p?.titulo ?? '',
+      id_planteamiento: p?.id_planteamiento,
       fecha_inicio:     '',
       fecha_termino:    '',
     };
@@ -183,7 +213,7 @@ export class Proyectos implements OnInit {
   cerrarCrear(): void {
     this.mostrarModalCrear            = false;
     this.planteamientoPreseleccionado = null;
-    this.formProyecto = { id_planteamiento: undefined, titulo_proyecto: '', fecha_inicio: '', fecha_termino: '' };
+    this.formProyecto = { id_planteamiento: undefined, fecha_inicio: '', fecha_termino: '' };
     this.alumnosSeleccionados = [];
     this.alumnoSeleccionadoId = undefined;
     this.archivosProyecto     = [];
@@ -205,15 +235,47 @@ export class Proyectos implements OnInit {
 
   formValido(): boolean {
     return !!(
-      (this.planteamientoPreseleccionado || this.formProyecto.id_planteamiento) &&
-      this.formProyecto.titulo_proyecto?.trim() &&
+      this.formProyecto.id_planteamiento &&
       this.formProyecto.fecha_inicio &&
       this.formProyecto.fecha_termino
     );
   }
 
-  guardarProyecto(): void {
+  async guardarProyecto(): Promise<void> {
     if (!this.formValido()) return;
+
+    let idEstadoDisponible = this.catalog.getIdEstadoProyecto('Disponible');
+    if (!idEstadoDisponible) {
+      const estados = this.catalog.estadosProyecto();
+      idEstadoDisponible = estados[0]?.id_estado ?? 1;
+    }
+
+    const { data, error } = await this.dataService.create<any>('proyecto', {
+      id_planteamiento: this.formProyecto.id_planteamiento,
+      id_estado:        idEstadoDisponible,
+      fecha_inicio:     this.formProyecto.fecha_inicio,
+      fecha_fin:        this.formProyecto.fecha_termino,
+      is_active:        true,
+    });
+
+    if (error) {
+      console.error('Error al crear proyecto:', error);
+      return;
+    }
+
+    if (data && this.alumnosSeleccionados.length > 0) {
+      const sb = this.supabaseService.client;
+      await Promise.all(
+        this.alumnosSeleccionados.map(a =>
+          sb.from('detalle_planteamiento_alumno').insert({
+            id_planteamiento: this.formProyecto.id_planteamiento,
+            id_alumno:        a.id,
+          })
+        )
+      );
+    }
+
+    await this.ngOnInit();
     this.cerrarCrear();
   }
 

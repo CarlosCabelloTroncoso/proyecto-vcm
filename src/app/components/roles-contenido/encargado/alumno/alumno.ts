@@ -124,7 +124,9 @@ export class Alumno implements OnInit {
 
   async onEliminarAlumno(): Promise<void> {
     if (this.alumnoAEliminar) {
-      await this.dataService.softDelete('alumno_voluntario', this.alumnoAEliminar!.id_alumno, 'id_alumno');
+      const id = this.alumnoAEliminar.id_alumno;
+      await this.dataService.softDelete('alumno_voluntario', id, 'id_alumno');
+      this.alumnos.update(lista => lista.filter(a => a.id_alumno !== id));
       this.alumnoAEliminar      = null;
       this.mostrarModalEliminar = false;
     }

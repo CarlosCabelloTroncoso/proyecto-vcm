@@ -184,6 +184,15 @@ export class Solicitudes implements OnInit {
   }
 
   async onGuardarSolicitud(datos: Partial<Solicitud>): Promise<void> {
+    if (datos.id_solicitud) {
+      await this.dataService.update('solicitud', datos.id_solicitud, {
+        titulo_solicitud:      datos.titulo_solicitud,
+        descripcion_solicitud: datos.descripcion_solicitud,
+        id_estado:             datos.id_estado,
+        id_carrera:            datos.id_carrera,
+        id_ciudad:             datos.id_ciudad,
+      }, 'id_solicitud');
+    }
     this.solicitudes.update(lista =>
       lista.map(s => s.id_solicitud === datos.id_solicitud ? datos as Solicitud : s)
     );
