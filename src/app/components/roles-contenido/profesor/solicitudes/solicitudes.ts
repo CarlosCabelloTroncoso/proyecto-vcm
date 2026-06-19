@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -43,7 +43,7 @@ export class Solicitudes implements OnInit {
   ];
 
   /* ─── Solicitudes aprobadas de la carrera del profesor ──────── */
-  solicitudes: Solicitud[] = [];
+  solicitudes = signal<Solicitud[]>([]);
 
   /* ─── Archivos adjuntos mock ────────────────────────────────── */
   archivos: Archivo[] = [];
@@ -57,8 +57,8 @@ export class Solicitudes implements OnInit {
 
   /* ─── Lista filtrada (solo aprobadas de su carrera) ─────────── */
   get solicitudesFiltradas(): Solicitud[] {
-    let lista = this.solicitudes.filter(
-      s => s.id_estado === 3
+    let lista = this.solicitudes().filter(
+      s => s.id_estado === 2
     );
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
@@ -72,11 +72,11 @@ export class Solicitudes implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    this.estados = this.catalog.estados;
-    this.carreras = this.catalog.carreras;
-    this.ciudades = this.catalog.ciudades;
+    this.estados = this.catalog.estados();
+    this.carreras = this.catalog.carreras();
+    this.ciudades = this.catalog.ciudades();
     const solicitudesRes = await this.dataService.getAll<any>('solicitud', { select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`, filters: { is_active: true } });
-    if (solicitudesRes.data) this.solicitudes = solicitudesRes.data;
+    if (solicitudesRes.data) this.solicitudes.set(solicitudesRes.data);
   }
 
   /* ─── Helpers ───────────────────────────────────────────────── */
@@ -108,7 +108,9 @@ export class Solicitudes implements OnInit {
 
   getBadgeEstado(id: number): string {
     const mapa: Record<number, string> = {
-      3: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+      2: 'bg-green-100 text-green-700 border-green-200',
+      3: 'bg-red-100   text-red-700   border-red-200',
+      4: 'bg-sky-100   text-sky-700   border-sky-200',
     };
     return mapa[id] ?? 'bg-gray-100 text-gray-500 border-gray-200';
   }

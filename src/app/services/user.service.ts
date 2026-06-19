@@ -6,7 +6,7 @@ import { Usuario as UsuarioInterface } from '../interfaces/usuario.interface';
 export type Usuario = UsuarioInterface;
 export type { UsuarioVCM };
 
-export const ROLES_INTERNOS = ['admin', 'gestor_vinculacion', 'profesor', 'autoridad'];
+export const ROLES_INTERNOS = ['admin', 'encargado', 'profesor', 'autoridad'];
 
 @Injectable({ providedIn: 'root' })
 export class UserService {

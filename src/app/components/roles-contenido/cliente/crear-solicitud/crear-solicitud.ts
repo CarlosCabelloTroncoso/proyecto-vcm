@@ -58,9 +58,17 @@ export class CrearSolicitud implements OnInit {
   ];
   readonly TAMANO_MAX_MB = 10;
 
-  constructor(private router: Router) {}
+  constructor(
+    private auth: AuthService,
+    private dataService: DataService,
+    private catalog: CatalogService,
+    private router: Router) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.catalog.load();
+    this.carreras = this.catalog.carreras();
+    this.ciudades = this.catalog.ciudades();
+
     const state = history.state;
     if (state?.modo === 'editar' && state?.solicitud) {
       this.modo              = 'editar';
@@ -181,45 +189,38 @@ export class CrearSolicitud implements OnInit {
   }
 
   /* ─── Submit ───────────────────────────────────────────────── */
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (!this.formularioValido) return;
 
     if (this.modo === 'crear') {
-      const idNuevo = Date.now();
-      const nueva: Solicitud = {
-        id_solicitud:             idNuevo,
+      const idUsuario = this.auth.usuario()?.id_usuario;
+      if (!idUsuario) return;
+
+      const { data } = await this.dataService.create<Solicitud>('solicitud', {
         titulo_solicitud:         this.form.titulo_solicitud!.trim(),
         descripcion_solicitud:    this.form.descripcion_solicitud!.trim(),
         fecha_creacion_solicitud: new Date().toISOString().split('T')[0],
         id_estado:                1,
-        id_usuario:               1,
+        id_usuario:               idUsuario,
         id_carrera:               +this.form.id_carrera!,
         id_ciudad:                +this.form.id_ciudad!,
-      };
-      const archivos: Archivo[] = this.archivosAdjuntos.map(e => ({
-        ...e.archivo,
-        id_solicitud: idNuevo,
-      }));
+      });
 
       this.router.navigate(['/cliente/mis-solicitudes'], {
-        state: { nuevaSolicitud: nueva, archivos }
+        state: data ? { abrirDetalleId: data.id_solicitud } : undefined,
       });
 
     } else {
-      const actualizada: Solicitud = {
-        ...this.solicitudOriginal!,
+      const idSolicitud = this.solicitudOriginal!.id_solicitud;
+      await this.dataService.update('solicitud', idSolicitud, {
         titulo_solicitud:      this.form.titulo_solicitud!.trim(),
         descripcion_solicitud: this.form.descripcion_solicitud!.trim(),
         id_carrera:            +this.form.id_carrera!,
         id_ciudad:             +this.form.id_ciudad!,
-      };
-      const archivos: Archivo[] = this.archivosAdjuntos.map(e => ({
-        ...e.archivo,
-        id_solicitud: this.solicitudOriginal!.id_solicitud,
-      }));
+      }, 'id_solicitud');
 
       this.router.navigate(['/cliente/mis-solicitudes'], {
-        state: { solicitudEditada: actualizada, archivos }
+        state: { abrirDetalleId: idSolicitud },
       });
     }
   }

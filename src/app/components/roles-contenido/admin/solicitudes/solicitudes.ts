@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Solicitud, EstadoSolicitud, Ciudad } from '../../../../interfaces/solicitud.interface';
@@ -21,11 +21,11 @@ export class Solicitudes implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    this.estados = this.catalog.estados;
-    this.carreras = this.catalog.carreras;
-    this.ciudades = this.catalog.ciudades;
+    this.estados = this.catalog.estados();
+    this.carreras = this.catalog.carreras();
+    this.ciudades = this.catalog.ciudades();
     const solicitudesRes = await this.dataService.getAll<any>('solicitud', { select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`, filters: { is_active: true } });
-    if (solicitudesRes.data) this.solicitudes = solicitudesRes.data;
+    if (solicitudesRes.data) this.solicitudes.set(solicitudesRes.data);
   }
 
 
@@ -39,7 +39,7 @@ export class Solicitudes implements OnInit {
   ciudades: Ciudad[] = [];
 
   /* ─── Datos mock ───────────────────────────────────────────── */
-  solicitudes: Solicitud[] = [];
+  solicitudes = signal<Solicitud[]>([]);
 
   /* ─── Meses del año ───────────────────────────────────────── */
   readonly meses = [
@@ -91,11 +91,11 @@ export class Solicitudes implements OnInit {
 
   getBadgeEstado(id_estado: number): string {
     const mapa: Record<number, string> = {
-      1: 'bg-amber-100   text-amber-700   border-amber-200',
-      2: 'bg-sky-100     text-sky-700     border-sky-200',
-      3: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-      4: 'bg-red-100     text-red-700     border-red-200',
-      5: 'bg-gray-100    text-gray-600    border-gray-200',
+      1: 'bg-amber-100 text-amber-700 border-amber-200',
+      2: 'bg-green-100 text-green-700 border-green-200',
+      3: 'bg-red-100   text-red-700   border-red-200',
+      4: 'bg-sky-100   text-sky-700   border-sky-200',
+      5: 'bg-gray-100  text-gray-600  border-gray-200',
     };
     return mapa[id_estado] ?? 'bg-gray-100 text-gray-600 border-gray-200';
   }
@@ -124,7 +124,7 @@ export class Solicitudes implements OnInit {
 
   /** Años únicos presentes en los datos, ordenados de más reciente a más antiguo */
   get aniosDisponibles(): string[] {
-    return [...new Set(this.solicitudes.map(s => s.fecha_creacion_solicitud.slice(0, 4)))]
+    return [...new Set(this.solicitudes().map(s => s.fecha_creacion_solicitud.slice(0, 4)))]
       .sort()
       .reverse();
   }
@@ -141,7 +141,7 @@ export class Solicitudes implements OnInit {
 
   /* ─── Lista filtrada ───────────────────────────────────────── */
   get solicitudesFiltradas(): Solicitud[] {
-    let lista = [...this.solicitudes];
+    let lista = [...this.solicitudes()];
 
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
@@ -184,14 +184,17 @@ export class Solicitudes implements OnInit {
   }
 
   async onGuardarSolicitud(datos: Partial<Solicitud>): Promise<void> {
-    const idx = this.solicitudes.findIndex(s => s.id_solicitud === datos.id_solicitud);
-    if (idx !== -1) this.solicitudes[idx] = datos as Solicitud;
+    this.solicitudes.update(lista =>
+      lista.map(s => s.id_solicitud === datos.id_solicitud ? datos as Solicitud : s)
+    );
     this.mostrarModalForm = false;
   }
 
   async onEliminarSolicitud(): Promise<void> {
     if (this.solicitudAEliminar) {
       await this.dataService.softDelete('solicitud', this.solicitudAEliminar!.id_solicitud, 'id_solicitud');
+      const id = this.solicitudAEliminar.id_solicitud;
+      this.solicitudes.update(lista => lista.filter(s => s.id_solicitud !== id));
       this.solicitudAEliminar   = null;
       this.mostrarModalEliminar = false;
     }

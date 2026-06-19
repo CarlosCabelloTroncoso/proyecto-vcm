@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ModalDetallePlanteamiento } from '../../../shared/modal-detalle-planteamiento/modal-detalle-planteamiento';
@@ -22,9 +22,9 @@ export class GestionPlanteamiento implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    this.estadosPlanteamiento = this.catalog.estadosPlanteamiento;
+    this.estadosPlanteamiento = this.catalog.estadosPlanteamiento();
     const planteamientosRes = await this.dataService.getAll<any>('planteamiento_proyecto', { select: `*, estado_planteamiento(nombre_estado), carrera(nombre_carrera), solicitud(titulo_solicitud), usuario(nombres_usuario, apellidos_usuario)`, filters: { is_active: true } });
-    if (planteamientosRes.data) this.planteamientos = planteamientosRes.data;
+    if (planteamientosRes.data) this.planteamientos.set(planteamientosRes.data);
   }
 
 
@@ -32,9 +32,9 @@ export class GestionPlanteamiento implements OnInit {
 
   estadosPlanteamiento: EstadoPlanteamiento[] = [];
 
-  solicitudesAprobadas: Solicitud[] = [];
+  solicitudesAprobadas = signal<Solicitud[]>([]);
 
-  planteamientos: PlanteamientoProyecto[] = [];
+  planteamientos = signal<PlanteamientoProyecto[]>([]);
 
   archivos: Archivo[] = [];
 
@@ -50,7 +50,7 @@ export class GestionPlanteamiento implements OnInit {
 
   get planteamientosFiltrados(): PlanteamientoProyecto[] {
     const idEstado = this.filtroActivo === 'pendiente' ? 1 : this.filtroActivo === 'aprobado' ? 2 : 3;
-    let lista = this.planteamientos.filter(
+    let lista = this.planteamientos().filter(
       p => p.id_estado === idEstado
     );
     if (this.searchTerm.trim()) {
@@ -64,7 +64,7 @@ export class GestionPlanteamiento implements OnInit {
   }
 
   get contadorPorEstado(): Record<string, number> {
-    const todos = [...this.planteamientos];
+    const todos = [...this.planteamientos()];
     return {
       pendiente: todos.filter(p => p.id_estado === 1).length,
       aprobado:  todos.filter(p => p.id_estado === 2).length,
@@ -77,7 +77,7 @@ export class GestionPlanteamiento implements OnInit {
   }
 
   getTituloSolicitud(id: number): string {
-    return this.solicitudesAprobadas.find(s => s.id_solicitud === id)?.titulo_solicitud ?? '—';
+    return this.solicitudesAprobadas().find(s => s.id_solicitud === id)?.titulo_solicitud ?? '—';
   }
 
   getBadgeEstado(id: number): string {
@@ -110,10 +110,10 @@ export class GestionPlanteamiento implements OnInit {
 
   confirmarAprobar(): void {
     if (!this.planteamientoAccion) return;
-    const idx = this.planteamientos.findIndex(
-      p => p.id_planteamiento === this.planteamientoAccion!.id_planteamiento
+    const id = this.planteamientoAccion.id_planteamiento;
+    this.planteamientos.update(lista =>
+      lista.map(p => p.id_planteamiento === id ? { ...p, id_estado: 2 } : p)
     );
-    if (idx > -1) this.planteamientos[idx] = { ...this.planteamientos[idx], id_estado: 2 };
     this.cancelarAccion();
   }
 
@@ -124,10 +124,10 @@ export class GestionPlanteamiento implements OnInit {
 
   confirmarRechazar(): void {
     if (!this.planteamientoAccion) return;
-    const idx = this.planteamientos.findIndex(
-      p => p.id_planteamiento === this.planteamientoAccion!.id_planteamiento
+    const id = this.planteamientoAccion.id_planteamiento;
+    this.planteamientos.update(lista =>
+      lista.map(p => p.id_planteamiento === id ? { ...p, id_estado: 3 } : p)
     );
-    if (idx > -1) this.planteamientos[idx] = { ...this.planteamientos[idx], id_estado: 3 };
     this.cancelarAccion();
   }
 

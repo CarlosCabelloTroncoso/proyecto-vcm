@@ -221,7 +221,7 @@
   [visible]="mostrarModalDetalle"
   [planteamiento]="planteamientoSeleccionado"
   [estadosPlanteamiento]="estadosPlanteamiento"
-  [solicitudesAprobadas]="solicitudesAprobadas"
+  [solicitudesAprobadas]="solicitudesAprobadas()"
   [archivos]="planteamientoSeleccionado ? getArchivosDePlanteamiento(planteamientoSeleccionado.id_planteamiento) : []"
   (cerrar)="cerrarDetalle()" />
 

@@ -70,6 +70,20 @@
           </div>
         </div>
 
+        <!-- Correo (solo en creación) -->
+        @if (!modoEdicion) {
+          <div>
+            <label class="mb-1.5 block text-xs font-semibold text-[#1B3A6B]">Correo electrónico</label>
+            <input
+              type="email"
+              [(ngModel)]="usuarioLocal.email"
+              placeholder="correo@ucm.cl"
+              class="w-full rounded-xl border border-[#1B3A6B]/20 px-3.5 py-2.5 text-sm text-[#1B3A6B]
+                     placeholder-[#1B3A6B]/30 outline-none transition
+                     focus:border-[#1B3A6B]/60 focus:ring-2 focus:ring-[#1B3A6B]/20"/>
+          </div>
+        }
+
         <!-- Teléfono -->
         <div>
           <label class="mb-1.5 block text-xs font-semibold text-[#1B3A6B]">Teléfono</label>
@@ -82,20 +96,40 @@
                    focus:border-[#1B3A6B]/60 focus:ring-2 focus:ring-[#1B3A6B]/20"/>
         </div>
 
-        <!-- Rol (select) -->
+        <!-- Rol -->
         <div>
           <label class="mb-1.5 block text-xs font-semibold text-[#1B3A6B]">Rol</label>
           <select
             [(ngModel)]="usuarioLocal.id_rol"
+            (ngModelChange)="onRolChange()"
             class="w-full rounded-xl border border-[#1B3A6B]/20 px-3.5 py-2.5 text-sm text-[#1B3A6B]
                    outline-none transition focus:border-[#1B3A6B]/60 focus:ring-2 focus:ring-[#1B3A6B]/20">
+            <option [ngValue]="undefined" disabled>Seleccione un rol</option>
             @for (rol of roles; track rol.id_rol) {
-              <option [value]="rol.id_rol">{{ rol.nombre_rol }}</option>
+              <option [value]="rol.id_rol">{{ getRolLabel(rol.nombre_rol) }}</option>
             }
           </select>
         </div>
 
-      </div> ───────────────────────────────────────────── -->
+        <!-- Carrera (solo para Profesor y Gestor de Vinculación) -->
+        @if (rolRequiereCarrera) {
+          <div>
+            <label class="mb-1.5 block text-xs font-semibold text-[#1B3A6B]">Carrera</label>
+            <select
+              [(ngModel)]="usuarioLocal.id_carrera"
+              class="w-full rounded-xl border border-[#1B3A6B]/20 px-3.5 py-2.5 text-sm text-[#1B3A6B]
+                     outline-none transition focus:border-[#1B3A6B]/60 focus:ring-2 focus:ring-[#1B3A6B]/20">
+              <option [ngValue]="undefined" disabled>Seleccione una carrera</option>
+              @for (c of carreras; track c.id_carrera) {
+                <option [value]="c.id_carrera">{{ c.nombre_carrera }}</option>
+              }
+            </select>
+          </div>
+        }
+
+      </div>
+
+      <!-- ── Footer ─────────────────────────────────────────── -->
       <div class="flex items-center justify-end gap-3 border-t border-[#1B3A6B]/10 px-6 py-4">
         <button
           (click)="onCerrar()"

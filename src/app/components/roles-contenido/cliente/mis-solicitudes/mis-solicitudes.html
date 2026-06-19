@@ -264,11 +264,11 @@
                       d="M9 12h6m2 0a8 8 0 1 1-16 0 8 8 0 0 1 16 0z"/>
                   </svg>
                   <p class="text-sm font-medium">
-                    {{ solicitudes.length === 0
+                    {{ solicitudes().length === 0
                         ? 'Aún no tienes solicitudes. ¡Crea tu primera!'
                         : 'No se encontraron solicitudes con esos filtros.' }}
                   </p>
-                  @if (solicitudes.length === 0) {
+                  @if (solicitudes().length === 0) {
                     <a routerLink="/cliente/crear-solicitud"
                        class="text-xs font-semibold text-[#1B3A6B] underline underline-offset-2
                               transition hover:text-[#1B3A6B]/70">
@@ -290,7 +290,7 @@
 
     <!-- Pie de tabla -->
     <div class="border-t border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.02] px-5 py-2.5 text-xs text-[#1B3A6B]/40">
-      {{ solicitudesFiltradas.length }} de {{ solicitudes.length }} solicitudes &nbsp;·&nbsp; UCM VcM v1.0
+      {{ solicitudesFiltradas.length }} de {{ solicitudes().length }} solicitudes &nbsp;·&nbsp; UCM VcM v1.0
     </div>
   </div>
 

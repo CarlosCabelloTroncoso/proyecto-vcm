@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DataService } from '../../../../core/services/data.service';
+import { CatalogService } from '../../../../core/services/catalog.service';
 
 interface AlumnoVista {
   id: number;
@@ -36,119 +38,82 @@ interface ProyectoDetalleData {
 export class ProyectoDetalleEncargado implements OnInit {
 
   proyecto: ProyectoDetalleData | null = null;
+  cargando = true;
 
-  private readonly proyectosMock: ProyectoDetalleData[] = [
-    {
-      id: 1,
-      titulo: 'Sistema de gestión de voluntarios',
-      planteamiento_origen: 'Sistema de gestión de voluntarios',
-      solicitud_origen: 'App móvil para servicios comunitarios',
-      tiempo_estimado: '4 meses',
-      estado: 'disponible',
-      alumnos: [],
-      observaciones: [],
-    },
-    {
-      id: 2,
-      titulo: 'Dashboard de transparencia ciudadana',
-      planteamiento_origen: 'Dashboard de transparencia',
-      solicitud_origen: 'Portal de transparencia ciudadana',
-      tiempo_estimado: '3 meses',
-      estado: 'disponible',
-      alumnos: [],
-      observaciones: [],
-    },
-    {
-      id: 3,
-      titulo: 'Portal de trámites digitales Talca',
-      planteamiento_origen: 'Portal de trámites online',
-      solicitud_origen: 'Digitalización de trámites municipales Talca',
-      tiempo_estimado: '6 meses',
-      fecha_inicio: '2025-03-01',
-      estado: 'en_proceso',
-      alumnos: [
-        { id: 1, rut: '20.123.456-7', nombre: 'Martina González López' },
-        { id: 2, rut: '20.234.567-8', nombre: 'Diego Muñoz Carrasco'   },
-      ],
-      observaciones: [
-        { id: 1, fecha: '2025-03-15', detalle: 'Se completó el módulo de autenticación.' },
-        { id: 2, fecha: '2025-04-02', detalle: 'Integración con la API municipal en proceso.' },
-      ],
-    },
-    {
-      id: 4,
-      titulo: 'Sistema de agenda comunitaria',
-      planteamiento_origen: 'Agenda digital comunitaria',
-      solicitud_origen: 'App móvil para servicios comunitarios',
-      tiempo_estimado: '4 meses',
-      fecha_inicio: '2025-01-10',
-      estado: 'pausado',
-      alumnos: [
-        { id: 3, rut: '19.876.543-2', nombre: 'Sofía Reyes Bustamante' },
-      ],
-      observaciones: [
-        { id: 1, fecha: '2025-01-20', detalle: 'Inicio del proyecto. Reunión de kick-off realizada.' },
-        { id: 2, fecha: '2025-02-14', detalle: 'Proyecto pausado por disponibilidad del cliente.' },
-      ],
-    },
-    {
-      id: 5,
-      titulo: 'Plataforma de reportes municipales',
-      planteamiento_origen: 'Sistema de reportes automáticos',
-      solicitud_origen: 'Digitalización de trámites municipales Talca',
-      tiempo_estimado: '5 meses',
-      fecha_inicio: '2024-09-15',
-      fecha_termino: '2025-01-10',
-      estado: 'cancelado',
-      alumnos: [],
-      observaciones: [
-        { id: 1, fecha: '2024-09-20', detalle: 'Proyecto iniciado. Análisis de requerimientos.' },
-        { id: 2, fecha: '2024-11-30', detalle: 'Proyecto cancelado por decisión del cliente.' },
-      ],
-    },
-    {
-      id: 6,
-      titulo: 'Módulo de pagos en línea UCM',
-      planteamiento_origen: 'Pasarela de pagos institucional',
-      solicitud_origen: 'Portal de transparencia ciudadana',
-      tiempo_estimado: '3 meses',
-      fecha_inicio: '2024-06-01',
-      fecha_termino: '2024-09-05',
-      estado: 'finalizado',
-      alumnos: [
-        { id: 6, rut: '19.234.567-1', nombre: 'Matías Herrera Ojeda' },
-      ],
-      observaciones: [
-        { id: 1, fecha: '2024-06-15', detalle: 'Configuración del entorno de desarrollo completada.' },
-        { id: 2, fecha: '2024-07-10', detalle: 'Módulo de pago integrado con Webpay.' },
-        { id: 3, fecha: '2024-09-05', detalle: 'Proyecto finalizado y entregado al cliente.' },
-      ],
-    },
-    {
-      id: 7,
-      titulo: 'App de seguimiento de solicitudes',
-      planteamiento_origen: 'Seguimiento en tiempo real',
-      solicitud_origen: 'Digitalización de trámites municipales Talca',
-      tiempo_estimado: '2 meses',
-      fecha_inicio: '2025-02-01',
-      estado: 'atrasado',
-      alumnos: [
-        { id: 4, rut: '21.345.678-9', nombre: 'Tomás Vargas Mora'     },
-        { id: 5, rut: '20.456.789-K', nombre: 'Valentina Castro Pino' },
-      ],
-      observaciones: [
-        { id: 1, fecha: '2025-02-10', detalle: 'Primera entrega parcial realizada.' },
-        { id: 2, fecha: '2025-03-05', detalle: 'Retraso por cambios en requerimientos del cliente.' },
-        { id: 3, fecha: '2025-03-20', detalle: 'Se retomaron las tareas pendientes del sprint 2.' },
-      ],
-    },
-  ];
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private dataService: DataService,
+    private catalog: CatalogService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
-
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.catalog.load();
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.proyecto = this.proyectosMock.find(p => p.id === id) ?? null;
+    if (!id) { this.cargando = false; return; }
+
+    const [proyRes, obsRes] = await Promise.all([
+      this.dataService.getById<any>(
+        'proyecto',
+        id,
+        'id_proyecto',
+        `id_proyecto, fecha_inicio, fecha_fin, id_estado,
+         estado_proyecto(nombre_estado),
+         planteamiento_proyecto(
+           titulo_planteamiento, tiempo_estimado_planteamiento,
+           solicitud(titulo_solicitud),
+           detalle_planteamiento_alumno(
+             alumno_voluntario(id_alumno, rut_alumno, nombres_alumno, apellidos_alumno)
+           )
+         )`,
+      ),
+      this.dataService.getAll<any>('observacion', {
+        filters: { id_proyecto: id, is_active: true },
+        orderBy: { column: 'fecha_observacion', ascending: true },
+      }),
+    ]);
+
+    if (proyRes.data) {
+      const p = proyRes.data;
+      const plan = p.planteamiento_proyecto;
+      const rawAlumnos: any[] = Array.isArray(plan?.detalle_planteamiento_alumno)
+        ? plan.detalle_planteamiento_alumno
+        : (plan?.detalle_planteamiento_alumno ? [plan.detalle_planteamiento_alumno] : []);
+
+      const alumnos: AlumnoVista[] = rawAlumnos
+        .map((d: any) => d.alumno_voluntario)
+        .filter(Boolean)
+        .map((a: any) => ({
+          id:     a.id_alumno,
+          rut:    a.rut_alumno,
+          nombre: `${a.nombres_alumno} ${a.apellidos_alumno}`,
+        }));
+
+      const observaciones: ObservacionVista[] = (obsRes.data ?? []).map((o: any) => ({
+        id:      o.id_observacion,
+        fecha:   o.fecha_observacion ?? '',
+        detalle: o.detalle_observacion,
+      }));
+
+      const nombreEstado = (p.estado_proyecto?.nombre_estado ?? '').toLowerCase().replace(/ /g, '_');
+
+      this.proyecto = {
+        id:                   p.id_proyecto,
+        titulo:               plan?.titulo_planteamiento ?? `Proyecto #${id}`,
+        planteamiento_origen: plan?.titulo_planteamiento ?? '—',
+        solicitud_origen:     plan?.solicitud?.titulo_solicitud ?? '—',
+        tiempo_estimado:      plan?.tiempo_estimado_planteamiento ?? '—',
+        fecha_inicio:         p.fecha_inicio ?? undefined,
+        fecha_termino:        p.fecha_fin ?? undefined,
+        estado:               nombreEstado,
+        alumnos,
+        observaciones,
+      };
+    }
+
+    this.cargando = false;
+    this.cdr.detectChanges();
   }
 
   volver(): void {

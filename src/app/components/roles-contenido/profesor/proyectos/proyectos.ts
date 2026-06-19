@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -42,79 +42,35 @@ export class Proyectos implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    this.estadosProyecto = this.catalog.estadosProyecto;
-    const proyectosRes = await this.dataService.getAll<any>('proyecto', { select: `*, estado_proyecto(nombre_estado), planteamiento_proyecto(titulo_planteamiento, id_carrera, id_solicitud, carrera(nombre_carrera), solicitud(titulo_solicitud))`, filters: { is_active: true } });
-    if (proyectosRes.data) this.proyectos = proyectosRes.data;
+    this.estadosProyecto = this.catalog.estadosProyecto();
+    const proyectosRes = await this.dataService.getAll<any>('proyecto', {
+      select: `*, estado_proyecto(nombre_estado), planteamiento_proyecto(titulo_planteamiento, tiempo_estimado_planteamiento, id_carrera, id_solicitud, solicitud(titulo_solicitud), carrera(nombre_carrera))`,
+      filters: { is_active: true },
+    });
+    if (proyectosRes.data) {
+      const mapped = proyectosRes.data.map((p: any): ProyectoVista => ({
+        id:                   p.id_proyecto,
+        titulo:               p.planteamiento_proyecto?.titulo_planteamiento ?? `Proyecto #${p.id_proyecto}`,
+        planteamiento_origen: p.planteamiento_proyecto?.titulo_planteamiento ?? '—',
+        solicitud_origen:     p.planteamiento_proyecto?.solicitud?.titulo_solicitud ?? '—',
+        tiempo_estimado:      p.planteamiento_proyecto?.tiempo_estimado_planteamiento ?? '—',
+        fecha_inicio:         p.fecha_inicio ?? undefined,
+        fecha_termino:        p.fecha_fin ?? undefined,
+        estado:               ((p.estado_proyecto?.nombre_estado ?? '') as string)
+                                .toLowerCase().replace(/ /g, '_') as ProyectoVista['estado'],
+      }));
+      this.proyectos.set(mapped);
+      // Auto-seleccionar primer tab con datos si el tab actual está vacío
+      if (mapped.length > 0 && !mapped.some(p => p.estado === this.filtroActivo)) {
+        this.filtroActivo = mapped[0].estado;
+      }
+    }
   }
 
 
   filtroActivo: 'aprobado' | 'en_proceso' | 'pausado' | 'cancelado' | 'finalizado' | 'atrasado' = 'aprobado';
 
-  proyectos: ProyectoVista[] = [
-    {
-      id: 1,
-      titulo: 'Sistema de gestión de voluntarios',
-      planteamiento_origen: 'Sistema de gestión de voluntarios',
-      solicitud_origen: 'App móvil para servicios comunitarios',
-      tiempo_estimado: '4 meses',
-      estado: 'aprobado',
-    },
-    {
-      id: 2,
-      titulo: 'Dashboard de transparencia ciudadana',
-      planteamiento_origen: 'Dashboard de transparencia',
-      solicitud_origen: 'Portal de transparencia ciudadana',
-      tiempo_estimado: '3 meses',
-      estado: 'aprobado',
-    },
-    {
-      id: 3,
-      titulo: 'Portal de trámites digitales Talca',
-      planteamiento_origen: 'Portal de trámites online',
-      solicitud_origen: 'Digitalización de trámites municipales Talca',
-      tiempo_estimado: '6 meses',
-      fecha_inicio: '2025-03-01',
-      estado: 'en_proceso',
-    },
-    {
-      id: 4,
-      titulo: 'Sistema de agenda comunitaria',
-      planteamiento_origen: 'Agenda digital comunitaria',
-      solicitud_origen: 'App móvil para servicios comunitarios',
-      tiempo_estimado: '4 meses',
-      fecha_inicio: '2025-01-10',
-      estado: 'pausado',
-    },
-    {
-      id: 5,
-      titulo: 'Plataforma de reportes municipales',
-      planteamiento_origen: 'Sistema de reportes automáticos',
-      solicitud_origen: 'Digitalización de trámites municipales Talca',
-      tiempo_estimado: '5 meses',
-      fecha_inicio: '2024-09-15',
-      fecha_termino: '2025-01-10',
-      estado: 'cancelado',
-    },
-    {
-      id: 6,
-      titulo: 'Módulo de pagos en línea UCM',
-      planteamiento_origen: 'Pasarela de pagos institucional',
-      solicitud_origen: 'Portal de transparencia ciudadana',
-      tiempo_estimado: '3 meses',
-      fecha_inicio: '2024-06-01',
-      fecha_termino: '2024-09-05',
-      estado: 'finalizado',
-    },
-    {
-      id: 7,
-      titulo: 'App de seguimiento de solicitudes',
-      planteamiento_origen: 'Seguimiento en tiempo real',
-      solicitud_origen: 'Digitalización de trámites municipales Talca',
-      tiempo_estimado: '2 meses',
-      fecha_inicio: '2025-02-01',
-      estado: 'atrasado',
-    },
-  ];
+  proyectos = signal<ProyectoVista[]>([]);
 
   // ── Modal Crear Proyecto ──────────────────────────────────────
   mostrarModalCrear = false;
@@ -159,22 +115,22 @@ export class Proyectos implements OnInit {
   // ── Getters ───────────────────────────────────────────────────
 
   get proyectosFiltrados(): ProyectoVista[] {
-    return this.proyectos.filter(p => p.estado === this.filtroActivo);
+    return this.proyectos().filter(p => p.estado === this.filtroActivo);
   }
 
   get contadorPorEstado(): Record<string, number> {
     return {
-      aprobado:   this.proyectos.filter(p => p.estado === 'aprobado').length,
-      en_proceso: this.proyectos.filter(p => p.estado === 'en_proceso').length,
-      pausado:    this.proyectos.filter(p => p.estado === 'pausado').length,
-      cancelado:  this.proyectos.filter(p => p.estado === 'cancelado').length,
-      finalizado: this.proyectos.filter(p => p.estado === 'finalizado').length,
-      atrasado:   this.proyectos.filter(p => p.estado === 'atrasado').length,
+      aprobado:   this.proyectos().filter(p => p.estado === 'aprobado').length,
+      en_proceso: this.proyectos().filter(p => p.estado === 'en_proceso').length,
+      pausado:    this.proyectos().filter(p => p.estado === 'pausado').length,
+      cancelado:  this.proyectos().filter(p => p.estado === 'cancelado').length,
+      finalizado: this.proyectos().filter(p => p.estado === 'finalizado').length,
+      atrasado:   this.proyectos().filter(p => p.estado === 'atrasado').length,
     };
   }
 
   get planteamientosDisponibles(): ProyectoVista[] {
-    return this.proyectos.filter(p => p.estado === 'aprobado');
+    return this.proyectos().filter(p => p.estado === 'aprobado');
   }
 
   get alumnosDisponiblesParaAgregar(): AlumnoVista[] {

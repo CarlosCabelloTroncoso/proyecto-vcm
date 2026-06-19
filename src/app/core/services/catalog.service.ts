@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { EstadoSolicitud, Ciudad } from '../../interfaces/solicitud.interface';
@@ -10,12 +10,19 @@ export class CatalogService {
   private supabase: SupabaseClient;
   private _loaded = false;
 
-  estados: EstadoSolicitud[] = [];
-  estadosPlanteamiento: EstadoPlanteamiento[] = [];
-  estadosProyecto: EstadoProyecto[] = [];
-  carreras: Carrera[] = [];
-  ciudades: Ciudad[] = [];
-  facultades: Facultad[] = [];
+  private _estados = signal<EstadoSolicitud[]>([]);
+  private _estadosPlanteamiento = signal<EstadoPlanteamiento[]>([]);
+  private _estadosProyecto = signal<EstadoProyecto[]>([]);
+  private _carreras = signal<Carrera[]>([]);
+  private _ciudades = signal<Ciudad[]>([]);
+  private _facultades = signal<Facultad[]>([]);
+
+  estados = this._estados.asReadonly();
+  estadosPlanteamiento = this._estadosPlanteamiento.asReadonly();
+  estadosProyecto = this._estadosProyecto.asReadonly();
+  carreras = this._carreras.asReadonly();
+  ciudades = this._ciudades.asReadonly();
+  facultades = this._facultades.asReadonly();
 
   constructor(private supabaseService: SupabaseService) {
     this.supabase = this.supabaseService.client;
@@ -33,54 +40,54 @@ export class CatalogService {
       this.supabase.from('facultad').select('*').eq('is_active', true),
     ]);
 
-    this.estados = (est.data || []) as EstadoSolicitud[];
-    this.estadosPlanteamiento = (estP.data || []) as EstadoPlanteamiento[];
-    this.estadosProyecto = (estPr.data || []) as EstadoProyecto[];
-    this.carreras = (car.data || []) as Carrera[];
-    this.ciudades = (ciu.data || []) as Ciudad[];
-    this.facultades = (fac.data || []) as Facultad[];
+    this._estados.set((est.data || []) as EstadoSolicitud[]);
+    this._estadosPlanteamiento.set((estP.data || []) as EstadoPlanteamiento[]);
+    this._estadosProyecto.set((estPr.data || []) as EstadoProyecto[]);
+    this._carreras.set((car.data || []) as Carrera[]);
+    this._ciudades.set((ciu.data || []) as Ciudad[]);
+    this._facultades.set((fac.data || []) as Facultad[]);
 
     this._loaded = true;
   }
 
   // Helpers usados por muchos componentes
   getNombreEstado(id: number): string {
-    return this.estados.find(e => e.id_estado === id)?.nombre_estado || '—';
+    return this._estados().find(e => e.id_estado === id)?.nombre_estado || '—';
   }
 
   getNombreEstadoPlanteamiento(id: number): string {
-    return this.estadosPlanteamiento.find(e => e.id_estado === id)?.nombre_estado || '—';
+    return this._estadosPlanteamiento().find(e => e.id_estado === id)?.nombre_estado || '—';
   }
 
   getNombreEstadoProyecto(id: number): string {
-    return this.estadosProyecto.find(e => e.id_estado === id)?.nombre_estado || '—';
+    return this._estadosProyecto().find(e => e.id_estado === id)?.nombre_estado || '—';
   }
 
   getNombreCarrera(id: number): string {
-    return this.carreras.find(c => c.id_carrera === id)?.nombre_carrera || '—';
+    return this._carreras().find(c => c.id_carrera === id)?.nombre_carrera || '—';
   }
 
   getEtiquetaCarrera(id: number): string {
-    return this.carreras.find(c => c.id_carrera === id)?.etiqueta_carrera || '—';
+    return this._carreras().find(c => c.id_carrera === id)?.etiqueta_carrera || '—';
   }
 
   getNombreCiudad(id: number): string {
-    return this.ciudades.find(c => c.id_ciudad === id)?.nombre_ciudad || '—';
+    return this._ciudades().find(c => c.id_ciudad === id)?.nombre_ciudad || '—';
   }
 
   getNombreFacultad(id: number): string {
-    return this.facultades.find(f => f.id_facultad === id)?.nombre_facultad || '—';
+    return this._facultades().find(f => f.id_facultad === id)?.nombre_facultad || '—';
   }
 
   getIdEstado(nombre: string): number {
-    return this.estados.find(e => e.nombre_estado === nombre)?.id_estado || 0;
+    return this._estados().find(e => e.nombre_estado === nombre)?.id_estado || 0;
   }
 
   getIdEstadoPlanteamiento(nombre: string): number {
-    return this.estadosPlanteamiento.find(e => e.nombre_estado === nombre)?.id_estado || 0;
+    return this._estadosPlanteamiento().find(e => e.nombre_estado === nombre)?.id_estado || 0;
   }
 
   getIdEstadoProyecto(nombre: string): number {
-    return this.estadosProyecto.find(e => e.nombre_estado === nombre)?.id_estado || 0;
+    return this._estadosProyecto().find(e => e.nombre_estado === nombre)?.id_estado || 0;
   }
 }

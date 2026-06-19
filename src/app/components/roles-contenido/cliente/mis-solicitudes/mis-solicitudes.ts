@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -29,7 +29,7 @@ export class MisSolicitudes implements OnInit {
   ciudades: Ciudad[] = [];
 
   /* ─── Datos mock del cliente (id_usuario: 1) ───────────────── */
-  solicitudes: Solicitud[] = [];
+  solicitudes = signal<Solicitud[]>([]);
 
     /* Los archivos se cargan por solicitud desde Supabase */
   archivos: any[] = [];
@@ -60,34 +60,30 @@ export class MisSolicitudes implements OnInit {
 
   constructor(
     private dataService: DataService,
-    private catalog: CatalogService,private router: Router) {}
+    private catalog: CatalogService,
+    private auth: AuthService,
+    private router: Router) {}
 
-  ngOnInit(): void {
-    const state = history.state;
+  async ngOnInit(): Promise<void> {
+    await this.catalog.load();
+    this.estados = this.catalog.estados();
+    this.carreras = this.catalog.carreras();
+    this.ciudades = this.catalog.ciudades();
 
-    // Viene de crear-solicitud → agrega y abre detalle
-    if (state?.nuevaSolicitud) {
-      this.solicitudes = [state.nuevaSolicitud, ...this.solicitudes];
-      // Añadir archivos de la nueva solicitud
-      if (state?.archivos?.length) {
-        this.archivos = [...this.archivos, ...state.archivos];
-      }
-      this.abrirDetalle(state.nuevaSolicitud);
+    const idUsuario = this.auth.usuario()?.id_usuario;
+    if (idUsuario) {
+      const res = await this.dataService.getAll<Solicitud>('solicitud', {
+        select: `*, estado_solicitud(nombre_estado), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`,
+        filters: { id_usuario: idUsuario, is_active: true },
+      });
+      if (res.data) this.solicitudes.set(res.data);
     }
 
-    // Viene de editar-solicitud → actualiza la fila y reemplaza sus archivos
-    if (state?.solicitudEditada) {
-      const idx = this.solicitudes.findIndex(
-        s => s.id_solicitud === state.solicitudEditada.id_solicitud
-      );
-      if (idx !== -1) this.solicitudes[idx] = state.solicitudEditada;
-
-      // Reemplazar archivos: eliminar los viejos y agregar los nuevos
-      const idSolicitud = state.solicitudEditada.id_solicitud;
-      this.archivos = [
-        ...this.archivos.filter(a => a.id_solicitud !== idSolicitud),
-        ...(state?.archivos ?? []),
-      ];
+    // Viene de crear/editar solicitud → abre el detalle de la solicitud recién guardada
+    const state = history.state;
+    if (state?.abrirDetalleId) {
+      const solicitud = this.solicitudes().find(s => s.id_solicitud === state.abrirDetalleId);
+      if (solicitud) this.abrirDetalle(solicitud);
     }
   }
 
@@ -116,11 +112,11 @@ export class MisSolicitudes implements OnInit {
 
   getBadgeEstado(id: number): string {
     const mapa: Record<number, string> = {
-      1: 'bg-amber-100   text-amber-700   border-amber-200',
-      2: 'bg-sky-100     text-sky-700     border-sky-200',
-      3: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-      4: 'bg-red-100     text-red-700     border-red-200',
-      5: 'bg-gray-100    text-gray-600    border-gray-200',
+      1: 'bg-amber-100 text-amber-700 border-amber-200',
+      2: 'bg-green-100 text-green-700 border-green-200',
+      3: 'bg-red-100   text-red-700   border-red-200',
+      4: 'bg-sky-100   text-sky-700   border-sky-200',
+      5: 'bg-gray-100  text-gray-600  border-gray-200',
     };
     return mapa[id] ?? 'bg-gray-100 text-gray-600 border-gray-200';
   }
@@ -148,7 +144,7 @@ export class MisSolicitudes implements OnInit {
   }
 
   get aniosDisponibles(): string[] {
-    return [...new Set(this.solicitudes.map(s => s.fecha_creacion_solicitud.slice(0, 4)))]
+    return [...new Set(this.solicitudes().map(s => s.fecha_creacion_solicitud.slice(0, 4)))]
       .sort().reverse();
   }
 
@@ -159,7 +155,7 @@ export class MisSolicitudes implements OnInit {
 
   /* ─── Lista filtrada ────────────────────────────────────────── */
   get solicitudesFiltradas(): Solicitud[] {
-    let lista = [...this.solicitudes];
+    let lista = [...this.solicitudes()];
 
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
@@ -215,7 +211,8 @@ export class MisSolicitudes implements OnInit {
   async onEliminarSolicitud(): Promise<void> {
     if (this.solicitudAEliminar) {
       const idSolicitud = this.solicitudAEliminar.id_solicitud;
-      this.solicitudes = this.solicitudes.filter(s => s.id_solicitud !== idSolicitud);
+      await this.dataService.softDelete('solicitud', idSolicitud, 'id_solicitud');
+      this.solicitudes.update(lista => lista.filter(s => s.id_solicitud !== idSolicitud));
       this.archivos    = this.archivos.filter(a => a.id_solicitud !== idSolicitud);
       this.solicitudAEliminar   = null;
       this.mostrarModalEliminar = false;

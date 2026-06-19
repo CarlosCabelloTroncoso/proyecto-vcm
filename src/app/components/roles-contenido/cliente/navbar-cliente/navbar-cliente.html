@@ -36,24 +36,22 @@
           <button (click)="profileMenuOpen = !profileMenuOpen"
                   class="flex items-center gap-3 rounded-xl px-3 py-1.5
                          transition hover:bg-white/10 cursor-pointer">
-            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop"
-                 alt="Perfil" class="h-9 w-9 rounded-full border-2 border-white/30 object-cover" />
-            <span class="hidden text-sm font-medium lg:inline">Mi Cuenta</span>
+            <div class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white/30 bg-white/20 text-sm font-bold">
+              {{ iniciales() }}
+            </div>
           </button>
 
           @if (profileMenuOpen) {
             <div class="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl
                         border border-gray-200 bg-white shadow-xl">
               <div class="border-b border-gray-100 px-4 py-3">
-                <p class="text-sm font-semibold text-[#1B3A6B]">Usuario Demo</p>
-                <p class="text-xs text-[#1B3A6B]/50">demo@ucm.cl</p>
+                <p class="text-sm font-semibold text-[#1B3A6B]">{{ nombreCompleto() }}</p>
               </div>
-              <a routerLink="/cliente/perfil" class="block px-4 py-3 text-sm text-[#1B3A6B]
-                                transition hover:bg-[#1B3A6B]/5">Mi Perfil</a>
-              <a href="#" class="block px-4 py-3 text-sm text-[#1B3A6B]
-                                transition hover:bg-[#1B3A6B]/5">Configuración</a>
+              <a routerLink="/cliente/perfil" (click)="profileMenuOpen = false"
+                 class="block px-4 py-3 text-sm text-[#1B3A6B]
+                        transition hover:bg-[#1B3A6B]/5">Mi Perfil</a>
               <div class="border-t border-gray-100"></div>
-              <a routerLink="/login" class="block px-4 py-3 text-sm text-red-500
+              <a (click)="cerrarSesion()" class="block cursor-pointer px-4 py-3 text-sm text-red-500
                                            transition hover:bg-red-50">
                 Cerrar sesión
               </a>
@@ -92,8 +90,8 @@
          routerLinkActive="bg-white/20"
          class="block rounded-xl px-4 py-3 text-sm hover:bg-white/10">Crear Solicitud</a>
       <div class="mt-3 border-t border-white/10 pt-3">
-        <a routerLink="/login" (click)="mobileMenuOpen = false"
-           class="block rounded-xl px-4 py-3 text-sm text-red-300">Cerrar sesión</a>
+        <a (click)="mobileMenuOpen = false; cerrarSesion()"
+           class="block cursor-pointer rounded-xl px-4 py-3 text-sm text-red-300">Cerrar sesión</a>
       </div>
     </div>
   }

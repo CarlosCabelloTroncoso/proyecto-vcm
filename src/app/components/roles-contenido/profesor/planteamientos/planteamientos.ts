@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,11 +26,11 @@ export class Planteamientos implements OnInit {
 
   // Datos del profesor vienen del AuthService
 
-  estadosPlanteamiento: EstadoPlanteamiento[] = [];
+  estadosPlanteamiento = signal<EstadoPlanteamiento[]>([]);
 
-  solicitudesAprobadas: Solicitud[] = [];
+  solicitudesAprobadas = signal<Solicitud[]>([]);
 
-  planteamientos: PlanteamientoProyecto[] = [];
+  planteamientos = signal<PlanteamientoProyecto[]>([]);
 
   filtroActivo: 'pendiente' | 'aprobado' | 'rechazado' = 'pendiente';
 
@@ -65,9 +65,34 @@ export class Planteamientos implements OnInit {
 
   constructor(
     private dataService: DataService,
-    private catalog: CatalogService,private route: ActivatedRoute, private router: Router) {}
+    private catalog: CatalogService,
+    private auth: AuthService,
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.catalog.load();
+    this.estadosPlanteamiento.set(this.catalog.estadosPlanteamiento());
+
+    const u = this.auth.usuario();
+    if (u) {
+      const [planRes, solRes] = await Promise.all([
+        this.dataService.getAll<any>('planteamiento_proyecto', {
+          select: '*, estado_planteamiento(nombre_estado), carrera(nombre_carrera), solicitud(titulo_solicitud)',
+          filters: { id_usuario: u.id_usuario, is_active: true },
+        }),
+        this.dataService.getAll<any>('solicitud', {
+          select: 'id_solicitud, titulo_solicitud',
+          filters: { is_active: true },
+        }),
+      ]);
+      if (planRes.data) this.planteamientos.set(planRes.data as PlanteamientoProyecto[]);
+      if (solRes.data) this.solicitudesAprobadas.set(solRes.data as Solicitud[]);
+      this.cdr.detectChanges();
+    }
+
     this.route.queryParams.subscribe(params => {
       const solicitudId = params['solicitudId'];
       if (solicitudId) {
@@ -78,23 +103,23 @@ export class Planteamientos implements OnInit {
 
   get planteamientosFiltrados(): PlanteamientoProyecto[] {
     const idEstado = this.filtroActivo === 'pendiente' ? 1 : this.filtroActivo === 'aprobado' ? 2 : 3;
-    return this.planteamientos.filter(p => p.id_estado === idEstado);
+    return this.planteamientos().filter(p => p.id_estado === idEstado);
   }
 
   get contadorPorEstado(): Record<string, number> {
     return {
-      pendiente: this.planteamientos.filter(p => p.id_estado === 1).length,
-      aprobado:  this.planteamientos.filter(p => p.id_estado === 2).length,
-      rechazado: this.planteamientos.filter(p => p.id_estado === 3).length,
+      pendiente: this.planteamientos().filter(p => p.id_estado === 1).length,
+      aprobado:  this.planteamientos().filter(p => p.id_estado === 2).length,
+      rechazado: this.planteamientos().filter(p => p.id_estado === 3).length,
     };
   }
 
   getNombreEstado(id: number): string {
-    return this.estadosPlanteamiento.find(e => e.id_estado === id)?.nombre_estado ?? '—';
+    return this.estadosPlanteamiento().find(e => e.id_estado === id)?.nombre_estado ?? '—';
   }
 
   getTituloSolicitud(id: number): string {
-    return this.solicitudesAprobadas.find(s => s.id_solicitud === id)?.titulo_solicitud ?? '—';
+    return this.solicitudesAprobadas().find(s => s.id_solicitud === id)?.titulo_solicitud ?? '—';
   }
 
   getBadgeEstado(id: number): string {
@@ -243,17 +268,15 @@ export class Planteamientos implements OnInit {
     if (!this.formValido()) return;
 
     if (this.modoEdicion && this.planteamientoEditando) {
-      const idx = this.planteamientos.findIndex(
-        p => p.id_planteamiento === this.planteamientoEditando!.id_planteamiento
+      const actualizado = {
+        ...this.planteamientoEditando,
+        ...this.formData,
+      } as PlanteamientoProyecto;
+      this.planteamientos.update(lista =>
+        lista.map(p => p.id_planteamiento === actualizado.id_planteamiento ? actualizado : p)
       );
-      if (idx > -1) {
-        this.planteamientos[idx] = {
-          ...this.planteamientoEditando,
-          ...this.formData,
-        } as PlanteamientoProyecto;
-      }
     } else {
-      this.planteamientos.push({
+      const nuevo: PlanteamientoProyecto = {
         id_planteamiento:              this.nextId++,
         titulo_planteamiento:          this.formData.titulo_planteamiento!,
         descripcion_planteamiento:     this.formData.descripcion_planteamiento!,
@@ -262,7 +285,8 @@ export class Planteamientos implements OnInit {
         id_carrera:   0 /* loaded from auth */,
         id_usuario:   0 /* loaded from auth */,
         id_estado:    1,
-      });
+      };
+      this.planteamientos.update(lista => [...lista, nuevo]);
       this.filtroActivo = 'pendiente';
     }
     this.cerrarModalForm();
@@ -280,8 +304,8 @@ export class Planteamientos implements OnInit {
 
   confirmarEliminar(): void {
     if (!this.planteamientoEliminar) return;
-    this.planteamientos = this.planteamientos.filter(
-      p => p.id_planteamiento !== this.planteamientoEliminar!.id_planteamiento
+    this.planteamientos.update(lista =>
+      lista.filter(p => p.id_planteamiento !== this.planteamientoEliminar!.id_planteamiento)
     );
     this.cerrarEliminar();
   }

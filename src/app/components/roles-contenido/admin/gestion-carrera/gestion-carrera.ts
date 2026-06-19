@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Carrera, Facultad } from '../../../../interfaces/academico.interface';
@@ -20,9 +20,9 @@ export class GestionCarrera implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    this.facultades = this.catalog.facultades;
+    this.facultades = this.catalog.facultades();
     const carrerasRes = await this.dataService.getAll<any>('carrera', { select: `*, facultad(nombre_facultad, etiqueta_facultad)`, filters: { is_active: true } });
-    if (carrerasRes.data) this.carreras = carrerasRes.data;
+    if (carrerasRes.data) this.carreras.set(carrerasRes.data);
   }
 
 
@@ -30,7 +30,7 @@ export class GestionCarrera implements OnInit {
   facultades: Facultad[] = [];
 
   /* ─── Datos mock ───────────────────────────────────────────── */
-  carreras: Carrera[] = [];
+  carreras = signal<Carrera[]>([]);
 
   /* ─── Búsqueda y filtros ───────────────────────────────────── */
   searchTerm     = '';
@@ -78,12 +78,12 @@ export class GestionCarrera implements OnInit {
 
   /* ─── Etiquetas únicas para el selector de filtro ─────────── */
   get etiquetasUnicas(): string[] {
-    return [...new Set(this.carreras.map(c => c.etiqueta_carrera))].sort();
+    return [...new Set(this.carreras().map(c => c.etiqueta_carrera))].sort();
   }
 
   /* ─── Lista filtrada ───────────────────────────────────────── */
   get carrerasFiltradas(): Carrera[] {
-    let lista = [...this.carreras];
+    let lista = [...this.carreras()];
 
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();

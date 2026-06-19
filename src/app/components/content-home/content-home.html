@@ -1,52 +1,325 @@
-<div class="relative bg-cover bg-center bg-no-repeat"
-     style="background-image: url('assets/ucmportada.png')">
+<!-- ═══════════════════════════════════════════
+     HERO – dos columnas, pantalla completa
+═══════════════════════════════════════════ -->
+<section class="relative min-h-screen flex flex-col overflow-hidden">
 
-  <!-- Overlay institucional para legibilidad -->
-  <div class="absolute inset-0 bg-[#1B3A6B]/70"></div>
+  <div class="absolute inset-0 bg-cover bg-center bg-no-repeat"
+       style="background-image: url('assets/ucmportada.png')"></div>
 
-  <!-- HERO -->
-  <div class="relative isolate px-6 pt-14 lg:px-8">
+  <div class="absolute inset-0 bg-gradient-to-b from-[#1B3A6B]/80 via-[#1B3A6B]/55 to-[#0d1f3c]/95"></div>
 
-    <div class="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+  <!-- Contenido: izquierda + derecha -->
+  <div class="relative z-10 flex flex-1 items-center px-6 py-20 lg:px-16">
+    <div class="mx-auto w-full max-w-7xl grid grid-cols-1 gap-14 lg:grid-cols-2 lg:gap-20 items-stretch">
 
-      <!-- Badge -->
-      <div class="hidden sm:mb-8 sm:flex sm:justify-center">
-        <div class="relative rounded-full px-3 py-1 text-sm text-white
-                    ring-1 ring-white/30 hover:ring-white/50 transition backdrop-blur-sm
-                    bg-white/10">
-          Plataforma oficial de Vinculación con el Medio UCM.
-          <a routerLink="/registro" class="font-semibold text-white ml-1">
-            <span aria-hidden="true" class="absolute inset-0"></span>Regístrate →
+      <!-- ── COLUMNA IZQUIERDA: presentación ── -->
+      <div class="flex flex-col items-start">
+
+        <!-- Badge -->
+        <div class="mb-8 inline-flex items-center gap-2 rounded-full border border-white/30
+                    bg-white/10 px-4 py-1.5 text-sm text-white backdrop-blur-sm">
+          <span class="h-2 w-2 animate-pulse rounded-full bg-green-400"></span>
+          Plataforma oficial · UCM Vinculación con el Medio
+        </div>
+
+        <!-- Titular -->
+        <h1 class="text-5xl font-extrabold leading-tight tracking-tight text-white
+                   drop-shadow-2xl sm:text-6xl">
+          Tu proyecto,<br>
+          <span class="text-blue-300">el futuro de la región</span>
+        </h1>
+
+        <!-- Subtítulo -->
+        <p class="mt-6 max-w-xl text-lg leading-relaxed text-white/85">
+          Conecta tus ideas con las facultades de la Universidad Católica del Maule
+          y genera un impacto real en la comunidad del Maule.
+        </p>
+
+        <!-- CTA único -->
+        <div class="mt-10">
+          <a href="#facultades"
+             class="rounded-xl border border-white/40 px-8 py-3.5 text-base font-semibold
+                    text-white transition-all duration-200 hover:bg-white/10">
+            Ver facultades ↓
           </a>
         </div>
+
+        <!-- Stats -->
+        <div class="mt-14 flex items-center gap-0 divide-x divide-white/20">
+          <div class="pr-8">
+            <p class="text-3xl font-extrabold text-white">8</p>
+            <p class="mt-1 text-xs font-semibold uppercase tracking-widest text-white/55">Facultades</p>
+          </div>
+          <div class="px-8">
+            <p class="text-3xl font-extrabold text-white">55</p>
+            <p class="mt-1 text-xs font-semibold uppercase tracking-widest text-white/55">Carreras</p>
+          </div>
+          <div class="pl-8">
+            <p class="text-3xl font-extrabold text-white">100%</p>
+            <p class="mt-1 text-xs font-semibold uppercase tracking-widest text-white/55">Digital</p>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Texto central -->
-      <div class="text-center">
-        <h1 class="text-5xl font-semibold tracking-tight text-balance text-white
-                   drop-shadow-lg sm:text-7xl">
-          Conecta tus ideas con nuestra universidad
-        </h1>
-        <p class="mt-8 text-lg font-medium text-pretty text-white/90 drop-shadow
-                  sm:text-xl/8">
-          Presenta tu proyecto, conecta con las carreras de la UCM y contribuye
-          al desarrollo de la Región del Maule.
-        </p>
-        <div class="mt-10 flex items-center justify-center gap-x-6">
+      <!-- ── COLUMNA DERECHA: cómo funciona ── -->
+      <div class="flex flex-col justify-between rounded-2xl border border-white/15 bg-white/10 p-6 backdrop-blur-sm h-full">
+
+        <h2 class="mb-5 text-xl font-bold text-white">¿Cómo funciona?</h2>
+
+        <div class="flex flex-1 flex-col justify-between gap-0">
+
+          <!-- Paso 1 -->
+          <div class="flex items-start gap-4 py-3">
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/20">
+              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+              </svg>
+            </div>
+            <div>
+              <span class="text-xs font-bold uppercase tracking-widest text-white/50">Paso 1</span>
+              <h3 class="text-base font-bold text-white">Regístrate</h3>
+              <p class="mt-1 text-sm leading-relaxed text-white/70">
+                Crea tu cuenta de forma rápida y accede a todos los servicios de vinculación.
+              </p>
+            </div>
+          </div>
+
+          <!-- Paso 2 -->
+          <div class="flex items-start gap-4 py-3">
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/20">
+              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div>
+              <span class="text-xs font-bold uppercase tracking-widest text-white/50">Paso 2</span>
+              <h3 class="text-base font-bold text-white">Presenta tu solicitud</h3>
+              <p class="mt-1 text-sm leading-relaxed text-white/70">
+                Describe tu proyecto y selecciona la facultad que mejor se alinea con tus objetivos.
+              </p>
+            </div>
+          </div>
+
+          <!-- Paso 3 -->
+          <div class="flex items-start gap-4 py-3">
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/20">
+              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <div>
+              <span class="text-xs font-bold uppercase tracking-widest text-white/50">Paso 3</span>
+              <h3 class="text-base font-bold text-white">Conecta con la UCM</h3>
+              <p class="mt-1 text-sm leading-relaxed text-white/70">
+                Nuestros equipos revisarán tu propuesta y te contactarán para dar los siguientes pasos.
+              </p>
+            </div>
+          </div>
+
+          <!-- CTA de la card -->
           <a routerLink="/registro"
-             class="rounded-md bg-white px-4 py-2.5 text-sm font-semibold
-                    text-[#1B3A6B] shadow-lg hover:bg-blue-50 transition">
-            Solicitar proyecto
+             class="mt-1 block w-full rounded-xl bg-white px-5 py-3 text-center text-base font-bold
+                    text-[#1B3A6B] shadow-xl transition-all duration-200 hover:scale-[1.02] hover:bg-blue-50">
+            Registrarse y comenzar →
           </a>
-          <a href="#"
-             class="text-sm font-semibold text-white hover:text-white/70 transition drop-shadow">
-            Conocer más →
-          </a>
+
         </div>
       </div>
 
     </div>
-
   </div>
 
-</div>
+  <!-- Indicador de scroll -->
+  <div class="relative z-10 flex justify-center pb-8">
+    <div class="animate-bounce">
+      <svg class="h-6 w-6 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     FACULTADES – galería con imágenes reales
+═══════════════════════════════════════════ -->
+<section id="facultades" class="bg-gray-50 py-24 px-6">
+  <div class="mx-auto max-w-6xl">
+
+    <div class="mb-14 text-center">
+      <h2 class="text-3xl font-bold text-[#1B3A6B] sm:text-4xl">Nuestras Facultades</h2>
+      <p class="mt-3 text-lg text-gray-500">
+        8 facultades listas para recibir y colaborar con tu proyecto
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+      <!-- ══ FILA 1 ══ -->
+
+      <!-- Agrarias: imagen izquierda -->
+      <div class="group flex overflow-hidden rounded-2xl bg-white shadow-md
+                  transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <div class="relative w-1/2 shrink-0 overflow-hidden">
+          <img src="assets/facultad-agricola.jpg" alt="Ciencias Agrarias y Forestales"
+               class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+        <div class="flex flex-1 flex-col justify-center p-7">
+          <p class="text-lg font-bold leading-snug text-[#1B3A6B]">Ciencias Agrarias y Forestales</p>
+          <p class="mt-3 text-base leading-relaxed text-gray-500">
+            Impulsa proyectos de agricultura sustentable, manejo forestal y desarrollo rural con el respaldo de expertos de la región.
+          </p>
+        </div>
+      </div>
+
+      <!-- Ingeniería: imagen derecha -->
+      <div class="group flex overflow-hidden rounded-2xl bg-white shadow-md
+                  transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <div class="flex flex-1 flex-col justify-center p-7">
+          <p class="text-lg font-bold leading-snug text-[#1B3A6B]">Ciencias de la Ingeniería</p>
+          <p class="mt-3 text-base leading-relaxed text-gray-500">
+            Desarrolla soluciones tecnológicas, automatización de procesos e infraestructura con apoyo técnico especializado.
+          </p>
+        </div>
+        <div class="relative w-1/2 shrink-0 overflow-hidden">
+          <img src="assets/facultad-ciencia-ingjpg.jpg" alt="Ciencias de la Ingeniería"
+               class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+      </div>
+
+      <!-- ══ FILA 2 ══ -->
+
+      <!-- Salud: imagen izquierda -->
+      <div class="group flex overflow-hidden rounded-2xl bg-white shadow-md
+                  transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <div class="relative w-1/2 shrink-0 overflow-hidden">
+          <img src="assets/facultad-ciencia-salud.jpg" alt="Ciencias de la Salud"
+               class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+        <div class="flex flex-1 flex-col justify-center p-7">
+          <p class="text-lg font-bold leading-snug text-[#1B3A6B]">Ciencias de la Salud</p>
+          <p class="mt-3 text-base leading-relaxed text-gray-500">
+            Accede a programas de salud comunitaria, nutrición y kinesiología para mejorar el bienestar de tu organización.
+          </p>
+        </div>
+      </div>
+
+      <!-- Básicas: imagen derecha -->
+      <div class="group flex overflow-hidden rounded-2xl bg-white shadow-md
+                  transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <div class="flex flex-1 flex-col justify-center p-7">
+          <p class="text-lg font-bold leading-snug text-[#1B3A6B]">Ciencias Básicas</p>
+          <p class="mt-3 text-base leading-relaxed text-gray-500">
+            Apóyate en análisis de laboratorio, estadística aplicada e investigación científica para validar tus proyectos.
+          </p>
+        </div>
+        <div class="relative w-1/2 shrink-0 overflow-hidden">
+          <img src="assets/facultad-ciencias-basicas.jpg" alt="Ciencias Básicas"
+               class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+      </div>
+
+      <!-- ══ FILA 3 ══ -->
+
+      <!-- Sociales: imagen izquierda -->
+      <div class="group flex overflow-hidden rounded-2xl bg-white shadow-md
+                  transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <div class="relative w-1/2 shrink-0 overflow-hidden">
+          <img src="assets/facultad-ciencias-sociales_2.jpg" alt="Ciencias Sociales y Económicas"
+               class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+        <div class="flex flex-1 flex-col justify-center p-7">
+          <p class="text-lg font-bold leading-snug text-[#1B3A6B]">Ciencias Sociales y Económicas</p>
+          <p class="mt-3 text-base leading-relaxed text-gray-500">
+            Recibe asesoría en gestión organizacional, diagnósticos sociales y estrategias de desarrollo económico local.
+          </p>
+        </div>
+      </div>
+
+      <!-- Educación: imagen derecha -->
+      <div class="group flex overflow-hidden rounded-2xl bg-white shadow-md
+                  transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <div class="flex flex-1 flex-col justify-center p-7">
+          <p class="text-lg font-bold leading-snug text-[#1B3A6B]">Educación</p>
+          <p class="mt-3 text-base leading-relaxed text-gray-500">
+            Diseña talleres formativos, programas educativos y materiales pedagógicos adaptados a las necesidades de tu comunidad.
+          </p>
+        </div>
+        <div class="relative w-1/2 shrink-0 overflow-hidden">
+          <img src="assets/facultad-educacion.jpg" alt="Educación"
+               class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+      </div>
+
+      <!-- ══ FILA 4 ══ -->
+
+      <!-- Medicina: imagen izquierda -->
+      <div class="group flex overflow-hidden rounded-2xl bg-white shadow-md
+                  transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <div class="relative w-1/2 shrink-0 overflow-hidden">
+          <img src="assets/facultad-medicina.jpg" alt="Medicina"
+               class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+        <div class="flex flex-1 flex-col justify-center p-7">
+          <p class="text-lg font-bold leading-snug text-[#1B3A6B]">Medicina</p>
+          <p class="mt-3 text-base leading-relaxed text-gray-500">
+            Conecta con profesionales de la salud para campañas médicas, atención preventiva e investigación clínica comunitaria.
+          </p>
+        </div>
+      </div>
+
+      <!-- Religiosas: imagen derecha -->
+      <div class="group flex overflow-hidden rounded-2xl bg-white shadow-md
+                  transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <div class="flex flex-1 flex-col justify-center p-7">
+          <p class="text-lg font-bold leading-snug text-[#1B3A6B]">Ciencias Religiosas y Filosóficas</p>
+          <p class="mt-3 text-base leading-relaxed text-gray-500">
+            Fortalece los valores éticos, el diálogo intercultural y el bienestar espiritual de tu organización o comunidad.
+          </p>
+        </div>
+        <div class="relative w-1/2 shrink-0 overflow-hidden">
+          <img src="assets/facultad-religiosas.jpg" alt="Ciencias Religiosas y Filosóficas"
+               class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     CTA FINAL – llamada a la acción
+═══════════════════════════════════════════ -->
+<section class="bg-[#1B3A6B] py-24 px-6">
+  <div class="mx-auto max-w-3xl text-center">
+
+    <h2 class="text-3xl font-bold text-white sm:text-4xl">
+      ¿Listo para hacer la diferencia?
+    </h2>
+    <p class="mt-4 text-lg leading-relaxed text-white/75">
+      Sé parte del cambio en la Región del Maule. Presenta tu solicitud hoy
+      y conecta tu proyecto con la Universidad Católica del Maule.
+    </p>
+
+    <a routerLink="/registro"
+       class="mt-10 inline-block rounded-xl bg-white px-10 py-4 text-lg font-bold
+              text-[#1B3A6B] shadow-2xl transition-all duration-200 hover:scale-105 hover:bg-blue-50">
+      Iniciar mi solicitud ahora
+    </a>
+
+    <p class="mt-6 text-sm text-white/50">
+      ¿Ya tienes una cuenta?
+      <a routerLink="/login"
+         class="ml-1 text-white/75 underline underline-offset-2 transition hover:text-white">
+        Inicia sesión aquí
+      </a>
+    </p>
+
+  </div>
+</section>

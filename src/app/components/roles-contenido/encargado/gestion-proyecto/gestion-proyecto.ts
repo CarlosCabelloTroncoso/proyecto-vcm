@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -36,15 +36,36 @@ export class GestionProyecto implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    this.estadosProyecto = this.catalog.estadosProyecto;
-    const proyectosRes = await this.dataService.getAll<any>('proyecto', { select: `*, estado_proyecto(nombre_estado), planteamiento_proyecto(titulo_planteamiento, id_carrera, id_solicitud, carrera(nombre_carrera))`, filters: { is_active: true } });
-    if (proyectosRes.data) this.proyectos = proyectosRes.data;
+    this.estadosProyecto = this.catalog.estadosProyecto();
+    const proyectosRes = await this.dataService.getAll<any>('proyecto', {
+      select: `*, estado_proyecto(nombre_estado), planteamiento_proyecto(titulo_planteamiento, tiempo_estimado_planteamiento, id_carrera, id_solicitud, solicitud(titulo_solicitud), carrera(nombre_carrera))`,
+      filters: { is_active: true },
+    });
+    if (proyectosRes.data) {
+      const mapped = proyectosRes.data.map((p: any): ProyectoVista => ({
+        id:                   p.id_proyecto,
+        titulo:               p.planteamiento_proyecto?.titulo_planteamiento ?? `Proyecto #${p.id_proyecto}`,
+        planteamiento_origen: p.planteamiento_proyecto?.titulo_planteamiento ?? '—',
+        solicitud_origen:     p.planteamiento_proyecto?.solicitud?.titulo_solicitud ?? '—',
+        tiempo_estimado:      p.planteamiento_proyecto?.tiempo_estimado_planteamiento ?? '—',
+        fecha_inicio:         p.fecha_inicio ?? undefined,
+        fecha_termino:        p.fecha_fin ?? undefined,
+        estado:               ((p.estado_proyecto?.nombre_estado ?? '') as string)
+                                .toLowerCase().replace(/ /g, '_') as EstadoProyectoKey,
+        planteamiento:        p.planteamiento_proyecto,
+      }));
+      this.proyectos.set(mapped);
+      // Auto-seleccionar primer tab con datos si el tab actual está vacío
+      if (mapped.length > 0 && !mapped.some(p => p.estado === this.filtroActivo)) {
+        this.filtroActivo = mapped[0].estado;
+      }
+    }
   }
 
 
   filtroActivo: EstadoProyectoKey = 'disponible';
 
-  proyectos: ProyectoVista[] = [];
+  proyectos = signal<ProyectoVista[]>([]);
 
   // ── Modal detalle planteamiento ────────────────────────────────────
   mostrarModalDetalle = false;
@@ -69,13 +90,13 @@ export class GestionProyecto implements OnInit {
   // ── Getters ───────────────────────────────────────────────────────
 
   get proyectosFiltrados(): ProyectoVista[] {
-    return this.proyectos.filter(p => p.estado === this.filtroActivo);
+    return this.proyectos().filter(p => p.estado === this.filtroActivo);
   }
 
   get contadorPorEstado(): Record<EstadoProyectoKey, number> {
     const claves: EstadoProyectoKey[] = ['disponible', 'en_proceso', 'pausado', 'atrasado', 'finalizado', 'cancelado'];
     return claves.reduce((acc, e) => {
-      acc[e] = this.proyectos.filter(p => p.estado === e).length;
+      acc[e] = this.proyectos().filter(p => p.estado === e).length;
       return acc;
     }, {} as Record<EstadoProyectoKey, number>);
   }

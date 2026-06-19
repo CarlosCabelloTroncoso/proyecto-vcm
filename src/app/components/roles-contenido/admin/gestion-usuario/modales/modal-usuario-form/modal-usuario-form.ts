@@ -2,6 +2,9 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Usuario, Rol } from '../../../../../../interfaces/usuario.interface';
+import { Carrera } from '../../../../../../interfaces/academico.interface';
+
+type UsuarioForm = Partial<Usuario> & { email?: string; id_carrera?: number };
 
 @Component({
   selector: 'app-modal-usuario-form',
@@ -14,20 +17,38 @@ export class ModalUsuarioForm implements OnChanges {
   @Input() modoEdicion  = false;
   @Input() usuario: Partial<Usuario> = {};
   @Input() roles: Rol[] = [];
+  @Input() carreras: Carrera[] = [];
 
-  @Output() guardar = new EventEmitter<Partial<Usuario>>();
+  @Output() guardar = new EventEmitter<UsuarioForm>();
   @Output() cerrar  = new EventEmitter<void>();
 
-  /** Copia local para no mutar el objeto del padre */
-  usuarioLocal: Partial<Usuario> = {};
-  mostrarPassword = false;
+  usuarioLocal: UsuarioForm = {};
+
+  private readonly rolLabels: Record<string, string> = {
+    cliente:   'Cliente',
+    profesor:  'Profesor',
+    encargado: 'Gestor de Vinculación',
+    autoridad: 'Autoridad',
+  };
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible']?.currentValue === true || changes['usuario']) {
-      // Clona el objeto recibido para trabajar localmente
-      this.usuarioLocal   = { ...this.usuario };
-      // En modo Crear la contraseña se muestra por defecto
-      this.mostrarPassword = !this.modoEdicion;
+      this.usuarioLocal = { ...this.usuario };
+    }
+  }
+
+  get rolRequiereCarrera(): boolean {
+    const rol = this.roles.find(r => r.id_rol === +this.usuarioLocal.id_rol!);
+    return rol?.nombre_rol === 'encargado' || rol?.nombre_rol === 'profesor';
+  }
+
+  getRolLabel(nombre: string): string {
+    return this.rolLabels[nombre] ?? nombre;
+  }
+
+  onRolChange(): void {
+    if (!this.rolRequiereCarrera) {
+      this.usuarioLocal.id_carrera = undefined;
     }
   }
 

@@ -39,8 +39,11 @@ export class ContentLogin {
       return;
     }
 
-    // Esperar a que se cargue el perfil del usuario
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Esperar a que se cargue el perfil del usuario (máx 3s)
+    const deadline = Date.now() + 3000;
+    while (!this.auth.usuario() && Date.now() < deadline) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
 
     // Redirigir según el rol
     this.router.navigate([this.auth.getHomePath()]);

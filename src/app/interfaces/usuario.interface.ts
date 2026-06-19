@@ -17,6 +17,8 @@ export interface Usuario {
   id_rol: number;
   // Relaciones
   rol?: Rol;
+  gestor_vinculacion_carrera?: { id_carrera: number; carrera?: { nombre_carrera: string; etiqueta_carrera: string } } | null;
+  profesor?: { id_carrera: number; carrera?: { nombre_carrera: string; etiqueta_carrera: string } } | null;
 }
 
 export interface GestorVinculacionCarrera {

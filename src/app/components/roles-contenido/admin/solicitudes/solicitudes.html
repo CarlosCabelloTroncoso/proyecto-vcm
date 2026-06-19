@@ -154,7 +154,7 @@
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Descripción</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Fecha Creación</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Estado</th>
-            <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">ID Usuario</th>
+            <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Usuario</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Carrera</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Ciudad</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Acción</th>
@@ -199,9 +199,9 @@
                 </span>
               </td>
 
-              <!-- ID Usuario -->
-              <td class="px-5 py-3.5 font-mono text-xs text-[#1B3A6B]/50">
-                #{{ solicitud.id_usuario }}
+              <!-- Usuario -->
+              <td class="whitespace-nowrap px-5 py-3.5 text-[#1B3A6B]/80">
+                {{ solicitud.usuario?.nombres_usuario }} {{ solicitud.usuario?.apellidos_usuario }}
               </td>
 
               <!-- Carrera -->
@@ -276,7 +276,7 @@
 
     <!-- Pie de tabla -->
     <div class="border-t border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.02] px-5 py-2.5 text-xs text-[#1B3A6B]/40">
-      {{ solicitudesFiltradas.length }} de {{ solicitudes.length }} solicitudes &nbsp;·&nbsp; UCM VcM v1.0
+      {{ solicitudesFiltradas.length }} de {{ solicitudes().length }} solicitudes &nbsp;·&nbsp; UCM VcM v1.0
     </div>
   </div>
 

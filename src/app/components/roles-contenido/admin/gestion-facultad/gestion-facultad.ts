@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Facultad } from '../../../../interfaces/academico.interface';
@@ -21,12 +21,12 @@ export class GestionFacultad implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
     const facultadesRes = await this.dataService.getAll<any>('facultad', { select: `*`, filters: { is_active: true } });
-    if (facultadesRes.data) this.facultades = facultadesRes.data;
+    if (facultadesRes.data) this.facultades.set(facultadesRes.data);
   }
 
 
   /* ─── Datos mock ───────────────────────────────────────────── */
-  facultades: Facultad[] = [];
+  facultades = signal<Facultad[]>([]);
 
   /* ─── Búsqueda y filtros ───────────────────────────────────── */
   searchTerm     = '';
@@ -57,12 +57,12 @@ export class GestionFacultad implements OnInit {
 
   /* ─── Etiquetas únicas para el selector de filtro ─────────── */
   get etiquetasUnicas(): string[] {
-    return [...new Set(this.facultades.map(f => f.etiqueta_facultad))].sort();
+    return [...new Set(this.facultades().map(f => f.etiqueta_facultad))].sort();
   }
 
   /* ─── Lista filtrada ───────────────────────────────────────── */
   get facultadesFiltradas(): Facultad[] {
-    let lista = [...this.facultades];
+    let lista = [...this.facultades()];
 
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();

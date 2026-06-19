@@ -257,7 +257,7 @@
                          text-[#1B3A6B] shadow-sm outline-none transition
                          focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15">
             <option [ngValue]="undefined" disabled>Seleccionar solicitud aprobada…</option>
-            @for (sol of solicitudesAprobadas; track sol.id_solicitud) {
+            @for (sol of solicitudesAprobadas(); track sol.id_solicitud) {
               <option [ngValue]="sol.id_solicitud">{{ sol.titulo_solicitud }}</option>
             }
           </select>
@@ -480,8 +480,8 @@
 <app-modal-detalle-planteamiento
   [visible]="mostrarModalDetalle"
   [planteamiento]="planteamientoDetalle"
-  [estadosPlanteamiento]="estadosPlanteamiento"
-  [solicitudesAprobadas]="solicitudesAprobadas"
+  [estadosPlanteamiento]="estadosPlanteamiento()"
+  [solicitudesAprobadas]="solicitudesAprobadas()"
   [archivos]="[]"
   (cerrar)="cerrarDetalle()" />
 

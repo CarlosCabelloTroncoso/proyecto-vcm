@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AlumnoVoluntario, Carrera } from '../../../../interfaces/academico.interface';
@@ -20,9 +20,9 @@ export class Alumno implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    this.carreras = this.catalog.carreras;
+    this.carreras = this.catalog.carreras();
     const alumnosRes = await this.dataService.getAll<any>('alumno_voluntario', { select: `*, carrera(nombre_carrera, etiqueta_carrera)`, filters: { is_active: true } });
-    if (alumnosRes.data) this.alumnos = alumnosRes.data;
+    if (alumnosRes.data) this.alumnos.set(alumnosRes.data);
   }
 
 
@@ -30,7 +30,7 @@ export class Alumno implements OnInit {
   carreras: Carrera[] = [];
 
   /* ─── Datos mock ───────────────────────────────────────────── */
-  alumnos: AlumnoVoluntario[] = [];
+  alumnos = signal<AlumnoVoluntario[]>([]);
 
   /* ─── Búsqueda y filtros ───────────────────────────────────── */
   searchTerm    = '';
@@ -70,7 +70,7 @@ export class Alumno implements OnInit {
 
   /* ─── Lista filtrada ───────────────────────────────────────── */
   get alumnosFiltrados(): AlumnoVoluntario[] {
-    let lista = [...this.alumnos];
+    let lista = [...this.alumnos()];
 
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();

@@ -8,7 +8,7 @@
     <h1 class="mt-3 text-3xl font-extrabold leading-tight text-[#1B3A6B] sm:text-4xl">
       Bienvenido,
       <span class="bg-gradient-to-r from-[#1B3A6B] to-[#3B6AAD] bg-clip-text text-transparent">
-        Administrador
+        {{ nombre }}
       </span>
     </h1>
     <p class="mt-3 max-w-2xl text-base leading-relaxed text-[#1B3A6B]/60">
@@ -18,185 +18,204 @@
 
   <!-- Stats -->
   <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 mb-10">
-    <div class="rounded-2xl bg-sky-50 p-4 transition hover:scale-[1.02]">
-      <p class="text-xs font-medium text-sky-600">Usuarios</p>
-      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">142</h3>
+
+    <div class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 transition hover:scale-[1.02]">
+      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 mb-2">
+        <svg class="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </div>
+      <p class="text-xs font-semibold text-indigo-500">Usuarios</p>
+      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">{{ cargando ? '…' : totalUsuarios }}</h3>
     </div>
-    <div class="rounded-2xl bg-emerald-50 p-4 transition hover:scale-[1.02]">
-      <p class="text-xs font-medium text-emerald-600">Facultades</p>
-      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">8</h3>
+
+    <div class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 transition hover:scale-[1.02]">
+      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 mb-2">
+        <svg class="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+      </div>
+      <p class="text-xs font-semibold text-indigo-500">Facultades</p>
+      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">{{ cargando ? '…' : totalFacultades }}</h3>
     </div>
-    <div class="rounded-2xl bg-violet-50 p-4 transition hover:scale-[1.02]">
-      <p class="text-xs font-medium text-violet-600">Carreras</p>
-      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">27</h3>
+
+    <div class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 transition hover:scale-[1.02]">
+      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 mb-2">
+        <svg class="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+      </div>
+      <p class="text-xs font-semibold text-indigo-500">Carreras</p>
+      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">{{ cargando ? '…' : totalCarreras }}</h3>
     </div>
-    <div class="rounded-2xl bg-amber-50 p-4 transition hover:scale-[1.02]">
-      <p class="text-xs font-medium text-amber-600">Alumnos</p>
-      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">1.240</h3>
+
+    <div class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 transition hover:scale-[1.02]">
+      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 mb-2">
+        <svg class="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+      </div>
+      <p class="text-xs font-semibold text-indigo-500">Alumnos</p>
+      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">{{ cargando ? '…' : totalAlumnos }}</h3>
     </div>
-    <div class="rounded-2xl bg-rose-50 p-4 transition hover:scale-[1.02]">
-      <p class="text-xs font-medium text-rose-600">Solicitudes</p>
-      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">89</h3>
+
+    <div class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 transition hover:scale-[1.02]">
+      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 mb-2">
+        <svg class="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <p class="text-xs font-semibold text-indigo-500">Solicitudes</p>
+      <h3 class="mt-1 text-2xl font-bold text-[#1B3A6B]">{{ cargando ? '…' : totalSolicitudes }}</h3>
     </div>
+
   </div>
 
-  <!-- Console Log Table -->
-  <div class="rounded-2xl border border-[#1B3A6B]/10 bg-[#0E1F38] shadow-lg overflow-hidden">
+  <!-- Log institucional -->
+  <div class="rounded-2xl border border-[#1B3A6B]/10 bg-white shadow-sm overflow-hidden">
 
-    <!-- Console header -->
-    <div class="flex items-center justify-between border-b border-white/10 px-5 py-3">
-      <div class="flex items-center gap-3">
-        <div class="flex gap-1.5">
-          <span class="h-3 w-3 rounded-full bg-red-500/80"></span>
-          <span class="h-3 w-3 rounded-full bg-amber-400/80"></span>
-          <span class="h-3 w-3 rounded-full bg-emerald-400/80"></span>
+    <!-- Cabecera + filtros -->
+    <div class="border-b border-[#1B3A6B]/10 px-6 py-4">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+        <div>
+          <h2 class="text-base font-bold text-[#1B3A6B]">Movimientos recientes</h2>
+          <p class="text-xs text-[#1B3A6B]/50 mt-0.5">Actividad del sistema — solicitudes, planteamientos, proyectos y usuarios</p>
         </div>
-        <span class="text-xs font-mono font-medium text-white/50">
-          system-log — movimientos recientes
-        </span>
+        @if (!cargando) {
+          <span class="text-xs text-[#1B3A6B]/40 font-medium whitespace-nowrap">
+            {{ logFiltrado.length }} {{ logFiltrado.length === 1 ? 'resultado' : 'resultados' }}
+          </span>
+        }
       </div>
-      <span class="flex items-center gap-1.5 text-xs font-mono text-emerald-400/60">
-        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        activo
-      </span>
+
+      <!-- Buscador + filtros de fecha -->
+      <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+
+        <!-- Buscador -->
+        <div class="relative flex-1 min-w-[200px]">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#1B3A6B]/30" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Buscar movimiento..."
+            class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white py-2 pl-9 pr-4 text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/30 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 transition"
+          />
+        </div>
+
+        <!-- Filtro año -->
+        <select
+          [(ngModel)]="filtroAnio"
+          (ngModelChange)="filtroMes = ''"
+          class="rounded-xl border border-[#1B3A6B]/20 bg-white px-3 py-2 text-sm text-[#1B3A6B] focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 transition"
+        >
+          <option value="">Todos los años</option>
+          @for (anio of aniosDisponibles; track anio) {
+            <option [value]="anio">{{ anio }}</option>
+          }
+        </select>
+
+        <!-- Filtro mes (solo si hay año seleccionado) -->
+        @if (filtroAnio) {
+          <select
+            [(ngModel)]="filtroMes"
+            class="rounded-xl border border-[#1B3A6B]/20 bg-white px-3 py-2 text-sm text-[#1B3A6B] focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/20 transition"
+          >
+            <option value="">Todos los meses</option>
+            @for (mes of meses; track mes.valor) {
+              <option [value]="mes.valor">{{ mes.nombre }}</option>
+            }
+          </select>
+        }
+
+        <!-- Limpiar filtros -->
+        @if (searchTerm || filtroAnio || filtroMes) {
+          <button
+            (click)="limpiarFiltros()"
+            class="flex items-center gap-1.5 rounded-xl border border-[#1B3A6B]/20 bg-white px-3 py-2 text-xs font-semibold text-[#1B3A6B]/60 hover:bg-[#1B3A6B]/5 transition"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+            </svg>
+            Limpiar
+          </button>
+        }
+
+      </div>
     </div>
 
-    <!-- Table -->
+    <!-- Tabla -->
     <div class="overflow-x-auto">
-      <table class="w-full text-sm font-mono">
-        <thead>
-          <tr class="border-b border-white/10 text-left">
-            <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">
-              Movimiento
-            </th>
-            <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">
-              Tipo de usuario
-            </th>
-            <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-white/40">
-              Fecha de creación
-            </th>
+      <table class="w-full text-sm">
+        <thead class="bg-[#1B3A6B]/5">
+          <tr class="border-b border-[#1B3A6B]/10 text-left">
+            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Movimiento</th>
+            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Entidad</th>
+            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Acción</th>
+            <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Fecha</th>
           </tr>
         </thead>
         <tbody>
-          <tr class="border-b border-white/5 transition hover:bg-white/5">
-            <td class="px-5 py-3.5 text-white/70">
-              Nuevo usuario registrado: <span class="text-sky-400">María González</span>
-            </td>
-            <td class="px-5 py-3.5">
-              <span class="rounded bg-sky-500/20 px-2 py-0.5 text-xs font-semibold text-sky-400">Cliente</span>
-            </td>
-            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:45</td>
-          </tr>
 
-          <tr class="border-b border-white/5 transition hover:bg-white/5">
-            <td class="px-5 py-3.5 text-white/70">
-              Solicitud <span class="text-white/90">#SOL-2026-0147</span> creada
-            </td>
-            <td class="px-5 py-3.5">
-              <span class="rounded bg-sky-500/20 px-2 py-0.5 text-xs font-semibold text-sky-400">Cliente</span>
-            </td>
-            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:42</td>
-          </tr>
+          <!-- Skeleton loader -->
+          @if (cargando) {
+            @for (i of [1,2,3,4,5,6]; track i) {
+              <tr class="border-b border-[#1B3A6B]/5">
+                <td class="px-6 py-3.5"><div class="h-3 w-3/4 rounded-full bg-[#1B3A6B]/10 animate-pulse"></div></td>
+                <td class="px-6 py-3.5"><div class="h-5 w-20 rounded-full bg-[#1B3A6B]/10 animate-pulse"></div></td>
+                <td class="px-6 py-3.5"><div class="h-5 w-24 rounded-full bg-[#1B3A6B]/10 animate-pulse"></div></td>
+                <td class="px-6 py-3.5"><div class="h-3 w-32 rounded-full bg-[#1B3A6B]/10 animate-pulse"></div></td>
+              </tr>
+            }
+          }
 
-          <tr class="border-b border-white/5 transition hover:bg-white/5">
-            <td class="px-5 py-3.5 text-white/70">
-              Perfil actualizado: <span class="text-sky-400">Prof. Soto</span> — Campo: Teléfono
-            </td>
-            <td class="px-5 py-3.5">
-              <span class="rounded bg-amber-500/20 px-2 py-0.5 text-xs font-semibold text-amber-400">Profesor</span>
-            </td>
-            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:38</td>
-          </tr>
+          <!-- Filas reales -->
+          @if (!cargando) {
+            @for (entry of logFiltrado; track $index) {
+              <tr class="border-b border-[#1B3A6B]/5 transition hover:bg-[#1B3A6B]/[0.03]">
+                <td class="px-6 py-3.5 text-[#1B3A6B]/80 max-w-sm">
+                  <span class="line-clamp-1">{{ entry.descripcion }}</span>
+                </td>
+                <td class="px-6 py-3.5">
+                  <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold" [ngClass]="entry.entidadClase">
+                    {{ entry.entidad }}
+                  </span>
+                </td>
+                <td class="px-6 py-3.5">
+                  <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold" [ngClass]="entry.accionClase">
+                    {{ entry.accion }}
+                  </span>
+                </td>
+                <td class="px-6 py-3.5 text-[#1B3A6B]/50 text-xs whitespace-nowrap">{{ formatFecha(entry.fecha) }}</td>
+              </tr>
+            }
 
-          <tr class="border-b border-white/5 transition hover:bg-white/5">
-            <td class="px-5 py-3.5 text-white/70">
-              Nueva carrera agregada: <span class="text-white/90">Ing. Civil Informática</span>
-            </td>
-            <td class="px-5 py-3.5">
-              <span class="rounded bg-rose-500/20 px-2 py-0.5 text-xs font-semibold text-rose-400">Admin</span>
-            </td>
-            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:35</td>
-          </tr>
+            @if (logFiltrado.length === 0) {
+              <tr>
+                <td colspan="4" class="px-6 py-12 text-center">
+                  <div class="flex flex-col items-center gap-2 text-[#1B3A6B]/30">
+                    <svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z"/>
+                    </svg>
+                    <span class="text-sm font-medium">Sin resultados</span>
+                    <span class="text-xs">Ajusta los filtros para ver más movimientos</span>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
 
-          <tr class="border-b border-white/5 transition hover:bg-white/5">
-            <td class="px-5 py-3.5 text-white/70">
-              Solicitud <span class="text-white/90">#SOL-2026-0145</span> aprobada
-            </td>
-            <td class="px-5 py-3.5">
-              <span class="rounded bg-violet-500/20 px-2 py-0.5 text-xs font-semibold text-violet-400">Autoridad</span>
-            </td>
-            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:30</td>
-          </tr>
-
-          <tr class="border-b border-white/5 transition hover:bg-white/5">
-            <td class="px-5 py-3.5 text-white/70">
-              Usuario eliminado: <span class="text-sky-400">Juan Pérez</span> — Cuenta duplicada
-            </td>
-            <td class="px-5 py-3.5">
-              <span class="rounded bg-rose-500/20 px-2 py-0.5 text-xs font-semibold text-rose-400">Admin</span>
-            </td>
-            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:28</td>
-          </tr>
-
-          <tr class="border-b border-white/5 transition hover:bg-white/5">
-            <td class="px-5 py-3.5 text-white/70">
-              Solicitud <span class="text-white/90">#SOL-2026-0144</span> vinculada a
-              <span class="text-sky-400">Enfermería</span>
-            </td>
-            <td class="px-5 py-3.5">
-              <span class="rounded bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-400">Gestor</span>
-            </td>
-            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:22</td>
-          </tr>
-
-          <tr class="border-b border-white/5 transition hover:bg-white/5">
-            <td class="px-5 py-3.5 text-white/70">
-              Rol cambiado: <span class="text-sky-400">Ana Fuentes</span> — Profesor → Encargado
-            </td>
-            <td class="px-5 py-3.5">
-              <span class="rounded bg-rose-500/20 px-2 py-0.5 text-xs font-semibold text-rose-400">Admin</span>
-            </td>
-            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:18</td>
-          </tr>
-
-          <tr class="border-b border-white/5 transition hover:bg-white/5">
-            <td class="px-5 py-3.5 text-white/70">
-              Solicitud <span class="text-white/90">#SOL-2026-0142</span> rechazada — Documentación incompleta
-            </td>
-            <td class="px-5 py-3.5">
-              <span class="rounded bg-cyan-500/20 px-2 py-0.5 text-xs font-semibold text-cyan-400">Encargado</span>
-            </td>
-            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 23:05</td>
-          </tr>
-
-          <tr class="border-b border-white/5 transition hover:bg-white/5">
-            <td class="px-5 py-3.5 text-white/70">
-              <span class="text-sky-400">156 alumnos</span> importados a carrera
-              <span class="text-white/90">Kinesiología</span>
-            </td>
-            <td class="px-5 py-3.5">
-              <span class="rounded bg-rose-500/20 px-2 py-0.5 text-xs font-semibold text-rose-400">Admin</span>
-            </td>
-            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 22:58</td>
-          </tr>
-
-          <tr class="transition hover:bg-white/5">
-            <td class="px-5 py-3.5 text-white/70">
-              Backup automático completado — <span class="text-emerald-400">OK</span>
-            </td>
-            <td class="px-5 py-3.5">
-              <span class="rounded bg-white/10 px-2 py-0.5 text-xs font-semibold text-white/50">Sistema</span>
-            </td>
-            <td class="px-5 py-3.5 text-white/40">23/05/2026 — 22:50</td>
-          </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Console footer -->
-    <div class="border-t border-white/10 px-5 py-2.5 flex items-center justify-between">
-      <span class="text-xs font-mono text-white/30">11 movimientos registrados</span>
-      <span class="text-xs font-mono text-white/30">UCM VcM v1.0</span>
+    <!-- Pie de tabla -->
+    <div class="border-t border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.02] px-6 py-3 flex items-center justify-between">
+      <span class="text-xs text-[#1B3A6B]/40">
+        {{ cargando ? 'Cargando movimientos…' : log.length + ' movimientos en total' }}
+      </span>
+      <span class="text-xs text-[#1B3A6B]/30">UCM · Vinculación con el Medio</span>
     </div>
 
   </div>

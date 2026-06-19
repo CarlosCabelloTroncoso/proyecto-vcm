@@ -70,8 +70,8 @@
                  text-[#1B3A6B] shadow-sm outline-none transition
                  focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/20">
           <option value="">Todos los roles</option>
-          @for (rol of roles; track rol.id_rol) {
-            <option [value]="rol.id_rol">{{ rol.nombre_rol }}</option>
+          @for (rol of todosLosRoles; track rol.id_rol) {
+            <option [value]="rol.id_rol">{{ getNombreRol(rol.id_rol) }}</option>
           }
         </select>
       </div>
@@ -153,6 +153,7 @@
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Apellidos</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Teléfono</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Rol</th>
+            <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Carrera</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Estado</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Fecha Creación</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Acción</th>
@@ -174,6 +175,19 @@
                 <span class="inline-block rounded-full border px-2.5 py-0.5 text-xs font-semibold {{ getBadgeClases(usuario.id_rol) }}">
                   {{ getNombreRol(usuario.id_rol) }}
                 </span>
+              </td>
+
+              <!-- Carrera -->
+              <td class="px-5 py-3.5">
+                @if (getCarreraUsuario(usuario).etiqueta) {
+                  <span class="inline-block rounded-full border px-2.5 py-0.5 text-xs font-semibold
+                               {{ getBadgeCarreraEtiqueta(getCarreraUsuario(usuario).etiqueta) }}"
+                        [title]="getCarreraUsuario(usuario).nombre">
+                    {{ getCarreraUsuario(usuario).etiqueta }}
+                  </span>
+                } @else {
+                  <span class="text-xs text-[#1B3A6B]/30">—</span>
+                }
               </td>
 
               <!-- Estado -->
@@ -227,7 +241,7 @@
           <!-- Estado vacío -->
           @if (usuariosFiltrados.length === 0) {
             <tr>
-              <td colspan="9" class="px-5 py-16 text-center">
+              <td colspan="10" class="px-5 py-16 text-center">
                 <div class="flex flex-col items-center gap-3 text-[#1B3A6B]/40">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none"
                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
@@ -249,7 +263,7 @@
 
     <!-- Pie de tabla -->
     <div class="border-t border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.02] px-5 py-2.5 text-xs text-[#1B3A6B]/40">
-      {{ usuariosFiltrados.length }} de {{ usuarios.length }} usuarios &nbsp;·&nbsp; UCM VcM v1.0
+      {{ usuariosFiltrados.length }} de {{ usuarios().length }} usuarios &nbsp;·&nbsp; UCM VcM v1.0
     </div>
   </div>
 
@@ -262,6 +276,7 @@
   [modoEdicion]="modoEdicion"
   [usuario]="usuarioEnEdicion"
   [roles]="roles"
+  [carreras]="carreras"
   (guardar)="onGuardarUsuario($event)"
   (cerrar)="cerrarModales()" />
 

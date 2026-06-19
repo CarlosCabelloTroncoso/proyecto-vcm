@@ -86,7 +86,7 @@ export const routes: Routes = [
   {
     path: 'encargado',
     component: Encargado,
-    canActivate: [authGuard, roleGuard('gestor_vinculacion')],
+    canActivate: [authGuard, roleGuard('encargado')],
     children:[
       {path: '', redirectTo: 'inicio',pathMatch: 'full'},
       {

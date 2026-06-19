@@ -1,54 +1,181 @@
-<section class="mx-auto max-w-7xl px-4 py-10 lg:px-8 lg:py-16">
-  <div class="grid items-center gap-10 lg:grid-cols-2">
+<div class="min-h-screen bg-gray-50">
+  <div class="mx-auto max-w-7xl px-6 py-16 lg:px-16 lg:py-20">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8 items-start">
 
-    <!-- Texto -->
-    <div>
-      <p class="text-sm font-semibold uppercase tracking-widest text-[#1B3A6B]/50">
-        Panel del profesor
-      </p>
-      <h1 class="mt-3 text-3xl font-extrabold leading-tight text-[#1B3A6B] sm:text-4xl lg:text-5xl">
-        Bienvenido a
-        <span class="bg-gradient-to-r from-[#1B3A6B] to-[#3B6AAD] bg-clip-text text-transparent">
-          UCM Vinculación
-        </span>
-      </h1>
-      <p class="mt-6 max-w-xl text-lg leading-relaxed text-[#1B3A6B]/65">
-        ¿Desea realizar un nuevo planteamiento? Gestione sus propuestas
-        académicas y dé seguimiento a los proyectos en curso.
-      </p>
-      <div class="mt-8 flex flex-wrap gap-3">
-        <a routerLink="/profesor/planteamientos"
-           class="rounded-xl bg-[#1B3A6B] px-7 py-3.5 text-sm font-semibold text-white
-                  shadow-lg transition hover:bg-[#16315b] hover:scale-[1.02] active:scale-[0.98]">
-          Nuevo Planteamiento
-        </a>
-        <a routerLink="/profesor/proyectos"
-           class="rounded-xl border-2 border-[#1B3A6B]/20 px-7 py-3.5 text-sm font-semibold
-                  text-[#1B3A6B] transition hover:border-[#1B3A6B]/40 hover:bg-[#1B3A6B]/5">
-          Ver Proyectos
-        </a>
+      <!-- COLUMNA IZQUIERDA — Card bienvenida + cómo funciona -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm flex flex-col gap-6">
+
+        <div>
+          <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-[#1B3A6B]/20
+                      bg-[#1B3A6B]/5 px-4 py-1.5 text-sm text-[#1B3A6B]">
+            <span class="h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
+            Panel del Profesor
+          </div>
+
+          <h1 class="text-4xl font-extrabold leading-tight tracking-tight text-[#1B3A6B] sm:text-5xl">
+            Bienvenido,<br>
+            <span class="text-blue-500">{{ nombre() }}</span>
+          </h1>
+
+          <p class="mt-4 text-base leading-relaxed text-gray-500">
+            Gestiona tus planteamientos académicos, haz seguimiento de su estado y revisa los proyectos en curso vinculados a tus propuestas.
+          </p>
+        </div>
+
+        <div class="border-t border-gray-100"></div>
+
+        <div>
+          <h2 class="mb-3 text-sm font-bold uppercase tracking-widest text-gray-400">¿Cómo funciona?</h2>
+          <div class="flex flex-col gap-1">
+
+            <div class="flex items-start gap-3 rounded-xl p-3 transition hover:bg-gray-50">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#1B3A6B]/10">
+                <svg class="h-4 w-4 text-[#1B3A6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-[#1B3A6B]">1. Crea un planteamiento</p>
+                <p class="text-xs leading-relaxed text-gray-500">Vincula tu propuesta a una solicitud aprobada y describe el proyecto académico.</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3 rounded-xl p-3 transition hover:bg-gray-50">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#1B3A6B]/10">
+                <svg class="h-4 w-4 text-[#1B3A6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-[#1B3A6B]">2. Revisión del encargado</p>
+                <p class="text-xs leading-relaxed text-gray-500">El encargado de vinculación evalúa tu planteamiento y puede dejarte observaciones.</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3 rounded-xl p-3 transition hover:bg-gray-50">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#1B3A6B]/10">
+                <svg class="h-4 w-4 text-[#1B3A6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-[#1B3A6B]">3. Aprobación e inicio</p>
+                <p class="text-xs leading-relaxed text-gray-500">Una vez aprobado, se genera el proyecto y puedes comenzar el trabajo con los alumnos.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="border-t border-gray-100"></div>
+
+        <div class="flex flex-wrap gap-3">
+          <a routerLink="/profesor/planteamientos"
+             class="inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-6 py-3 text-sm
+                    font-semibold text-white shadow-md transition hover:bg-[#1B3A6B]/90 active:scale-[0.98]">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            Nuevo Planteamiento
+          </a>
+          <a routerLink="/profesor/proyectos"
+             class="inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/30 px-6 py-3
+                    text-sm font-semibold text-[#1B3A6B] transition hover:bg-[#1B3A6B]/5 active:scale-[0.98]">
+            Ver Proyectos
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+            </svg>
+          </a>
+        </div>
+
       </div>
+
+      <!-- COLUMNA DERECHA -->
+      <div class="flex flex-col gap-6">
+
+        <!-- Card Stats -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h2 class="mb-4 text-xl font-bold text-[#1B3A6B]">Mis Planteamientos</h2>
+          <div class="grid grid-cols-4 gap-2">
+
+            <div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-4 flex flex-col items-center text-center">
+              <p class="text-2xl font-extrabold text-amber-700 leading-none">{{ pendientes() }}</p>
+              <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-amber-500">Pendientes</p>
+            </div>
+
+            <div class="rounded-xl border border-green-200 bg-green-50 px-3 py-4 flex flex-col items-center text-center">
+              <p class="text-2xl font-extrabold text-green-700 leading-none">{{ aprobados() }}</p>
+              <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-green-500">Aprobados</p>
+            </div>
+
+            <div class="rounded-xl border border-red-200 bg-red-50 px-3 py-4 flex flex-col items-center text-center">
+              <p class="text-2xl font-extrabold text-red-700 leading-none">{{ rechazados() }}</p>
+              <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-red-500">Rechazados</p>
+            </div>
+
+            <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-4 flex flex-col items-center text-center">
+              <p class="text-2xl font-extrabold text-sky-700 leading-none">{{ enCurso() }}</p>
+              <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-sky-500">Proyectos</p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Card Actividad reciente -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h2 class="mb-4 text-xl font-bold text-[#1B3A6B]">Actividad reciente</h2>
+
+          @if (actividad().length === 0) {
+            <div class="flex flex-col items-center justify-center py-8 text-center">
+              <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 mb-3">
+                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-3-3v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-medium text-gray-500">Aún no tienes planteamientos</p>
+              <p class="text-xs text-gray-400 mt-1">Crea tu primer planteamiento para ver la actividad aquí.</p>
+            </div>
+          } @else {
+            <div class="flex flex-col divide-y divide-gray-100 max-h-[22rem] overflow-y-auto pr-1">
+              @for (entrada of actividad(); track entrada.titulo) {
+                <div class="flex items-start gap-3 py-3">
+
+                  @if (entrada.estado === 2) {
+                    <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-green-100">
+                      <svg class="h-3.5 w-3.5 text-green-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                      </svg>
+                    </div>
+                  } @else if (entrada.estado === 3) {
+                    <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-100">
+                      <svg class="h-3.5 w-3.5 text-red-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                    </div>
+                  } @else {
+                    <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                      <svg class="h-3.5 w-3.5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    </div>
+                  }
+
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm text-gray-700 leading-snug">{{ entrada.mensaje }}</p>
+                    <p class="mt-0.5 text-xs text-gray-400">{{ entrada.fecha }}</p>
+                  </div>
+
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+
     </div>
-
-    <!-- Stats -->
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <div class="rounded-2xl bg-emerald-50 p-5 transition hover:scale-[1.02]">
-        <p class="text-sm font-medium text-emerald-600">Planteamientos aprobados</p>
-        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">24</h3>
-      </div>
-      <div class="rounded-2xl bg-amber-50 p-5 transition hover:scale-[1.02]">
-        <p class="text-sm font-medium text-amber-600">Planteamientos pendientes</p>
-        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">12</h3>
-      </div>
-      <div class="rounded-2xl bg-rose-50 p-5 transition hover:scale-[1.02]">
-        <p class="text-sm font-medium text-rose-600">Planteamientos rechazados</p>
-        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">3</h3>
-      </div>
-      <div class="rounded-2xl bg-sky-50 p-5 transition hover:scale-[1.02]">
-        <p class="text-sm font-medium text-sky-600">Proyectos en curso</p>
-        <h3 class="mt-2 text-3xl font-bold text-[#1B3A6B]">8</h3>
-      </div>
-    </div>
-
   </div>
-</section>
+</div>

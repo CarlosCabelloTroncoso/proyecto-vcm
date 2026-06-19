@@ -66,7 +66,7 @@ export class AuthService {
       .from('usuario')
       .select('*, rol(nombre_rol)')
       .eq('auth_uid', authUid)
-      .eq('is_active', true)
+      .neq('is_active', false)  // permite NULL (no configurado) y true
       .single();
 
     if (!error && data) {
@@ -99,6 +99,11 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+  async reloadPerfil(): Promise<void> {
+    const session = this._session();
+    if (session) await this.loadUsuario(session.user.id);
+  }
+
   hasRole(role: string): boolean {
     return this.userRole() === role;
   }
@@ -114,7 +119,7 @@ export class AuthService {
       case 'admin': return '/admin/inicio';
       case 'cliente': return '/cliente/inicio';
       case 'profesor': return '/profesor/inicio';
-      case 'gestor_vinculacion': return '/encargado/inicio';
+      case 'encargado': return '/encargado/inicio';
       case 'autoridad': return '/autoridad/inicio';
       default: return '/login';
     }

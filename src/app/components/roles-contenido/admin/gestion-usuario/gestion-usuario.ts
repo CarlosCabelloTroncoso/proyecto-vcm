@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../../../core/services/data.service';
 import { CatalogService } from '../../../../core/services/catalog.service';
 import { Usuario, Rol } from '../../../../interfaces/usuario.interface';
+import { Carrera } from '../../../../interfaces/academico.interface';
 import { ModalUsuarioForm } from './modales/modal-usuario-form/modal-usuario-form';
 import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
 
@@ -15,25 +16,45 @@ import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar'
 })
 export class GestionUsuario implements OnInit {
 
-  /* ─── Roles ────────────────────────────────────────────────── */
-  roles: Rol[] = [
-    { id_rol: 1, nombre_rol: 'Admin',     descripcion_rol: 'Administrador del sistema' },
-    { id_rol: 2, nombre_rol: 'Autoridad', descripcion_rol: 'Autoridad universitaria'   },
-    { id_rol: 3, nombre_rol: 'Cliente',   descripcion_rol: 'Usuario cliente'            },
-    { id_rol: 4, nombre_rol: 'Encargado', descripcion_rol: 'Encargado de carrera'       },
-    { id_rol: 5, nombre_rol: 'Gestor',    descripcion_rol: 'Gestor de vinculación'      },
-    { id_rol: 6, nombre_rol: 'Profesor',  descripcion_rol: 'Docente'                    },
-  ];
+  roles: Rol[] = [];         // para el modal (sin admin)
+  todosLosRoles: Rol[] = []; // para la tabla y filtros (con admin)
+
+  private readonly rolLabels: Record<string, string> = {
+    admin:      'Administrador',
+    cliente:    'Cliente',
+    profesor:   'Profesor',
+    encargado:  'Gestor de Vinculación',
+    autoridad:  'Autoridad',
+  };
 
   /* ─── Datos mock ───────────────────────────────────────────── */
-  usuarios: Usuario[] = [];
+  usuarios = signal<Usuario[]>([]);
 
-  constructor(private dataService: DataService, private catalog: CatalogService) {}
+  constructor(
+    private dataService: DataService,
+    private catalog: CatalogService,
+    private cdr: ChangeDetectorRef,
+  ) {}
+
+  get carreras(): Carrera[] {
+    return this.catalog.carreras();
+  }
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    const res = await this.dataService.getAll<any>('usuario', { select: '*, rol(nombre_rol)', filters: { is_active: true } });
-    if (res.data) this.usuarios = res.data;
+    const [usuRes, rolRes] = await Promise.all([
+      this.dataService.getAll<any>('usuario', {
+        select: '*, rol(nombre_rol), gestor_vinculacion_carrera(id_carrera, carrera(nombre_carrera, etiqueta_carrera)), profesor(id_carrera, carrera(nombre_carrera, etiqueta_carrera))',
+        filters: { is_active: true },
+      }),
+      this.dataService.getAll<Rol>('rol', { filters: { is_active: true } }),
+    ]);
+    if (usuRes.data) this.usuarios.set(usuRes.data);
+    if (rolRes.data) {
+      this.todosLosRoles = rolRes.data;
+      this.roles = rolRes.data.filter(r => r.nombre_rol !== 'admin');
+    }
+    this.cdr.detectChanges();
   }
 
   /* ─── Meses del año ───────────────────────────────────────── */
@@ -64,24 +85,49 @@ export class GestionUsuario implements OnInit {
   mostrarModalForm     = false;
   mostrarModalEliminar = false;
   modoEdicion          = false;
-  usuarioEnEdicion: Partial<Usuario> = {};
+  usuarioEnEdicion: Partial<Usuario> & { id_carrera?: number } = {};
   usuarioAEliminar: Usuario | null   = null;
 
   /* ─── Helpers de presentación ──────────────────────────────── */
   getNombreRol(id_rol: number): string {
-    return this.roles.find(r => r.id_rol === id_rol)?.nombre_rol ?? '—';
+    const rol = this.todosLosRoles.find(r => r.id_rol === id_rol);
+    if (!rol) return '—';
+    return this.rolLabels[rol.nombre_rol] ?? rol.nombre_rol;
   }
 
   getBadgeClases(id_rol: number): string {
-    const mapa: Record<number, string> = {
-      1: 'bg-rose-100    text-rose-700    border-rose-200',
-      2: 'bg-violet-100  text-violet-700  border-violet-200',
-      3: 'bg-sky-100     text-sky-700     border-sky-200',
-      4: 'bg-cyan-100    text-cyan-700    border-cyan-200',
-      5: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-      6: 'bg-amber-100   text-amber-700   border-amber-200',
+    const nombre = this.todosLosRoles.find(r => r.id_rol === id_rol)?.nombre_rol ?? '';
+    const mapa: Record<string, string> = {
+      admin:              'bg-rose-100    text-rose-700    border-rose-200',
+      autoridad:          'bg-violet-100  text-violet-700  border-violet-200',
+      cliente:            'bg-sky-100     text-sky-700     border-sky-200',
+      encargado:          'bg-emerald-100 text-emerald-700 border-emerald-200',
+      profesor:           'bg-amber-100   text-amber-700   border-amber-200',
     };
-    return mapa[id_rol] ?? 'bg-gray-100 text-gray-600 border-gray-200';
+    return mapa[nombre] ?? 'bg-gray-100 text-gray-600 border-gray-200';
+  }
+
+  getCarreraUsuario(u: any): { nombre: string; etiqueta: string } {
+    const resolve = (raw: any) =>
+      Array.isArray(raw) ? raw[0]?.carrera : raw?.carrera;
+    const c = resolve(u.gestor_vinculacion_carrera) ?? resolve(u.profesor);
+    return { nombre: c?.nombre_carrera ?? '', etiqueta: c?.etiqueta_carrera ?? '' };
+  }
+
+  getBadgeCarreraEtiqueta(etiqueta: string): string {
+    if (!etiqueta) return '';
+    const colores = [
+      'bg-blue-100    text-blue-700    border-blue-200',
+      'bg-violet-100  text-violet-700  border-violet-200',
+      'bg-emerald-100 text-emerald-700 border-emerald-200',
+      'bg-amber-100   text-amber-700   border-amber-200',
+      'bg-sky-100     text-sky-700     border-sky-200',
+      'bg-rose-100    text-rose-700    border-rose-200',
+      'bg-teal-100    text-teal-700    border-teal-200',
+      'bg-pink-100    text-pink-700    border-pink-200',
+    ];
+    const hash = etiqueta.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    return colores[hash % colores.length];
   }
 
   formatearFecha(fecha: string): string {
@@ -92,7 +138,7 @@ export class GestionUsuario implements OnInit {
 
   /** Años únicos presentes en los datos, ordenados de más reciente a más antiguo */
   get aniosDisponibles(): string[] {
-    return [...new Set(this.usuarios.map(u => u.fecha_creacion.slice(0, 4)))]
+    return [...new Set(this.usuarios().map(u => u.fecha_creacion.slice(0, 4)))]
       .sort()
       .reverse();
   }
@@ -109,7 +155,7 @@ export class GestionUsuario implements OnInit {
 
   /* ─── Lista filtrada ───────────────────────────────────────── */
   get usuariosFiltrados(): Usuario[] {
-    let lista = [...this.usuarios];
+    let lista = [...this.usuarios()];
 
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
@@ -145,9 +191,25 @@ export class GestionUsuario implements OnInit {
     this.mostrarModalForm = true;
   }
 
-  abrirEditar(usuario: Usuario): void {
+  async abrirEditar(usuario: Usuario): Promise<void> {
     this.modoEdicion      = true;
     this.usuarioEnEdicion = { ...usuario };
+
+    const rolNombre = this.todosLosRoles.find(r => r.id_rol === usuario.id_rol)?.nombre_rol;
+    if (rolNombre === 'encargado') {
+      const res = await this.dataService.getAll<{ id_carrera: number }>(
+        'gestor_vinculacion_carrera',
+        { filters: { id_usuario: usuario.id_usuario } }
+      );
+      if (res.data?.[0]) this.usuarioEnEdicion = { ...this.usuarioEnEdicion, id_carrera: res.data[0].id_carrera };
+    } else if (rolNombre === 'profesor') {
+      const res = await this.dataService.getAll<{ id_carrera: number }>(
+        'profesor',
+        { filters: { id_usuario: usuario.id_usuario } }
+      );
+      if (res.data?.[0]) this.usuarioEnEdicion = { ...this.usuarioEnEdicion, id_carrera: res.data[0].id_carrera };
+    }
+
     this.mostrarModalForm = true;
   }
 
@@ -159,17 +221,19 @@ export class GestionUsuario implements OnInit {
   /** Recibe los datos emitidos por ModalUsuarioForm */
   async onGuardarUsuario(datos: Partial<Usuario>): Promise<void> {
     if (this.modoEdicion) {
-      const idx = this.usuarios.findIndex(u => u.id_usuario === datos.id_usuario);
-      if (idx !== -1) this.usuarios[idx] = datos as Usuario;
+      this.usuarios.update(lista =>
+        lista.map(u => u.id_usuario === datos.id_usuario ? datos as Usuario : u)
+      );
     } else {
-      const nuevoId = this.usuarios.length
-        ? Math.max(...this.usuarios.map(u => u.id_usuario)) + 1
+      const nuevoId = this.usuarios().length
+        ? Math.max(...this.usuarios().map(u => u.id_usuario)) + 1
         : 1;
-      this.usuarios.push({
+      const nuevo = {
         ...datos,
         id_usuario:     nuevoId,
         fecha_creacion: new Date().toISOString().split('T')[0],
-      } as Usuario);
+      } as Usuario;
+      this.usuarios.update(lista => [...lista, nuevo]);
     }
     this.mostrarModalForm = false;
   }
@@ -177,7 +241,8 @@ export class GestionUsuario implements OnInit {
   /** Confirmación del ModalConfirmar */
   onEliminarUsuario(): void {
     if (this.usuarioAEliminar) {
-      this.usuarios = this.usuarios.filter(u => u.id_usuario !== this.usuarioAEliminar!.id_usuario);
+      const id = this.usuarioAEliminar.id_usuario;
+      this.usuarios.update(lista => lista.filter(u => u.id_usuario !== id));
       this.usuarioAEliminar    = null;
       this.mostrarModalEliminar = false;
     }
