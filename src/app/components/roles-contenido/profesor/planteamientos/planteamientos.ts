@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { PlanteamientoProyecto, EstadoPlanteamiento, Archivo } from '../../../../interfaces/proyecto.interface';
 import { Solicitud } from '../../../../interfaces/solicitud.interface';
 import { ProfesorCarrera } from '../../../../interfaces/usuario.interface';
@@ -66,11 +66,13 @@ export class Planteamientos implements OnInit {
     private catalog: CatalogService,
     private auth: AuthService,
     private cdr: ChangeDetectorRef,
-    private route: ActivatedRoute,
     private router: Router,
   ) {}
 
   async ngOnInit(): Promise<void> {
+    const navState = history.state as { solicitudId?: number };
+    const solicitudId = navState?.solicitudId;
+
     await this.catalog.load();
     this.estadosPlanteamiento.set(this.catalog.estadosPlanteamiento());
 
@@ -91,12 +93,11 @@ export class Planteamientos implements OnInit {
       this.cdr.detectChanges();
     }
 
-    this.route.queryParams.subscribe(params => {
-      const solicitudId = params['solicitudId'];
-      if (solicitudId) {
-        this.abrirCrear(+solicitudId);
-      }
-    });
+    if (solicitudId) {
+      history.replaceState({}, '');
+      this.abrirCrear(solicitudId);
+      this.cdr.detectChanges();
+    }
   }
 
   get planteamientosFiltrados(): PlanteamientoProyecto[] {
@@ -164,7 +165,6 @@ export class Planteamientos implements OnInit {
     this.formData = {};
     this.archivosAdjuntos = [];
     this.errorArchivos = [];
-    this.router.navigate([], { queryParams: {}, replaceUrl: true });
   }
 
   onFileChange(event: Event): void {
@@ -293,6 +293,7 @@ export class Planteamientos implements OnInit {
         id_carrera:                    u.profesor?.id_carrera ?? 0,
         id_usuario:                    u.id_usuario,
         id_estado:                     1,
+        fecha_creacion:                new Date().toISOString(),
       });
       if (data) {
         this.planteamientos.update(lista => [...lista, data]);

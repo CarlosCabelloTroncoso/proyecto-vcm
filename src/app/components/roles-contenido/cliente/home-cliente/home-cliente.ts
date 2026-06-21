@@ -10,7 +10,8 @@ interface EntradaActividad {
   titulo: string;
   mensaje: string;
   estado: number;
-  fecha: string;
+  fechaDisplay: string;
+  esNuevo: boolean;
 }
 
 @Component({
@@ -30,13 +31,11 @@ export class HomeCliente implements OnInit {
 
   private solicitudes = signal<Solicitud[]>([]);
 
-  // IDs resueltos desde el catálogo (defaults seguros mientras carga)
-  private idPendiente  = signal(1);
-  private idEnProceso  = signal(0);
-  private idAprobada   = signal(2);
-  private idRechazada  = signal(3);
+  private idPendiente = signal(1);
+  private idEnProceso = signal(0);
+  private idAprobada  = signal(2);
+  private idRechazada = signal(3);
 
-  // Expuestos al template para los iconos de actividad
   get aprobadaId()  { return this.idAprobada();  }
   get rechazadaId() { return this.idRechazada(); }
   get enProcesoId() { return this.idEnProceso(); }
@@ -48,25 +47,47 @@ export class HomeCliente implements OnInit {
 
   actividad = computed<EntradaActividad[]>(() =>
     [...this.solicitudes()]
-      .sort((a, b) => new Date(b.fecha_creacion_solicitud).getTime() - new Date(a.fecha_creacion_solicitud).getTime())
+      .sort((a, b) => {
+        const fechaA = a.fecha_actualizacion ?? a.fecha_creacion_solicitud;
+        const fechaB = b.fecha_actualizacion ?? b.fecha_creacion_solicitud;
+        const diff = new Date(fechaB).getTime() - new Date(fechaA).getTime();
+        return diff !== 0 ? diff : b.id_solicitud - a.id_solicitud;
+      })
       .map(s => ({
-        titulo: s.titulo_solicitud,
-        mensaje: this.mensajePorEstado(s.id_estado, s.titulo_solicitud),
-        estado: s.id_estado,
-        fecha: this.formatFecha(s.fecha_creacion_solicitud),
+        titulo:       s.titulo_solicitud,
+        mensaje:      this.mensajePorEstado(s.id_estado, s.titulo_solicitud),
+        estado:       s.id_estado,
+        fechaDisplay: this.buildFechaDisplay(s),
+        esNuevo:      this.esReciente(s.fecha_actualizacion),
       }))
   );
 
   private mensajePorEstado(estado: number, titulo: string): string {
-    if (estado === this.idAprobada())   return `Tu solicitud "${titulo}" fue aprobada`;
-    if (estado === this.idRechazada())  return `Tu solicitud "${titulo}" fue rechazada`;
-    if (estado === this.idEnProceso())  return `Tu solicitud "${titulo}" está en proceso`;
+    if (estado === this.idAprobada())  return `Tu solicitud "${titulo}" fue aprobada`;
+    if (estado === this.idRechazada()) return `Tu solicitud "${titulo}" fue rechazada`;
+    if (estado === this.idEnProceso()) return `Tu solicitud "${titulo}" está en proceso`;
     return `Tu solicitud "${titulo}" está pendiente de revisión`;
+  }
+
+  private buildFechaDisplay(s: Solicitud): string {
+    if (s.fecha_actualizacion) {
+      return `Actualizado el ${this.formatFecha(s.fecha_actualizacion)}`;
+    }
+    return this.formatFecha(s.fecha_creacion_solicitud);
   }
 
   private formatFecha(iso: string): string {
     const d = new Date(iso);
-    return d.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' });
+    return d.toLocaleString('es-CL', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+  }
+
+  private esReciente(fecha?: string | null): boolean {
+    if (!fecha) return false;
+    const diff = Date.now() - new Date(fecha).getTime();
+    return diff < 24 * 60 * 60 * 1000; // últimas 24 horas
   }
 
   async ngOnInit(): Promise<void> {
@@ -78,13 +99,13 @@ export class HomeCliente implements OnInit {
     const estados = this.catalog.estados();
     const find = (regex: RegExp) => estados.find(e => regex.test(e.nombre_estado))?.id_estado ?? 0;
 
-    this.idPendiente.set(find(/pendiente/i)  || 1);
-    this.idEnProceso.set(find(/proceso/i)    || 0);
-    this.idAprobada.set(find(/aprobad/i)     || 2);
-    this.idRechazada.set(find(/rechazad/i)   || 3);
+    this.idPendiente.set(find(/pendiente/i) || 1);
+    this.idEnProceso.set(find(/proceso/i)   || 0);
+    this.idAprobada.set(find(/aprobad/i)    || 2);
+    this.idRechazada.set(find(/rechazad/i)  || 3);
 
     const res = await this.data.getAll<Solicitud>('solicitud', {
-      select: 'id_solicitud, id_estado, titulo_solicitud, fecha_creacion_solicitud',
+      select:  'id_solicitud, id_estado, titulo_solicitud, fecha_creacion_solicitud, fecha_actualizacion',
       filters: { id_usuario: idUsuario, is_active: true },
     });
 

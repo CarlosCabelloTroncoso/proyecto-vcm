@@ -21,6 +21,8 @@ export interface PlanteamientoProyecto {
   id_solicitud: number;
   id_usuario: number;
   id_estado: number;
+  fecha_creacion?: string | null;
+  fecha_actualizacion?: string | null;
   is_active?: boolean;
   // Relaciones
   estado_planteamiento?: { nombre_estado: string };

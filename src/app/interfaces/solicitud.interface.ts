@@ -16,6 +16,7 @@ export interface Solicitud {
   titulo_solicitud: string;
   descripcion_solicitud: string;
   fecha_creacion_solicitud: string;
+  fecha_actualizacion?: string | null;
   id_estado: number;
   id_usuario: number;
   id_carrera: number;

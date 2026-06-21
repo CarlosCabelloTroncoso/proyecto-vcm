@@ -175,7 +175,10 @@ export class MisSolicitudes implements OnInit {
     if (this.filtroTipo === 'carrera' && this.filtroCarrera)
       lista = lista.filter(s => s.id_carrera === +this.filtroCarrera);
 
-    return lista;
+    return lista.sort((a, b) => {
+      const diff = new Date(b.fecha_creacion_solicitud).getTime() - new Date(a.fecha_creacion_solicitud).getTime();
+      return diff !== 0 ? diff : b.id_solicitud - a.id_solicitud;
+    });
   }
 
   onCambiarFiltroTipo(): void {

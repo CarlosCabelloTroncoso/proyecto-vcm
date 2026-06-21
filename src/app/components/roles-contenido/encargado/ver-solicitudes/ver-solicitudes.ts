@@ -156,10 +156,11 @@ export class VerSolicitudes implements OnInit {
 
   async confirmarAprobar(): Promise<void> {
     if (this.solicitudAccion) {
-      const id = this.solicitudAccion.id_solicitud;
-      await this.dataService.update('solicitud', id, { id_estado: 2 }, 'id_solicitud');
+      const id  = this.solicitudAccion.id_solicitud;
+      const now = new Date().toISOString();
+      await this.dataService.update('solicitud', id, { id_estado: 2, fecha_actualizacion: now }, 'id_solicitud');
       this.solicitudes.update(lista =>
-        lista.map(s => s.id_solicitud === id ? { ...s, id_estado: 2 } : s)
+        lista.map(s => s.id_solicitud === id ? { ...s, id_estado: 2, fecha_actualizacion: now } : s)
       );
     }
     this.mostrarModalAprobar = false;
@@ -168,10 +169,11 @@ export class VerSolicitudes implements OnInit {
 
   async confirmarRechazar(): Promise<void> {
     if (this.solicitudAccion) {
-      const id = this.solicitudAccion.id_solicitud;
-      await this.dataService.update('solicitud', id, { id_estado: 3 }, 'id_solicitud');
+      const id  = this.solicitudAccion.id_solicitud;
+      const now = new Date().toISOString();
+      await this.dataService.update('solicitud', id, { id_estado: 3, fecha_actualizacion: now }, 'id_solicitud');
       this.solicitudes.update(lista =>
-        lista.map(s => s.id_solicitud === id ? { ...s, id_estado: 3 } : s)
+        lista.map(s => s.id_solicitud === id ? { ...s, id_estado: 3, fecha_actualizacion: now } : s)
       );
     }
     this.mostrarModalRechazar = false;

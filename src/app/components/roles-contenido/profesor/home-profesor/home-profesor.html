@@ -164,8 +164,15 @@
                   }
 
                   <div class="min-w-0 flex-1">
-                    <p class="text-sm text-gray-700 leading-snug">{{ entrada.mensaje }}</p>
-                    <p class="mt-0.5 text-xs text-gray-400">{{ entrada.fecha }}</p>
+                    <div class="flex items-center gap-2">
+                      <p class="text-sm text-gray-700 leading-snug">{{ entrada.mensaje }}</p>
+                      @if (entrada.esNuevo) {
+                        <span class="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-600">
+                          Nuevo
+                        </span>
+                      }
+                    </div>
+                    <p class="mt-0.5 text-xs text-gray-400">{{ entrada.fechaDisplay }}</p>
                   </div>
 
                 </div>

@@ -110,10 +110,11 @@ export class GestionPlanteamiento implements OnInit {
 
   async confirmarAprobar(): Promise<void> {
     if (!this.planteamientoAccion) return;
-    const id = this.planteamientoAccion.id_planteamiento;
-    await this.dataService.update('planteamiento_proyecto', id, { id_estado: 2 }, 'id_planteamiento');
+    const id  = this.planteamientoAccion.id_planteamiento;
+    const now = new Date().toISOString();
+    await this.dataService.update('planteamiento_proyecto', id, { id_estado: 2, fecha_actualizacion: now }, 'id_planteamiento');
     this.planteamientos.update(lista =>
-      lista.map(p => p.id_planteamiento === id ? { ...p, id_estado: 2 } : p)
+      lista.map(p => p.id_planteamiento === id ? { ...p, id_estado: 2, fecha_actualizacion: now } : p)
     );
     this.cancelarAccion();
   }
@@ -125,10 +126,11 @@ export class GestionPlanteamiento implements OnInit {
 
   async confirmarRechazar(): Promise<void> {
     if (!this.planteamientoAccion) return;
-    const id = this.planteamientoAccion.id_planteamiento;
-    await this.dataService.update('planteamiento_proyecto', id, { id_estado: 3 }, 'id_planteamiento');
+    const id  = this.planteamientoAccion.id_planteamiento;
+    const now = new Date().toISOString();
+    await this.dataService.update('planteamiento_proyecto', id, { id_estado: 3, fecha_actualizacion: now }, 'id_planteamiento');
     this.planteamientos.update(lista =>
-      lista.map(p => p.id_planteamiento === id ? { ...p, id_estado: 3 } : p)
+      lista.map(p => p.id_planteamiento === id ? { ...p, id_estado: 3, fecha_actualizacion: now } : p)
     );
     this.cancelarAccion();
   }

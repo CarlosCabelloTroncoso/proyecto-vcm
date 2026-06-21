@@ -192,10 +192,10 @@ export class CrearSolicitud implements OnInit {
   async onSubmit(): Promise<void> {
     if (!this.formularioValido) return;
 
-    if (this.modo === 'crear') {
-      const idUsuario = this.auth.usuario()?.id_usuario;
-      if (!idUsuario) return;
+    const idUsuario = this.auth.usuario()?.id_usuario;
+    if (!idUsuario) return;
 
+    if (this.modo === 'crear') {
       const { data } = await this.dataService.create<Solicitud>('solicitud', {
         titulo_solicitud:         this.form.titulo_solicitud!.trim(),
         descripcion_solicitud:    this.form.descripcion_solicitud!.trim(),
@@ -212,6 +212,7 @@ export class CrearSolicitud implements OnInit {
 
     } else {
       const idSolicitud = this.solicitudOriginal!.id_solicitud;
+
       await this.dataService.update('solicitud', idSolicitud, {
         titulo_solicitud:      this.form.titulo_solicitud!.trim(),
         descripcion_solicitud: this.form.descripcion_solicitud!.trim(),
