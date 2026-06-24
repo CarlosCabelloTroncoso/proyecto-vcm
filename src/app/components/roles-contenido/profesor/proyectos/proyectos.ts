@@ -24,6 +24,7 @@ interface AlumnoVista {
   id: number;
   rut: string;
   nombre: string;
+  idCarrera: number;
 }
 
 interface ArchivoEntry {
@@ -57,31 +58,52 @@ export class Proyectos implements OnInit {
         filters: { is_active: true },
       }),
       this.dataService.getAll<any>('planteamiento_proyecto', {
-        select: 'id_planteamiento, titulo_planteamiento',
+        select: 'id_planteamiento, titulo_planteamiento, id_carrera',
         filters: { id_estado: 2, is_active: true },
       }),
       this.dataService.getAll<any>('alumno_voluntario', {
-        select: 'id_alumno, rut_alumno, nombres_alumno, apellidos_alumno',
+        select: 'id_alumno, rut_alumno, nombres_alumno, apellidos_alumno, id_carrera',
         filters: { is_active: true },
       }),
     ]);
 
     if (proyectosRes.data) {
-      const mapped = proyectosRes.data.map((p: any): ProyectoVista => ({
-        id:                   p.id_proyecto,
-        id_planteamiento:     p.id_planteamiento,
-        titulo:               p.planteamiento_proyecto?.titulo_planteamiento ?? `Proyecto #${p.id_proyecto}`,
-        planteamiento_origen: p.planteamiento_proyecto?.titulo_planteamiento ?? '—',
-        solicitud_origen:     p.planteamiento_proyecto?.solicitud?.titulo_solicitud ?? '—',
-        tiempo_estimado:      p.planteamiento_proyecto?.tiempo_estimado_planteamiento ?? '—',
-        fecha_inicio:         p.fecha_inicio ?? undefined,
-        fecha_termino:        p.fecha_fin ?? undefined,
-        estado:               ((p.estado_proyecto?.nombre_estado ?? '') as string)
-                                .toLowerCase().replace(/ /g, '_') as ProyectoVista['estado'],
-      }));
+      const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+      const terminales: ProyectoVista['estado'][] = ['finalizado', 'cancelado'];
+      const idEstadoAtrasado = this.catalog.getIdEstadoProyecto('Atrasado');
+      const idsAMarcarAtrasado: number[] = [];
+
+      const mapped = proyectosRes.data.map((p: any): ProyectoVista => {
+        const estadoRaw = ((p.estado_proyecto?.nombre_estado ?? '') as string)
+          .toLowerCase().replace(/ /g, '_') as ProyectoVista['estado'];
+        const fechaFin = p.fecha_fin ? new Date(p.fecha_fin) : null;
+        let estado = estadoRaw;
+        if (fechaFin && fechaFin < hoy && !terminales.includes(estadoRaw) && estadoRaw !== 'atrasado') {
+          estado = 'atrasado';
+          idsAMarcarAtrasado.push(p.id_proyecto);
+        }
+        return {
+          id:                   p.id_proyecto,
+          id_planteamiento:     p.id_planteamiento,
+          titulo:               p.planteamiento_proyecto?.titulo_planteamiento ?? `Proyecto #${p.id_proyecto}`,
+          planteamiento_origen: p.planteamiento_proyecto?.titulo_planteamiento ?? '—',
+          solicitud_origen:     p.planteamiento_proyecto?.solicitud?.titulo_solicitud ?? '—',
+          tiempo_estimado:      p.planteamiento_proyecto?.tiempo_estimado_planteamiento ?? '—',
+          fecha_inicio:         p.fecha_inicio ?? undefined,
+          fecha_termino:        p.fecha_fin ?? undefined,
+          estado,
+        };
+      });
       this.proyectos.set(mapped);
       if (mapped.length > 0 && !mapped.some(p => p.estado === this.filtroActivo)) {
         this.filtroActivo = mapped[0].estado;
+      }
+      if (idEstadoAtrasado && idsAMarcarAtrasado.length > 0) {
+        await Promise.all(
+          idsAMarcarAtrasado.map(id =>
+            this.dataService.update('proyecto', id, { id_estado: idEstadoAtrasado }, 'id_proyecto')
+          )
+        );
       }
     }
 
@@ -91,9 +113,10 @@ export class Proyectos implements OnInit {
 
     if (alumnosRes.data) {
       this.alumnosDisponibles = alumnosRes.data.map((a: any): AlumnoVista => ({
-        id:     a.id_alumno,
-        rut:    a.rut_alumno,
-        nombre: `${a.nombres_alumno} ${a.apellidos_alumno}`,
+        id:        a.id_alumno,
+        rut:       a.rut_alumno,
+        nombre:    `${a.nombres_alumno} ${a.apellidos_alumno}`,
+        idCarrera: a.id_carrera,
       }));
     }
 
@@ -110,7 +133,7 @@ export class Proyectos implements OnInit {
 
   proyectos = signal<ProyectoVista[]>([]);
 
-  planteamientosAprobados = signal<{ id_planteamiento: number; titulo_planteamiento: string }[]>([]);
+  planteamientosAprobados = signal<{ id_planteamiento: number; titulo_planteamiento: string; id_carrera: number }[]>([]);
 
   // ── Modal Crear Proyecto ──────────────────────────────────────
   mostrarModalCrear = false;
@@ -143,10 +166,23 @@ export class Proyectos implements OnInit {
   ];
   readonly TAMANO_MAX_MB = 10;
 
+  // ── Constantes ────────────────────────────────────────────────
+
+  readonly ESTADOS_ASIGNABLES: { key: ProyectoVista['estado']; label: string }[] = [
+    { key: 'en_proceso', label: 'En proceso' },
+    { key: 'pausado',    label: 'Pausado'    },
+    { key: 'finalizado', label: 'Finalizado' },
+    { key: 'cancelado',  label: 'Cancelado'  },
+  ];
+
+  readonly ESTADOS_TERMINALES: ProyectoVista['estado'][] = ['finalizado', 'cancelado'];
+
   // ── Getters ───────────────────────────────────────────────────
 
   get proyectosFiltrados(): ProyectoVista[] {
-    return this.proyectos().filter(p => p.estado === this.filtroActivo);
+    return this.proyectos()
+      .filter(p => p.estado === this.filtroActivo)
+      .sort((a, b) => b.id - a.id);
   }
 
   get contadorPorEstado(): Record<string, number> {
@@ -165,9 +201,51 @@ export class Proyectos implements OnInit {
   }
 
   get alumnosDisponiblesParaAgregar(): AlumnoVista[] {
+    const idPlan = this.formProyecto.id_planteamiento
+      ?? this.planteamientoPreseleccionado?.id_planteamiento;
+    const idCarrera = idPlan
+      ? (this.planteamientosAprobados().find(p => p.id_planteamiento === idPlan)?.id_carrera ?? null)
+      : null;
+
     return this.alumnosDisponibles.filter(
-      a => !this.alumnosSeleccionados.some(s => s.id === a.id)
+      a => (!idCarrera || a.idCarrera === idCarrera)
+        && !this.alumnosSeleccionados.some(s => s.id === a.id)
     );
+  }
+
+  esTerminal(estado: ProyectoVista['estado']): boolean {
+    return this.ESTADOS_TERMINALES.includes(estado);
+  }
+
+  getOpcionesEstado(estadoActual: ProyectoVista['estado']): { key: ProyectoVista['estado']; label: string }[] {
+    return this.ESTADOS_ASIGNABLES.filter(e => e.key !== estadoActual);
+  }
+
+  async cambiarEstado(proyecto: ProyectoVista, event: Event): Promise<void> {
+    const select = event.target as HTMLSelectElement;
+    const nuevoEstado = select.value as ProyectoVista['estado'];
+    if (!nuevoEstado) return;
+    const idEstado = this.catalog.getIdEstadoProyecto(this.getNombreEstado(nuevoEstado));
+    if (idEstado) {
+      const { error } = await this.dataService.update('proyecto', proyecto.id, { id_estado: idEstado }, 'id_proyecto');
+      if (!error) {
+        this.proyectos.update(lista =>
+          lista.map(p => p.id === proyecto.id ? { ...p, estado: nuevoEstado } : p)
+        );
+        if (nuevoEstado === 'cancelado' && proyecto.id_planteamiento) {
+          const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
+          await this.dataService.update(
+            'planteamiento_proyecto',
+            proyecto.id_planteamiento,
+            { id_estado: idCancelado, fecha_actualizacion: new Date().toISOString() },
+            'id_planteamiento'
+          );
+        }
+      } else {
+        console.error('Error al cambiar estado:', error);
+      }
+    }
+    select.value = '';
   }
 
   getBadgeEstado(estado: string): string {
@@ -275,8 +353,51 @@ export class Proyectos implements OnInit {
       );
     }
 
+    if (data) {
+      await this.subirNuevosArchivos(data.id_proyecto);
+    }
+
     await this.ngOnInit();
     this.cerrarCrear();
+  }
+
+  private sanitizarNombreArchivo(nombre: string): string {
+    return nombre
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-zA-Z0-9._-]/g, '_');
+  }
+
+  private async subirNuevosArchivos(idProyecto: number): Promise<void> {
+    const nuevos = this.archivosProyecto.filter(e => !!e.file);
+    for (const entry of nuevos) {
+      const file             = entry.file!;
+      const extension        = file.name.split('.').pop()?.toLowerCase() ?? 'bin';
+      const nombreSanitizado = this.sanitizarNombreArchivo(file.name);
+      const ruta             = `proyectos/${idProyecto}/${Date.now()}_${nombreSanitizado}`;
+
+      const { error: storageError } = await this.supabaseService.client.storage
+        .from('vcm-archivos')
+        .upload(ruta, file, { upsert: true });
+
+      if (storageError) {
+        console.error('[Storage] Error al subir archivo:', storageError);
+        continue;
+      }
+
+      const { error: dbError } = await this.dataService.create('archivo', {
+        nombre_archivo:   file.name,
+        ruta_archivo:     ruta,
+        tipo_archivo:     extension,
+        id_solicitud:     null,
+        id_planteamiento: null,
+        id_proyecto:      idProyecto,
+      });
+
+      if (dbError) {
+        console.error('[DB] Error al registrar archivo:', dbError);
+      }
+    }
   }
 
   // ── Archivos ──────────────────────────────────────────────────

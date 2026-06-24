@@ -124,8 +124,10 @@ export class GestionAlumno implements OnInit {
   async onEliminarAlumno(): Promise<void> {
     if (this.alumnoAEliminar) {
       const id = this.alumnoAEliminar.id_alumno;
-      await this.dataService.softDelete('alumno_voluntario', id, 'id_alumno');
-      this.alumnos.update(lista => lista.filter(a => a.id_alumno !== id));
+      const { error } = await this.dataService.softDelete('alumno_voluntario', id, 'id_alumno');
+      if (!error) {
+        this.alumnos.update(lista => lista.filter(a => a.id_alumno !== id));
+      }
       this.alumnoAEliminar     = null;
       this.mostrarModalEliminar = false;
     }

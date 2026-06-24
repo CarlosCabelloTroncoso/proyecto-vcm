@@ -8,6 +8,7 @@ import { Archivo } from '../../../../interfaces/proyecto.interface';
 import { AuthService } from '../../../../core/services/auth.service';
 import { DataService } from '../../../../core/services/data.service';
 import { CatalogService } from '../../../../core/services/catalog.service';
+import { SupabaseService } from '../../../../core/services/supabase.service';
 
 /** Par interno: metadatos del archivo + referencia al File nativo (si es nuevo). */
 interface ArchivoEntry {
@@ -42,6 +43,7 @@ export class CrearSolicitud implements OnInit {
 
   /* ─── Archivos adjuntos ─────────────────────────────────────── */
   archivosAdjuntos: ArchivoEntry[] = [];
+  archivosEliminados: Archivo[] = [];
   arrastrandoArchivo = false;
   errorArchivos: string[] = [];
 
@@ -62,6 +64,7 @@ export class CrearSolicitud implements OnInit {
     private auth: AuthService,
     private dataService: DataService,
     private catalog: CatalogService,
+    private supabaseService: SupabaseService,
     private router: Router) {}
 
   async ngOnInit(): Promise<void> {
@@ -147,6 +150,10 @@ export class CrearSolicitud implements OnInit {
   }
 
   eliminarArchivo(index: number): void {
+    const entry = this.archivosAdjuntos[index];
+    if (!entry.file) {
+      this.archivosEliminados.push(entry.archivo);
+    }
     this.archivosAdjuntos.splice(index, 1);
   }
 
@@ -206,6 +213,10 @@ export class CrearSolicitud implements OnInit {
         id_ciudad:                +this.form.id_ciudad!,
       });
 
+      if (data) {
+        await this.subirNuevosArchivos('solicitudes', data.id_solicitud);
+      }
+
       this.router.navigate(['/cliente/mis-solicitudes'], {
         state: data ? { abrirDetalleId: data.id_solicitud } : undefined,
       });
@@ -220,10 +231,65 @@ export class CrearSolicitud implements OnInit {
         id_ciudad:             +this.form.id_ciudad!,
       }, 'id_solicitud');
 
+      await this.eliminarArchivosRemovidos();
+      await this.subirNuevosArchivos('solicitudes', idSolicitud);
+
       this.router.navigate(['/cliente/mis-solicitudes'], {
         state: { abrirDetalleId: idSolicitud },
       });
     }
+  }
+
+  private sanitizarNombreArchivo(nombre: string): string {
+    return nombre
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-zA-Z0-9._-]/g, '_');
+  }
+
+  private async subirNuevosArchivos(
+    carpeta: 'solicitudes' | 'planteamientos' | 'proyectos',
+    idEntidad: number
+  ): Promise<void> {
+    const nuevos = this.archivosAdjuntos.filter(e => !!e.file);
+    for (const entry of nuevos) {
+      const file             = entry.file!;
+      const extension        = file.name.split('.').pop()?.toLowerCase() ?? 'bin';
+      const nombreSanitizado = this.sanitizarNombreArchivo(file.name);
+      const ruta             = `${carpeta}/${idEntidad}/${Date.now()}_${nombreSanitizado}`;
+
+      const { error: storageError } = await this.supabaseService.client.storage
+        .from('vcm-archivos')
+        .upload(ruta, file, { upsert: true });
+
+      if (storageError) {
+        console.error('[Storage] Error al subir archivo:', storageError);
+        continue;
+      }
+
+      const { error: dbError } = await this.dataService.create('archivo', {
+        nombre_archivo:   file.name,
+        ruta_archivo:     ruta,
+        tipo_archivo:     extension,
+        id_solicitud:     carpeta === 'solicitudes'    ? idEntidad : null,
+        id_planteamiento: carpeta === 'planteamientos' ? idEntidad : null,
+        id_proyecto:      carpeta === 'proyectos'      ? idEntidad : null,
+      });
+
+      if (dbError) {
+        console.error('[DB] Error al registrar archivo:', dbError);
+      }
+    }
+  }
+
+  private async eliminarArchivosRemovidos(): Promise<void> {
+    for (const archivo of this.archivosEliminados) {
+      await this.supabaseService.client.storage
+        .from('vcm-archivos')
+        .remove([archivo.ruta_archivo]);
+      await this.dataService.hardDelete('archivo', archivo.id_archivo, 'id_archivo');
+    }
+    this.archivosEliminados = [];
   }
 
   cancelar(): void {

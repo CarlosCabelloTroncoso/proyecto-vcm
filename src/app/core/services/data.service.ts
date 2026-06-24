@@ -94,6 +94,30 @@ export class DataService {
     return { error: error?.message || null };
   }
 
+  async hardDelete(
+    table: string,
+    id: number,
+    pkColumn: string = 'id'
+  ): Promise<{ error: string | null }> {
+    const { error } = await this.supabase
+      .from(table)
+      .delete()
+      .eq(pkColumn, id);
+    return { error: error?.message || null };
+  }
+
+  async deleteWhere(
+    table: string,
+    filters: Record<string, any>
+  ): Promise<{ error: string | null }> {
+    let query = this.supabase.from(table).delete() as any;
+    for (const [key, value] of Object.entries(filters)) {
+      query = query.eq(key, value);
+    }
+    const { error } = await query;
+    return { error: error?.message || null };
+  }
+
   async rpc<T>(
     functionName: string,
     params: Record<string, any>

@@ -10,7 +10,7 @@
     </h1>
     <p class="mt-1 text-sm text-[#1B3A6B]/60">
       Gestiona las solicitudes de
-      <span class="font-semibold text-[#1B3A6B]">Ingeniería Civil Informática</span>
+      <span class="font-semibold text-[#1B3A6B]">{{ nombreCarrera || '…' }}</span>
       — aprueba o rechaza las solicitudes pendientes.
     </p>
   </div>
@@ -126,10 +126,18 @@
                 </td>
 
                 <td class="px-5 py-4">
-                  <span class="inline-flex rounded-full border px-2.5 py-0.5
-                               text-xs font-semibold {{ getBadgeEstado(sol.id_estado) }}">
-                    {{ getNombreEstado(sol.id_estado) }}
-                  </span>
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="inline-flex rounded-full border px-2.5 py-0.5
+                                 text-xs font-semibold {{ getBadgeEstado(sol.id_estado) }}">
+                      {{ getNombreEstado(sol.id_estado) }}
+                    </span>
+                    @if (esSolicitudOcupada(sol.id_solicitud)) {
+                      <span class="inline-flex rounded-full border border-orange-200
+                                   bg-orange-50 px-2.5 py-0.5 text-xs font-semibold text-orange-600">
+                        En uso
+                      </span>
+                    }
+                  </div>
                 </td>
 
                 <!-- Acciones -->
@@ -225,7 +233,7 @@
   [estados]="estados"
   [carreras]="carreras"
   [ciudades]="ciudades"
-  [archivos]="solicitudSeleccionada ? getArchivosDeSolicitud(solicitudSeleccionada.id_solicitud) : []"
+  [archivos]="archivos"
   [nombreCliente]="solicitudSeleccionada ? getNombreCliente(solicitudSeleccionada.id_usuario) : ''"
   (cerrar)="cerrarDetalle()" />
 

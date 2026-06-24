@@ -13,6 +13,7 @@ type EstadoProyectoKey = 'disponible' | 'en_proceso' | 'pausado' | 'atrasado' | 
 
 interface ProyectoVista {
   id: number;
+  id_planteamiento: number;
   titulo: string;
   planteamiento_origen: string;
   solicitud_origen: string;
@@ -32,32 +33,62 @@ interface ProyectoVista {
 export class GestionProyecto implements OnInit {
   estadosProyecto: any[] = [];
 
+  private auth = inject(AuthService);
+
+  nombreCarrera = '';
+
   constructor(private dataService: DataService, private catalog: CatalogService) {}
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
     this.estadosProyecto = this.catalog.estadosProyecto();
+
+    const idCarrera = this.auth.usuario()?.gestor_vinculacion_carrera?.id_carrera;
+    if (idCarrera) {
+      this.nombreCarrera = this.catalog.carreras().find(c => c.id_carrera === idCarrera)?.nombre_carrera ?? '';
+    }
     const proyectosRes = await this.dataService.getAll<any>('proyecto', {
       select: `*, estado_proyecto(nombre_estado), planteamiento_proyecto(titulo_planteamiento, tiempo_estimado_planteamiento, id_carrera, id_solicitud, solicitud(titulo_solicitud), carrera(nombre_carrera))`,
       filters: { is_active: true },
     });
     if (proyectosRes.data) {
-      const mapped = proyectosRes.data.map((p: any): ProyectoVista => ({
-        id:                   p.id_proyecto,
-        titulo:               p.planteamiento_proyecto?.titulo_planteamiento ?? `Proyecto #${p.id_proyecto}`,
-        planteamiento_origen: p.planteamiento_proyecto?.titulo_planteamiento ?? '—',
-        solicitud_origen:     p.planteamiento_proyecto?.solicitud?.titulo_solicitud ?? '—',
-        tiempo_estimado:      p.planteamiento_proyecto?.tiempo_estimado_planteamiento ?? '—',
-        fecha_inicio:         p.fecha_inicio ?? undefined,
-        fecha_termino:        p.fecha_fin ?? undefined,
-        estado:               ((p.estado_proyecto?.nombre_estado ?? '') as string)
-                                .toLowerCase().replace(/ /g, '_') as EstadoProyectoKey,
-        planteamiento:        p.planteamiento_proyecto,
-      }));
+      const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+      const terminales: EstadoProyectoKey[] = ['finalizado', 'cancelado'];
+      const idEstadoAtrasado = this.catalog.getIdEstadoProyecto('Atrasado');
+      const idsAMarcarAtrasado: number[] = [];
+
+      const mapped = proyectosRes.data.map((p: any): ProyectoVista => {
+        const estadoRaw = ((p.estado_proyecto?.nombre_estado ?? '') as string)
+          .toLowerCase().replace(/ /g, '_') as EstadoProyectoKey;
+        const fechaFin = p.fecha_fin ? new Date(p.fecha_fin) : null;
+        let estado = estadoRaw;
+        if (fechaFin && fechaFin < hoy && !terminales.includes(estadoRaw) && estadoRaw !== 'atrasado') {
+          estado = 'atrasado';
+          idsAMarcarAtrasado.push(p.id_proyecto);
+        }
+        return {
+          id:                   p.id_proyecto,
+          id_planteamiento:     p.id_planteamiento,
+          titulo:               p.planteamiento_proyecto?.titulo_planteamiento ?? `Proyecto #${p.id_proyecto}`,
+          planteamiento_origen: p.planteamiento_proyecto?.titulo_planteamiento ?? '—',
+          solicitud_origen:     p.planteamiento_proyecto?.solicitud?.titulo_solicitud ?? '—',
+          tiempo_estimado:      p.planteamiento_proyecto?.tiempo_estimado_planteamiento ?? '—',
+          fecha_inicio:         p.fecha_inicio ?? undefined,
+          fecha_termino:        p.fecha_fin ?? undefined,
+          estado,
+          planteamiento:        p.planteamiento_proyecto,
+        };
+      });
       this.proyectos.set(mapped);
-      // Auto-seleccionar primer tab con datos si el tab actual está vacío
       if (mapped.length > 0 && !mapped.some(p => p.estado === this.filtroActivo)) {
         this.filtroActivo = mapped[0].estado;
+      }
+      if (idEstadoAtrasado && idsAMarcarAtrasado.length > 0) {
+        await Promise.all(
+          idsAMarcarAtrasado.map(id =>
+            this.dataService.update('proyecto', id, { id_estado: idEstadoAtrasado }, 'id_proyecto')
+          )
+        );
       }
     }
   }
@@ -80,7 +111,6 @@ export class GestionProyecto implements OnInit {
   readonly ESTADOS_ASIGNABLES: { key: EstadoProyectoKey; label: string }[] = [
     { key: 'en_proceso', label: 'En proceso' },
     { key: 'pausado',    label: 'Pausado'    },
-    { key: 'atrasado',   label: 'Atrasado'   },
     { key: 'finalizado', label: 'Finalizado' },
     { key: 'cancelado',  label: 'Cancelado'  },
   ];
@@ -90,7 +120,9 @@ export class GestionProyecto implements OnInit {
   // ── Getters ───────────────────────────────────────────────────────
 
   get proyectosFiltrados(): ProyectoVista[] {
-    return this.proyectos().filter(p => p.estado === this.filtroActivo);
+    return this.proyectos()
+      .filter(p => p.estado === this.filtroActivo)
+      .sort((a, b) => b.id - a.id);
   }
 
   get contadorPorEstado(): Record<EstadoProyectoKey, number> {
@@ -117,10 +149,23 @@ export class GestionProyecto implements OnInit {
     if (!nuevoEstado) return;
     const idEstado = this.catalog.getIdEstadoProyecto(this.getNombreEstado(nuevoEstado));
     if (idEstado) {
-      await this.dataService.update('proyecto', proyecto.id, { id_estado: idEstado }, 'id_proyecto');
-      this.proyectos.update(lista =>
-        lista.map(p => p.id === proyecto.id ? { ...p, estado: nuevoEstado } : p)
-      );
+      const { error } = await this.dataService.update('proyecto', proyecto.id, { id_estado: idEstado }, 'id_proyecto');
+      if (!error) {
+        this.proyectos.update(lista =>
+          lista.map(p => p.id === proyecto.id ? { ...p, estado: nuevoEstado } : p)
+        );
+        if (nuevoEstado === 'cancelado' && proyecto.id_planteamiento) {
+          const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
+          await this.dataService.update(
+            'planteamiento_proyecto',
+            proyecto.id_planteamiento,
+            { id_estado: idCancelado, fecha_actualizacion: new Date().toISOString() },
+            'id_planteamiento'
+          );
+        }
+      } else {
+        console.error('Error al cambiar estado del proyecto:', error);
+      }
     }
     select.value = '';
   }

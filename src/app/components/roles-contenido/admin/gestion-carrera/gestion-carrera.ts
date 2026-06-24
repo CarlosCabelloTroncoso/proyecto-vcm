@@ -128,14 +128,18 @@ export class GestionCarrera implements OnInit {
       await this.dataService.create('carrera', datos);
     }
     this.mostrarModalForm = false;
+    this.catalog.invalidate();
     await this.ngOnInit();
   }
 
   async onEliminarCarrera(): Promise<void> {
     if (this.carreraAEliminar) {
       const id = this.carreraAEliminar.id_carrera;
-      await this.dataService.softDelete('carrera', id, 'id_carrera');
-      this.carreras.update(lista => lista.filter(c => c.id_carrera !== id));
+      const { error } = await this.dataService.softDelete('carrera', id, 'id_carrera');
+      if (!error) {
+        this.carreras.update(lista => lista.filter(c => c.id_carrera !== id));
+        this.catalog.invalidate();
+      }
       this.carreraAEliminar     = null;
       this.mostrarModalEliminar = false;
     }

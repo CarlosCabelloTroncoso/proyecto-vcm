@@ -148,7 +148,7 @@
             <div class="grid grid-cols-1 gap-2">
               <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-4 flex flex-col items-center text-center">
                 <p class="text-2xl font-extrabold text-sky-700 leading-none">{{ totalProyectos() }}</p>
-                <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-sky-500">Total activos</p>
+                <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-sky-500">Total</p>
               </div>
             </div>
           </div>
@@ -175,13 +175,13 @@
 
                 <div class="flex items-start gap-3 py-3">
 
-                  @if (entrada.estado === 2) {
+                  @if (entrada.colorIcono === 'verde') {
                     <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-green-100">
                       <svg class="h-3.5 w-3.5 text-green-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                       </svg>
                     </div>
-                  } @else if (entrada.estado === 3) {
+                  } @else if (entrada.colorIcono === 'rojo') {
                     <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-100">
                       <svg class="h-3.5 w-3.5 text-red-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -208,8 +208,10 @@
                       <span class="text-[10px] font-medium px-1.5 py-0.5 rounded"
                             [class]="entrada.tipo === 'solicitud'
                               ? 'bg-violet-50 text-violet-500'
-                              : 'bg-sky-50 text-sky-500'">
-                        {{ entrada.tipo === 'solicitud' ? 'Solicitud' : 'Planteamiento' }}
+                              : entrada.tipo === 'planteamiento'
+                              ? 'bg-sky-50 text-sky-500'
+                              : 'bg-emerald-50 text-emerald-600'">
+                        {{ entrada.tipo === 'solicitud' ? 'Solicitud' : entrada.tipo === 'planteamiento' ? 'Planteamiento' : 'Proyecto' }}
                       </span>
                       <p class="text-xs text-gray-400">{{ entrada.fechaDisplay }}</p>
                     </div>

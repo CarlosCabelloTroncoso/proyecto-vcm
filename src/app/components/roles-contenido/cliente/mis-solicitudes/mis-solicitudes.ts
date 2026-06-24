@@ -10,6 +10,7 @@ import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar'
 import { AuthService } from '../../../../core/services/auth.service';
 import { DataService } from '../../../../core/services/data.service';
 import { CatalogService } from '../../../../core/services/catalog.service';
+import { SupabaseService } from '../../../../core/services/supabase.service';
 
 @Component({
   selector: 'app-mis-solicitudes',
@@ -62,6 +63,7 @@ export class MisSolicitudes implements OnInit {
     private dataService: DataService,
     private catalog: CatalogService,
     private auth: AuthService,
+    private supabaseService: SupabaseService,
     private router: Router) {}
 
   async ngOnInit(): Promise<void> {
@@ -72,11 +74,14 @@ export class MisSolicitudes implements OnInit {
 
     const idUsuario = this.auth.usuario()?.id_usuario;
     if (idUsuario) {
-      const res = await this.dataService.getAll<Solicitud>('solicitud', {
-        select: `*, estado_solicitud(nombre_estado), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`,
+      const res = await this.dataService.getAll<any>('solicitud', {
+        select: `*, estado_solicitud(nombre_estado), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad), archivo(*)`,
         filters: { id_usuario: idUsuario, is_active: true },
       });
-      if (res.data) this.solicitudes.set(res.data);
+      if (res.data) {
+        this.solicitudes.set(res.data);
+        this.archivos = res.data.flatMap((s: any) => s.archivo ?? []);
+      }
     }
 
     // Viene de crear/editar solicitud → abre el detalle de la solicitud recién guardada
@@ -214,9 +219,21 @@ export class MisSolicitudes implements OnInit {
   async onEliminarSolicitud(): Promise<void> {
     if (this.solicitudAEliminar) {
       const idSolicitud = this.solicitudAEliminar.id_solicitud;
-      await this.dataService.softDelete('solicitud', idSolicitud, 'id_solicitud');
-      this.solicitudes.update(lista => lista.filter(s => s.id_solicitud !== idSolicitud));
-      this.archivos    = this.archivos.filter(a => a.id_solicitud !== idSolicitud);
+
+      const archivosDeEsta = this.archivos.filter(a => a.id_solicitud === idSolicitud);
+      if (archivosDeEsta.length > 0) {
+        await this.supabaseService.client.storage
+          .from('vcm-archivos')
+          .remove(archivosDeEsta.map(a => a.ruta_archivo));
+      }
+
+      await this.dataService.deleteWhere('archivo', { id_solicitud: idSolicitud });
+
+      const { error } = await this.dataService.hardDelete('solicitud', idSolicitud, 'id_solicitud');
+      if (!error) {
+        this.solicitudes.update(lista => lista.filter(s => s.id_solicitud !== idSolicitud));
+        this.archivos = this.archivos.filter(a => a.id_solicitud !== idSolicitud);
+      }
       this.solicitudAEliminar   = null;
       this.mostrarModalEliminar = false;
     }

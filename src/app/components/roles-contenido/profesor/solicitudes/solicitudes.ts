@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -23,6 +23,7 @@ export class Solicitudes implements OnInit {
   constructor(
     private dataService: DataService,
     private catalog: CatalogService,
+    private cdr: ChangeDetectorRef,
     private router: Router) {}
 
   /* ─── Catálogos ────────────────────────────────────────────── */
@@ -32,6 +33,8 @@ export class Solicitudes implements OnInit {
 
   /* ─── Solicitudes ───────────────────────────────────────────── */
   solicitudes = signal<Solicitud[]>([]);
+
+  solicitudesOcupadasIds = new Set<number>();
 
   archivos: Archivo[] = [];
 
@@ -83,7 +86,11 @@ export class Solicitudes implements OnInit {
       lista = lista.filter(s => s.fecha_creacion_solicitud.startsWith(this.filtroFechaEfectiva));
     }
 
-    return lista;
+    return lista.sort((a, b) => {
+      const fa = a.fecha_creacion_solicitud ?? '';
+      const fb = b.fecha_creacion_solicitud ?? '';
+      return fb.localeCompare(fa);
+    });
   }
 
   async ngOnInit(): Promise<void> {
@@ -97,11 +104,27 @@ export class Solicitudes implements OnInit {
       this.nombreCarrera = this.carreras.find(c => c.id_carrera === idCarrera)?.nombre_carrera ?? '';
     }
 
-    const solicitudesRes = await this.dataService.getAll<any>('solicitud', {
-      select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`,
-      filters: { is_active: true },
-    });
+    const [solicitudesRes, ocupadas] = await Promise.all([
+      this.dataService.getAll<any>('solicitud', {
+        select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`,
+        filters: { is_active: true },
+      }),
+      this.cargarSolicitudesOcupadas(),
+    ]);
     if (solicitudesRes.data) this.solicitudes.set(solicitudesRes.data);
+    this.solicitudesOcupadasIds = ocupadas;
+  }
+
+  private async cargarSolicitudesOcupadas(): Promise<Set<number>> {
+    const { data } = await this.dataService.getAll<any>('planteamiento_proyecto', {
+      select: 'id_solicitud',
+      filters: { id_estado: 2, is_active: true },
+    });
+    const ocupadas = new Set<number>();
+    if (data) {
+      for (const pp of data) ocupadas.add(pp.id_solicitud);
+    }
+    return ocupadas;
   }
 
   limpiarFiltros(): void {
@@ -153,17 +176,30 @@ export class Solicitudes implements OnInit {
   }
 
   /* ─── Acciones ──────────────────────────────────────────────── */
-  abrirDetalle(solicitud: Solicitud): void {
+  async abrirDetalle(solicitud: Solicitud): Promise<void> {
     this.solicitudSeleccionada = solicitud;
     this.mostrarModalDetalle   = true;
+    this.archivos              = [];
+
+    const { data } = await this.dataService.getAll<Archivo>('archivo', {
+      filters: { id_solicitud: solicitud.id_solicitud },
+    });
+    this.archivos = data ?? [];
+    this.cdr.detectChanges();
   }
 
   cerrarModal(): void {
     this.mostrarModalDetalle   = false;
     this.solicitudSeleccionada = null;
+    this.archivos              = [];
+  }
+
+  esSolicitudOcupada(id: number): boolean {
+    return this.solicitudesOcupadasIds.has(id);
   }
 
   realizarPlanteamiento(solicitud: Solicitud): void {
+    if (this.esSolicitudOcupada(solicitud.id_solicitud)) return;
     this.router.navigate(['/profesor/planteamientos'], {
       state: { solicitudId: solicitud.id_solicitud },
     });

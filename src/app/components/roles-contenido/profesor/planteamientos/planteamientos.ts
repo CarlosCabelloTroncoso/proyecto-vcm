@@ -10,6 +10,7 @@ import { ModalDetallePlanteamiento } from '../../../shared/modal-detalle-plantea
 import { AuthService } from '../../../../core/services/auth.service';
 import { DataService } from '../../../../core/services/data.service';
 import { CatalogService } from '../../../../core/services/catalog.service';
+import { SupabaseService } from '../../../../core/services/supabase.service';
 
 interface ArchivoEntry {
   archivo: Archivo;
@@ -26,13 +27,17 @@ export class Planteamientos implements OnInit {
 
   // Datos del profesor vienen del AuthService
 
+  nombreCarrera = '';
+
   estadosPlanteamiento = signal<EstadoPlanteamiento[]>([]);
 
   solicitudesAprobadas = signal<Solicitud[]>([]);
 
+  solicitudesOcupadasIds = new Set<number>();
+
   planteamientos = signal<PlanteamientoProyecto[]>([]);
 
-  filtroActivo: 'pendiente' | 'aprobado' | 'rechazado' = 'pendiente';
+  filtroActivo: 'pendiente' | 'aprobado' | 'rechazado' | 'cancelado' = 'pendiente';
 
   mostrarModalForm   = false;
   modoEdicion        = false;
@@ -57,6 +62,7 @@ export class Planteamientos implements OnInit {
 
   mostrarModalDetalle = false;
   planteamientoDetalle: PlanteamientoProyecto | null = null;
+  archivosDetalle: Archivo[] = [];
 
   mostrarModalEliminar = false;
   planteamientoEliminar: PlanteamientoProyecto | null = null;
@@ -65,6 +71,7 @@ export class Planteamientos implements OnInit {
     private dataService: DataService,
     private catalog: CatalogService,
     private auth: AuthService,
+    private supabaseService: SupabaseService,
     private cdr: ChangeDetectorRef,
     private router: Router,
   ) {}
@@ -76,20 +83,27 @@ export class Planteamientos implements OnInit {
     await this.catalog.load();
     this.estadosPlanteamiento.set(this.catalog.estadosPlanteamiento());
 
+    const idCarrera = this.auth.usuario()?.profesor?.id_carrera;
+    if (idCarrera) {
+      this.nombreCarrera = this.catalog.carreras().find(c => c.id_carrera === idCarrera)?.nombre_carrera ?? '';
+    }
+
     const u = this.auth.usuario();
     if (u) {
-      const [planRes, solRes] = await Promise.all([
+      const [planRes, solRes, ocupadas] = await Promise.all([
         this.dataService.getAll<any>('planteamiento_proyecto', {
-          select: '*, estado_planteamiento(nombre_estado), carrera(nombre_carrera), solicitud(titulo_solicitud)',
+          select: '*, estado_planteamiento(nombre_estado), carrera(nombre_carrera), solicitud(titulo_solicitud), proyecto(id_proyecto, is_active, estado_proyecto(nombre_estado))',
           filters: { id_usuario: u.id_usuario, is_active: true },
         }),
         this.dataService.getAll<any>('solicitud', {
           select: 'id_solicitud, titulo_solicitud',
           filters: { id_estado: 2, is_active: true },
         }),
+        this.cargarSolicitudesOcupadas(),
       ]);
       if (planRes.data) this.planteamientos.set(planRes.data as PlanteamientoProyecto[]);
       if (solRes.data) this.solicitudesAprobadas.set(solRes.data as Solicitud[]);
+      this.solicitudesOcupadasIds = ocupadas;
       this.cdr.detectChanges();
     }
 
@@ -101,15 +115,24 @@ export class Planteamientos implements OnInit {
   }
 
   get planteamientosFiltrados(): PlanteamientoProyecto[] {
-    const idEstado = this.filtroActivo === 'pendiente' ? 1 : this.filtroActivo === 'aprobado' ? 2 : 3;
-    return this.planteamientos().filter(p => p.id_estado === idEstado);
+    const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
+    const idMap: Record<string, number> = { pendiente: 1, aprobado: 2, rechazado: 3, cancelado: idCancelado };
+    return this.planteamientos()
+      .filter(p => p.id_estado === (idMap[this.filtroActivo] ?? 1))
+      .sort((a: any, b: any) => {
+        const fa = a.fecha_actualizacion ?? a.fecha_creacion ?? '';
+        const fb = b.fecha_actualizacion ?? b.fecha_creacion ?? '';
+        return fb.localeCompare(fa);
+      });
   }
 
   get contadorPorEstado(): Record<string, number> {
+    const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
     return {
       pendiente: this.planteamientos().filter(p => p.id_estado === 1).length,
       aprobado:  this.planteamientos().filter(p => p.id_estado === 2).length,
       rechazado: this.planteamientos().filter(p => p.id_estado === 3).length,
+      cancelado: this.planteamientos().filter(p => p.id_estado === idCancelado).length,
     };
   }
 
@@ -122,17 +145,37 @@ export class Planteamientos implements OnInit {
   }
 
   getBadgeEstado(id: number): string {
+    const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
     const mapa: Record<number, string> = {
       1: 'bg-amber-100 text-amber-700 border-amber-200',
       2: 'bg-emerald-100 text-emerald-700 border-emerald-200',
       3: 'bg-red-100 text-red-500 border-red-200',
+      [idCancelado]: 'bg-slate-100 text-slate-500 border-slate-200',
     };
     return mapa[id] ?? 'bg-gray-100 text-gray-500 border-gray-200';
   }
 
-  abrirDetalle(p: PlanteamientoProyecto): void {
+  tieneProyectoActivo(p: PlanteamientoProyecto): boolean {
+    const proyectos: any[] = Array.isArray((p as any).proyecto) ? (p as any).proyecto : [];
+    return proyectos.some(
+      (pr: any) => pr.is_active === true && pr.estado_proyecto?.nombre_estado !== 'Cancelado'
+    );
+  }
+
+  async abrirDetalle(p: PlanteamientoProyecto): Promise<void> {
     this.planteamientoDetalle = p;
     this.mostrarModalDetalle  = true;
+    this.archivosDetalle      = [];
+
+    const [archPlan, archSol] = await Promise.all([
+      this.dataService.getAll<Archivo>('archivo', { filters: { id_planteamiento: p.id_planteamiento } }),
+      this.dataService.getAll<Archivo>('archivo', { filters: { id_solicitud: p.id_solicitud } }),
+    ]);
+    this.archivosDetalle = [
+      ...(archSol.data  ?? []),
+      ...(archPlan.data ?? []),
+    ];
+    this.cdr.detectChanges();
   }
 
   cerrarDetalle(): void {
@@ -280,6 +323,7 @@ export class Planteamientos implements OnInit {
         'id_planteamiento'
       );
       if (data) {
+        await this.subirNuevosArchivos(data.id_planteamiento);
         this.planteamientos.update(lista =>
           lista.map(p => p.id_planteamiento === data.id_planteamiento ? { ...p, ...data } : p)
         );
@@ -296,11 +340,51 @@ export class Planteamientos implements OnInit {
         fecha_creacion:                new Date().toISOString(),
       });
       if (data) {
+        await this.subirNuevosArchivos(data.id_planteamiento);
         this.planteamientos.update(lista => [...lista, data]);
         this.filtroActivo = 'pendiente';
       }
     }
     this.cerrarModalForm();
+  }
+
+  private sanitizarNombreArchivo(nombre: string): string {
+    return nombre
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-zA-Z0-9._-]/g, '_');
+  }
+
+  private async subirNuevosArchivos(idPlanteamiento: number): Promise<void> {
+    const nuevos = this.archivosAdjuntos.filter(e => !!e.file);
+    for (const entry of nuevos) {
+      const file             = entry.file!;
+      const extension        = file.name.split('.').pop()?.toLowerCase() ?? 'bin';
+      const nombreSanitizado = this.sanitizarNombreArchivo(file.name);
+      const ruta             = `planteamientos/${idPlanteamiento}/${Date.now()}_${nombreSanitizado}`;
+
+      const { error: storageError } = await this.supabaseService.client.storage
+        .from('vcm-archivos')
+        .upload(ruta, file, { upsert: true });
+
+      if (storageError) {
+        console.error('[Storage] Error al subir archivo:', storageError);
+        continue;
+      }
+
+      const { error: dbError } = await this.dataService.create('archivo', {
+        nombre_archivo:   file.name,
+        ruta_archivo:     ruta,
+        tipo_archivo:     extension,
+        id_solicitud:     null,
+        id_planteamiento: idPlanteamiento,
+        id_proyecto:      null,
+      });
+
+      if (dbError) {
+        console.error('[DB] Error al registrar archivo:', dbError);
+      }
+    }
   }
 
   abrirEliminar(p: PlanteamientoProyecto): void {
@@ -342,5 +426,24 @@ export class Planteamientos implements OnInit {
       this.formData.tiempo_estimado_planteamiento?.trim() &&
       this.formData.id_solicitud
     );
+  }
+
+  get solicitudesDisponibles(): Solicitud[] {
+    return this.solicitudesAprobadas().filter(
+      s => !this.solicitudesOcupadasIds.has(s.id_solicitud)
+        || s.id_solicitud === this.formData.id_solicitud
+    );
+  }
+
+  private async cargarSolicitudesOcupadas(): Promise<Set<number>> {
+    const { data } = await this.dataService.getAll<any>('planteamiento_proyecto', {
+      select: 'id_solicitud',
+      filters: { id_estado: 2, is_active: true },
+    });
+    const ocupadas = new Set<number>();
+    if (data) {
+      for (const pp of data) ocupadas.add(pp.id_solicitud);
+    }
+    return ocupadas;
   }
 }

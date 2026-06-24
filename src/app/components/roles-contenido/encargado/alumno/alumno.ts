@@ -16,12 +16,24 @@ import { CatalogService } from '../../../../core/services/catalog.service';
 })
 export class Alumno implements OnInit {
 
-  constructor(private dataService: DataService, private catalog: CatalogService) {}
+  constructor(
+    private dataService: DataService,
+    private catalog: CatalogService,
+    private auth: AuthService,
+  ) {}
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
     this.carreras = this.catalog.carreras();
-    const alumnosRes = await this.dataService.getAll<any>('alumno_voluntario', { select: `*, carrera(nombre_carrera, etiqueta_carrera)`, filters: { is_active: true } });
+
+    const idCarrera = this.auth.usuario()?.gestor_vinculacion_carrera?.id_carrera;
+    const filters: Record<string, any> = { is_active: true };
+    if (idCarrera) filters['id_carrera'] = idCarrera;
+
+    const alumnosRes = await this.dataService.getAll<any>('alumno_voluntario', {
+      select: `*, carrera(nombre_carrera, etiqueta_carrera)`,
+      filters,
+    });
     if (alumnosRes.data) this.alumnos.set(alumnosRes.data);
   }
 
@@ -96,8 +108,9 @@ export class Alumno implements OnInit {
 
   /* ─── Acciones CRUD ────────────────────────────────────────── */
   abrirCrear(): void {
-    this.modoEdicion      = false;
-    this.alumnoEnEdicion  = { id_carrera: 1 };
+    const idCarrera = this.auth.usuario()?.gestor_vinculacion_carrera?.id_carrera ?? 1;
+    this.modoEdicion     = false;
+    this.alumnoEnEdicion = { id_carrera: idCarrera };
     this.mostrarModalForm = true;
   }
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Solicitud, EstadoSolicitud, Ciudad } from '../../../interfaces/solicitud.interface';
 import { Carrera } from '../../../interfaces/academico.interface';
 import { Archivo } from '../../../interfaces/proyecto.interface';
+import { SupabaseService } from '../../../core/services/supabase.service';
 
 @Component({
   selector: 'app-modal-detalle-solicitud',
@@ -24,6 +25,20 @@ export class ModalDetalleSolicitud {
 
   @Output() cerrar = new EventEmitter<void>();
   @Output() editar = new EventEmitter<Solicitud>();
+
+  constructor(private supabaseService: SupabaseService) {}
+
+  async descargar(archivo: Archivo): Promise<void> {
+    const { data } = await this.supabaseService.client.storage
+      .from('vcm-archivos')
+      .createSignedUrl(archivo.ruta_archivo, 60, { download: archivo.nombre_archivo });
+    if (data?.signedUrl) {
+      const a = document.createElement('a');
+      a.href = data.signedUrl;
+      a.target = '_blank';
+      a.click();
+    }
+  }
 
   /* ─── Helpers solicitud ────────────────────────────────────── */
   getNombreEstado(id: number): string {

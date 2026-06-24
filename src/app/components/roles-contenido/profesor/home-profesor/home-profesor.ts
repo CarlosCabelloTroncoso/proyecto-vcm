@@ -7,7 +7,9 @@ import { DataService } from '../../../../core/services/data.service';
 interface EntradaActividad {
   titulo: string;
   mensaje: string;
-  estado: number;
+  tipo: 'planteamiento' | 'proyecto';
+  estadoId: number;
+  estadoNombre: string;
   fechaDisplay: string;
   esNuevo: boolean;
 }
@@ -34,30 +36,62 @@ export class HomeProfesor implements OnInit {
   rechazados = computed(() => this.planteamientos().filter(p => p.id_estado === 3).length);
   enCurso    = computed(() => this.proyectos().length);
 
-  actividad = computed<EntradaActividad[]>(() =>
-    [...this.planteamientos()]
-      .sort((a, b) => {
-        const fechaA = a.fecha_actualizacion ?? a.fecha_creacion ?? '';
-        const fechaB = b.fecha_actualizacion ?? b.fecha_creacion ?? '';
-        if (fechaA && fechaB) {
-          const diff = new Date(fechaB).getTime() - new Date(fechaA).getTime();
-          return diff !== 0 ? diff : b.id_planteamiento - a.id_planteamiento;
-        }
-        return b.id_planteamiento - a.id_planteamiento;
-      })
-      .map(p => ({
+  actividad = computed<EntradaActividad[]>(() => {
+    type Item = { entry: EntradaActividad; date: string; id: number };
+
+    const planMap = new Map(
+      this.planteamientos().map(p => [p.id_planteamiento, p.titulo_planteamiento])
+    );
+
+    const planItems: Item[] = this.planteamientos().map(p => ({
+      entry: {
+        tipo:         'planteamiento' as const,
         titulo:       p.titulo_planteamiento,
         mensaje:      this.mensajePorEstado(p.id_estado, p.titulo_planteamiento),
-        estado:       p.id_estado,
+        estadoId:     p.id_estado,
+        estadoNombre: '',
         fechaDisplay: this.buildFechaDisplay(p),
         esNuevo:      this.esReciente(p.fecha_actualizacion),
-      }))
-  );
+      },
+      date: p.fecha_actualizacion ?? p.fecha_creacion ?? '',
+      id:   p.id_planteamiento,
+    }));
+
+    const proyItems: Item[] = this.proyectos().map((pr: any) => {
+      const titulo       = planMap.get(pr.id_planteamiento) ?? `Proyecto #${pr.id_proyecto}`;
+      const estadoNombre = ((pr.estado_proyecto?.nombre_estado ?? 'En curso') as string)
+                            .toLowerCase().replace(/ /g, '_');
+      return {
+        entry: {
+          tipo:         'proyecto' as const,
+          titulo,
+          mensaje:      `Tu proyecto "${titulo}" está ${estadoNombre.replace(/_/g, ' ')}`,
+          estadoId:     pr.id_estado,
+          estadoNombre,
+          fechaDisplay: pr.fecha_inicio ? `Inicio: ${this.formatFecha(pr.fecha_inicio)}` : '—',
+          esNuevo:      this.esReciente(pr.fecha_inicio),
+        },
+        date: pr.fecha_inicio ?? '',
+        id:   -(pr.id_proyecto as number),
+      };
+    });
+
+    return [...planItems, ...proyItems]
+      .sort((a, b) => {
+        if (a.date && b.date) {
+          const diff = new Date(b.date).getTime() - new Date(a.date).getTime();
+          return diff !== 0 ? diff : b.id - a.id;
+        }
+        return a.date ? -1 : b.date ? 1 : 0;
+      })
+      .map(item => item.entry);
+  });
 
   private mensajePorEstado(estado: number, titulo: string): string {
     switch (estado) {
       case 2:  return `Tu planteamiento "${titulo}" fue aprobado`;
       case 3:  return `Tu planteamiento "${titulo}" fue rechazado`;
+      case 4:  return `Tu planteamiento "${titulo}" fue cancelado`;
       default: return `Tu planteamiento "${titulo}" está pendiente de revisión`;
     }
   }
@@ -102,7 +136,7 @@ export class HomeProfesor implements OnInit {
     const misIds = new Set((planRes.data ?? []).map((p: any) => p.id_planteamiento));
     if (misIds.size > 0) {
       const proyRes = await this.data.getAll<any>('proyecto', {
-        select:  'id_proyecto, id_planteamiento, id_estado',
+        select:  'id_proyecto, id_planteamiento, id_estado, fecha_inicio, estado_proyecto(nombre_estado)',
         filters: { is_active: true },
       });
       if (proyRes.data) {

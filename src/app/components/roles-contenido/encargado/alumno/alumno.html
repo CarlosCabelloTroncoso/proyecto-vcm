@@ -46,22 +46,8 @@
                focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/20"/>
     </div>
 
-    <!-- Filtro por carrera -->
-    <div class="min-w-[240px]">
-      <select
-        [(ngModel)]="filtroCarrera"
-        class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-3 py-2.5 text-sm
-               text-[#1B3A6B] shadow-sm outline-none transition
-               focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/20">
-        <option value="">— Filtrar por carrera —</option>
-        @for (carrera of carreras; track carrera.id_carrera) {
-          <option [value]="carrera.id_carrera">{{ carrera.nombre_carrera }}</option>
-        }
-      </select>
-    </div>
-
     <!-- Limpiar filtros -->
-    @if (searchTerm || filtroCarrera) {
+    @if (searchTerm) {
       <button
         (click)="limpiarFiltros()"
         class="inline-flex items-center gap-1.5 rounded-xl border border-[#1B3A6B]/20 bg-white
@@ -83,7 +69,6 @@
 
         <thead>
           <tr class="border-b border-[#1B3A6B]/10 bg-[#1B3A6B]/5 text-left">
-            <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">ID</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">RUT</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Nombres</th>
             <th class="whitespace-nowrap px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Apellidos</th>
@@ -98,7 +83,6 @@
           @for (alumno of alumnosFiltrados; track alumno.id_alumno) {
             <tr class="border-b border-[#1B3A6B]/5 transition hover:bg-[#1B3A6B]/[0.03]">
 
-              <td class="px-5 py-3.5 font-mono text-xs text-[#1B3A6B]/50">#{{ alumno.id_alumno }}</td>
               <td class="px-5 py-3.5 font-mono text-[#1B3A6B]/80">{{ alumno.rut_alumno }}</td>
               <td class="px-5 py-3.5 font-medium text-[#1B3A6B]">{{ alumno.nombres_alumno }}</td>
               <td class="px-5 py-3.5 text-[#1B3A6B]/80">{{ alumno.apellidos_alumno }}</td>
@@ -110,9 +94,7 @@
                 <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5
                              text-xs font-semibold {{ getBadgeClasesCarrera(alumno.id_carrera) }}">
                   <span class="font-mono font-bold">{{ getEtiquetaCarrera(alumno.id_carrera) }}</span>
-                  <span class="hidden xl:inline text-[0.65rem] opacity-80">
-                    {{ getNombreCarrera(alumno.id_carrera) }}
-                  </span>
+                  <span class="hidden xl:inline text-[0.65rem] opacity-80">{{ getNombreCarrera(alumno.id_carrera) }}</span>
                 </span>
               </td>
 
@@ -154,7 +136,7 @@
           <!-- Estado vacío -->
           @if (alumnosFiltrados.length === 0) {
             <tr>
-              <td colspan="8" class="px-5 py-16 text-center">
+              <td colspan="7" class="px-5 py-16 text-center">
                 <div class="flex flex-col items-center gap-3 text-[#1B3A6B]/40">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none"
                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">

@@ -15,6 +15,7 @@ export interface UsuarioVCM {
   id_rol: number;
   rol?: { nombre_rol: string };
   profesor?: { id_carrera: number } | null;
+  gestor_vinculacion_carrera?: { id_carrera: number } | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -65,7 +66,7 @@ export class AuthService {
   private async loadUsuario(authUid: string): Promise<void> {
     const { data, error } = await this.supabase
       .from('usuario')
-      .select('*, rol(nombre_rol), profesor(id_carrera)')
+      .select('*, rol(nombre_rol), profesor(id_carrera), gestor_vinculacion_carrera(id_carrera)')
       .eq('auth_uid', authUid)
       .single();
 

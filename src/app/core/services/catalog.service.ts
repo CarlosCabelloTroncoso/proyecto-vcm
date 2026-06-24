@@ -28,6 +28,10 @@ export class CatalogService {
     this.supabase = this.supabaseService.client;
   }
 
+  invalidate(): void {
+    this._loaded = false;
+  }
+
   async load(): Promise<void> {
     if (this._loaded) return;
 

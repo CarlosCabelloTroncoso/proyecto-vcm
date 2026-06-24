@@ -6,8 +6,9 @@ import { DataService } from '../../../../core/services/data.service';
 
 interface EntradaActividad {
   mensaje: string;
-  tipo: 'solicitud' | 'planteamiento';
+  tipo: 'solicitud' | 'planteamiento' | 'proyecto';
   estado: number;
+  colorIcono: 'verde' | 'rojo' | 'ambar';
   fechaDisplay: string;
   esNuevo: boolean;
   fechaOrden: string;
@@ -46,6 +47,7 @@ export class HomeEncargado implements OnInit {
       mensaje:      this.mensajeSolicitud(s.id_estado, s.titulo_solicitud),
       tipo:         'solicitud' as const,
       estado:       s.id_estado,
+      colorIcono:   s.id_estado === 2 ? 'verde' as const : s.id_estado === 3 ? 'rojo' as const : 'ambar' as const,
       fechaDisplay: this.buildFechaSolicitud(s),
       esNuevo:      this.esReciente(s.fecha_actualizacion),
       fechaOrden:   s.fecha_actualizacion ?? s.fecha_creacion_solicitud ?? '',
@@ -55,12 +57,27 @@ export class HomeEncargado implements OnInit {
       mensaje:      this.mensajePlanteamiento(p.id_estado, p.titulo_planteamiento),
       tipo:         'planteamiento' as const,
       estado:       p.id_estado,
+      colorIcono:   p.id_estado === 2 ? 'verde' as const : p.id_estado === 3 ? 'rojo' as const : 'ambar' as const,
       fechaDisplay: this.buildFechaPlanteamiento(p),
       esNuevo:      this.esReciente(p.fecha_actualizacion),
       fechaOrden:   p.fecha_actualizacion ?? p.fecha_creacion ?? '',
     }));
 
-    return [...entrSol, ...entrPlan].sort((a, b) => {
+    const entrProy = this.proyectos().map(p => {
+      const titulo      = p.planteamiento_proyecto?.titulo_planteamiento ?? `Proyecto #${p.id_proyecto}`;
+      const nombreEst   = (p.estado_proyecto?.nombre_estado ?? '').toLowerCase().replace(/ /g, '_');
+      return {
+        mensaje:      this.mensajeProyecto(nombreEst, titulo),
+        tipo:         'proyecto' as const,
+        estado:       p.id_estado,
+        colorIcono:   nombreEst === 'finalizado' ? 'verde' as const : nombreEst === 'cancelado' ? 'rojo' as const : 'ambar' as const,
+        fechaDisplay: p.fecha_inicio ? `Iniciado el ${this.formatFechaDate(p.fecha_inicio)}` : '—',
+        esNuevo:      false,
+        fechaOrden:   p.fecha_inicio ?? '',
+      };
+    });
+
+    return [...entrSol, ...entrPlan, ...entrProy].sort((a, b) => {
       if (a.fechaOrden && b.fechaOrden) {
         return new Date(b.fechaOrden).getTime() - new Date(a.fechaOrden).getTime();
       }
@@ -81,6 +98,17 @@ export class HomeEncargado implements OnInit {
       case 2:  return `Planteamiento "${titulo}" fue aprobado`;
       case 3:  return `Planteamiento "${titulo}" fue rechazado`;
       default: return `Planteamiento "${titulo}" esperando revisión`;
+    }
+  }
+
+  private mensajeProyecto(nombreEstado: string, titulo: string): string {
+    switch (nombreEstado) {
+      case 'finalizado': return `Proyecto "${titulo}" fue finalizado`;
+      case 'cancelado':  return `Proyecto "${titulo}" fue cancelado`;
+      case 'en_proceso': return `Proyecto "${titulo}" está en proceso`;
+      case 'pausado':    return `Proyecto "${titulo}" está pausado`;
+      case 'atrasado':   return `Proyecto "${titulo}" está atrasado`;
+      default:           return `Proyecto "${titulo}" disponible`;
     }
   }
 
@@ -133,7 +161,7 @@ export class HomeEncargado implements OnInit {
         filters: { is_active: true },
       }),
       this.data.getAll<any>('proyecto', {
-        select:  'id_proyecto',
+        select:  'id_proyecto, id_estado, fecha_inicio, estado_proyecto(nombre_estado), planteamiento_proyecto(titulo_planteamiento)',
         filters: { is_active: true },
       }),
     ]);

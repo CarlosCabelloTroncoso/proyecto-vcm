@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ModalDetalleSolicitud } from '../../../shared/modal-detalle-solicitud/modal-detalle-solicitud';
@@ -19,20 +19,35 @@ import { CatalogService } from '../../../../core/services/catalog.service';
 })
 export class VerSolicitudes implements OnInit {
 
-  constructor(private dataService: DataService, private catalog: CatalogService) {}
+  private auth = inject(AuthService);
+
+  constructor(
+    private dataService: DataService,
+    private catalog: CatalogService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
     this.estados = this.catalog.estados();
     this.carreras = this.catalog.carreras();
     this.ciudades = this.catalog.ciudades();
-    const solicitudesRes = await this.dataService.getAll<any>('solicitud', { select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`, filters: { is_active: true } });
+
+    const idCarrera = this.auth.usuario()?.gestor_vinculacion_carrera?.id_carrera;
+    if (idCarrera) {
+      this.nombreCarrera = this.carreras.find(c => c.id_carrera === idCarrera)?.nombre_carrera ?? '';
+    }
+
+    const [solicitudesRes, planRes] = await Promise.all([
+      this.dataService.getAll<any>('solicitud', { select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`, filters: { is_active: true } }),
+      this.dataService.getAll<any>('planteamiento_proyecto', { select: 'id_solicitud', filters: { is_active: true } }),
+    ]);
     if (solicitudesRes.data) this.solicitudes.set(solicitudesRes.data);
+    if (planRes.data) this.solicitudesOcupadasIds = new Set(planRes.data.map((p: any) => p.id_solicitud));
   }
 
-
-  /* ─── Sesión mock: encargado de ICI ────────────────────────── */
-  // Carrera del gestor se obtiene via RLS (Supabase filtra automáticamente)
+  /* ─── Carrera del encargado ─────────────────────────────────── */
+  nombreCarrera = '';
 
   /* ─── Catálogos ────────────────────────────────────────────── */
   estados: EstadoSolicitud[] = [];
@@ -45,6 +60,8 @@ export class VerSolicitudes implements OnInit {
 
   /* ─── Solicitudes de la carrera del encargado ───────────────── */
   solicitudes = signal<Solicitud[]>([]);
+
+  solicitudesOcupadasIds = new Set<number>();
 
     archivos: any[] = [];
 
@@ -75,7 +92,11 @@ export class VerSolicitudes implements OnInit {
       );
     }
 
-    return lista;
+    return lista.sort((a, b) => {
+      const fa = (a as any).fecha_creacion_solicitud ?? '';
+      const fb = (b as any).fecha_creacion_solicitud ?? '';
+      return fb.localeCompare(fa);
+    });
   }
 
   get contadorPorEstado(): Record<string, number> {
@@ -111,6 +132,10 @@ export class VerSolicitudes implements OnInit {
     return this.ciudades.find(c => c.id_ciudad === id)?.nombre_ciudad ?? '—';
   }
 
+  esSolicitudOcupada(id: number): boolean {
+    return this.solicitudesOcupadasIds.has(id);
+  }
+
   getArchivosDeSolicitud(id: number): Archivo[] {
     return this.archivos.filter(a => a.id_solicitud === id);
   }
@@ -133,14 +158,22 @@ export class VerSolicitudes implements OnInit {
   }
 
   /* ─── Acciones modal detalle ────────────────────────────────── */
-  abrirDetalle(solicitud: Solicitud): void {
+  async abrirDetalle(solicitud: Solicitud): Promise<void> {
     this.solicitudSeleccionada = solicitud;
     this.mostrarModalDetalle   = true;
+    this.archivos              = [];
+
+    const { data } = await this.dataService.getAll<Archivo>('archivo', {
+      filters: { id_solicitud: solicitud.id_solicitud },
+    });
+    this.archivos = data ?? [];
+    this.cdr.detectChanges();
   }
 
   cerrarDetalle(): void {
     this.mostrarModalDetalle   = false;
     this.solicitudSeleccionada = null;
+    this.archivos              = [];
   }
 
   /* ─── Acciones aprobar / rechazar ───────────────────────────── */

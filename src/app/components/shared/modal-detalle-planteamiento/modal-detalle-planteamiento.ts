@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlanteamientoProyecto, EstadoPlanteamiento, Archivo } from '../../../interfaces/proyecto.interface';
 import { Solicitud } from '../../../interfaces/solicitud.interface';
+import { SupabaseService } from '../../../core/services/supabase.service';
 
 @Component({
   selector: 'app-modal-detalle-planteamiento',
@@ -19,6 +20,20 @@ export class ModalDetallePlanteamiento {
   @Input() nombreProfesor?: string;
 
   @Output() cerrar = new EventEmitter<void>();
+
+  constructor(private supabaseService: SupabaseService) {}
+
+  async descargar(archivo: Archivo): Promise<void> {
+    const { data } = await this.supabaseService.client.storage
+      .from('vcm-archivos')
+      .createSignedUrl(archivo.ruta_archivo, 60, { download: archivo.nombre_archivo });
+    if (data?.signedUrl) {
+      const a = document.createElement('a');
+      a.href = data.signedUrl;
+      a.target = '_blank';
+      a.click();
+    }
+  }
 
   getNombreEstado(id: number): string {
     return this.estadosPlanteamiento.find(e => e.id_estado === id)?.nombre_estado ?? '—';

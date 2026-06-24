@@ -1,9 +1,10 @@
-import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, signal, inject, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../../../core/services/data.service';
 import { CatalogService } from '../../../../core/services/catalog.service';
 import { SupabaseService } from '../../../../core/services/supabase.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { Usuario, Rol } from '../../../../interfaces/usuario.interface';
 import { Carrera } from '../../../../interfaces/academico.interface';
 import { ModalUsuarioForm } from './modales/modal-usuario-form/modal-usuario-form';
@@ -19,6 +20,8 @@ type UsuarioForm = Partial<Usuario> & { id_carrera?: number };
 })
 export class GestionUsuario implements OnInit {
 
+  private auth = inject(AuthService);
+
   roles: Rol[] = [];         // para el modal (sin admin)
   todosLosRoles: Rol[] = []; // para la tabla y filtros (con admin)
 
@@ -26,7 +29,7 @@ export class GestionUsuario implements OnInit {
     admin:      'Administrador',
     cliente:    'Cliente',
     profesor:   'Profesor',
-    encargado:  'Gestor de Vinculación',
+    encargado:  'Encargado',
     autoridad:  'Autoridad',
   };
 
@@ -91,6 +94,10 @@ export class GestionUsuario implements OnInit {
   modoEdicion          = false;
   usuarioEnEdicion: Partial<Usuario> & { id_carrera?: number } = {};
   usuarioAEliminar: Usuario | null   = null;
+
+  esPropioUsuario(u: Usuario): boolean {
+    return u.id_usuario === this.auth.usuario()?.id_usuario;
+  }
 
   /* ─── Helpers de presentación ──────────────────────────────── */
   getNombreRol(id_rol: number): string {

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ModalDetallePlanteamiento } from '../../../shared/modal-detalle-planteamiento/modal-detalle-planteamiento';
@@ -18,17 +18,34 @@ import { CatalogService } from '../../../../core/services/catalog.service';
 })
 export class GestionPlanteamiento implements OnInit {
 
-  constructor(private dataService: DataService, private catalog: CatalogService) {}
+  private auth = inject(AuthService);
+
+  constructor(
+    private dataService: DataService,
+    private catalog: CatalogService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
     this.estadosPlanteamiento = this.catalog.estadosPlanteamiento();
-    const planteamientosRes = await this.dataService.getAll<any>('planteamiento_proyecto', { select: `*, estado_planteamiento(nombre_estado), carrera(nombre_carrera), solicitud(titulo_solicitud), usuario(nombres_usuario, apellidos_usuario)`, filters: { is_active: true } });
+
+    const idCarrera = this.auth.usuario()?.gestor_vinculacion_carrera?.id_carrera;
+    if (idCarrera) {
+      const carreras = this.catalog.carreras();
+      this.nombreCarrera = carreras.find(c => c.id_carrera === idCarrera)?.nombre_carrera ?? '';
+    }
+
+    const [planteamientosRes, proyectosRes] = await Promise.all([
+      this.dataService.getAll<any>('planteamiento_proyecto', { select: `*, estado_planteamiento(nombre_estado), carrera(nombre_carrera), solicitud(titulo_solicitud), usuario(nombres_usuario, apellidos_usuario)`, filters: { is_active: true } }),
+      this.dataService.getAll<any>('proyecto', { select: 'id_planteamiento', filters: { is_active: true } }),
+    ]);
     if (planteamientosRes.data) this.planteamientos.set(planteamientosRes.data);
+    if (proyectosRes.data) this.planteamientosConProyectoIds = new Set(proyectosRes.data.map((p: any) => p.id_planteamiento));
   }
 
-
-  // Carrera del gestor filtrada via RLS
+  /* ─── Carrera del encargado ─────────────────────────────────── */
+  nombreCarrera = '';
 
   estadosPlanteamiento: EstadoPlanteamiento[] = [];
 
@@ -36,9 +53,11 @@ export class GestionPlanteamiento implements OnInit {
 
   planteamientos = signal<PlanteamientoProyecto[]>([]);
 
+  planteamientosConProyectoIds = new Set<number>();
+
   archivos: Archivo[] = [];
 
-  filtroActivo: 'pendiente' | 'aprobado' | 'rechazado' = 'pendiente';
+  filtroActivo: 'pendiente' | 'aprobado' | 'rechazado' | 'cancelado' = 'pendiente';
   searchTerm = '';
 
   mostrarModalDetalle   = false;
@@ -49,7 +68,8 @@ export class GestionPlanteamiento implements OnInit {
   planteamientoAccion:  PlanteamientoProyecto | null = null;
 
   get planteamientosFiltrados(): PlanteamientoProyecto[] {
-    const idEstado = this.filtroActivo === 'pendiente' ? 1 : this.filtroActivo === 'aprobado' ? 2 : 3;
+    const idMap: Record<string, number> = { pendiente: 1, aprobado: 2, rechazado: 3, cancelado: this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4 };
+    const idEstado = idMap[this.filtroActivo] ?? 1;
     let lista = this.planteamientos().filter(
       p => p.id_estado === idEstado
     );
@@ -60,16 +80,26 @@ export class GestionPlanteamiento implements OnInit {
         this.getTituloSolicitud(p.id_solicitud).toLowerCase().includes(t)
       );
     }
-    return lista;
+    return lista.sort((a: any, b: any) => {
+      const fa = a.fecha_actualizacion ?? a.fecha_creacion ?? '';
+      const fb = b.fecha_actualizacion ?? b.fecha_creacion ?? '';
+      return fb.localeCompare(fa);
+    });
   }
 
   get contadorPorEstado(): Record<string, number> {
     const todos = [...this.planteamientos()];
+    const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
     return {
       pendiente: todos.filter(p => p.id_estado === 1).length,
       aprobado:  todos.filter(p => p.id_estado === 2).length,
       rechazado: todos.filter(p => p.id_estado === 3).length,
+      cancelado: todos.filter(p => p.id_estado === idCancelado).length,
     };
+  }
+
+  tieneProyecto(id: number): boolean {
+    return this.planteamientosConProyectoIds.has(id);
   }
 
   getNombreEstado(id: number): string {
@@ -81,10 +111,12 @@ export class GestionPlanteamiento implements OnInit {
   }
 
   getBadgeEstado(id: number): string {
+    const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
     const mapa: Record<number, string> = {
       1: 'bg-amber-100 text-amber-700 border-amber-200',
       2: 'bg-emerald-100 text-emerald-700 border-emerald-200',
       3: 'bg-red-100 text-red-500 border-red-200',
+      [idCancelado]: 'bg-slate-100 text-slate-500 border-slate-200',
     };
     return mapa[id] ?? 'bg-gray-100 text-gray-500 border-gray-200';
   }
@@ -93,9 +125,20 @@ export class GestionPlanteamiento implements OnInit {
     return this.archivos.filter(a => a.id_planteamiento === id);
   }
 
-  abrirDetalle(p: PlanteamientoProyecto): void {
+  async abrirDetalle(p: PlanteamientoProyecto): Promise<void> {
     this.planteamientoSeleccionado = p;
     this.mostrarModalDetalle       = true;
+    this.archivos                  = [];
+
+    const [archPlan, archSol] = await Promise.all([
+      this.dataService.getAll<Archivo>('archivo', { filters: { id_planteamiento: p.id_planteamiento } }),
+      this.dataService.getAll<Archivo>('archivo', { filters: { id_solicitud: p.id_solicitud } }),
+    ]);
+    this.archivos = [
+      ...(archSol.data  ?? []),
+      ...(archPlan.data ?? []),
+    ];
+    this.cdr.detectChanges();
   }
 
   cerrarDetalle(): void {

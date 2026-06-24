@@ -106,15 +106,20 @@ export class GestionFacultad implements OnInit {
       await this.dataService.create('facultad', datos);
     }
     this.mostrarModalForm = false;
+    this.catalog.invalidate();
     await this.ngOnInit();
   }
 
   async onEliminarFacultad(): Promise<void> {
     if (this.facultadAEliminar) {
-      await this.dataService.softDelete('facultad', this.facultadAEliminar.id_facultad, 'id_facultad');
+      const id = this.facultadAEliminar.id_facultad;
+      const { error } = await this.dataService.softDelete('facultad', id, 'id_facultad');
+      if (!error) {
+        this.facultades.update(lista => lista.filter(f => f.id_facultad !== id));
+        this.catalog.invalidate();
+      }
       this.facultadAEliminar    = null;
       this.mostrarModalEliminar = false;
-      await this.ngOnInit();
     }
   }
 
