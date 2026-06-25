@@ -6,6 +6,10 @@
 /out-tsc
 /bazel-out
 
+# Variables de entorno (se generan en build desde variables de Vercel)
+/src/environments/environment.ts
+/src/environments/environment.prod.ts
+
 # Node
 /node_modules
 npm-debug.log
