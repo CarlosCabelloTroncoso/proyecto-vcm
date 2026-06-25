@@ -1,0 +1,82 @@
+<!-- Fondo institucional -->
+<div class="relative min-h-screen flex items-center justify-center px-4 py-12 bg-cover bg-center bg-no-repeat"
+     style="background-image: url('assets/ucmportada.png')">
+
+  <div class="absolute inset-0 bg-[#1B3A6B]/50"></div>
+
+  <div class="relative z-10 w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
+
+    <!-- Header -->
+    <div class="flex flex-col items-center gap-3 bg-[#1B3A6B] px-8 py-8">
+      <img src="images/escudo-ucm.png" alt="UCM" class="h-14 w-14 brightness-0 invert" />
+      <div class="text-center">
+        <p class="text-lg font-bold tracking-wide text-white">UCM Vinculación</p>
+        <p class="mt-0.5 text-xs font-medium tracking-widest text-white/55 uppercase">
+          Universidad Católica del Maule
+        </p>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="px-8 py-8">
+
+      <h2 class="mb-2 text-center text-xl font-bold text-[#1B3A6B]">
+        Recuperar contraseña
+      </h2>
+      <p class="mb-6 text-center text-sm text-[#1B3A6B]/60">
+        Ingresa tu correo y te enviaremos un enlace para restablecerla.
+      </p>
+
+      @if (successMsg()) {
+        <div class="mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+          {{ successMsg() }}
+        </div>
+      }
+
+      @if (errorMsg()) {
+        <div class="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          {{ errorMsg() }}
+        </div>
+      }
+
+      @if (!successMsg()) {
+        <div class="space-y-5">
+          <div>
+            <label for="email"
+                   class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+              Correo electrónico
+            </label>
+            <input id="email" type="email" placeholder="correo@ucm.cl"
+                   [(ngModel)]="email"
+                   (keyup.enter)="onEnviar()"
+                   class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white py-2.5 px-4
+                          text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/35 outline-none shadow-sm
+                          transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15" />
+          </div>
+
+          <button type="button"
+                  (click)="onEnviar()"
+                  [disabled]="isLoading()"
+                  class="mt-2 w-full rounded-xl bg-[#1B3A6B] py-2.5 text-sm font-semibold
+                         text-white shadow-sm transition hover:bg-[#1B3A6B]/85 active:scale-[0.98]
+                         disabled:opacity-60 disabled:cursor-not-allowed">
+            {{ isLoading() ? 'Enviando...' : 'Enviar enlace' }}
+          </button>
+        </div>
+      }
+
+      <a routerLink="/login"
+         class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#1B3A6B]/8
+                py-2.5 text-sm font-semibold text-[#1B3A6B] transition
+                hover:bg-[#1B3A6B]/15 active:scale-[0.98]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Volver al inicio de sesión
+      </a>
+
+    </div>
+  </div>
+
+</div>

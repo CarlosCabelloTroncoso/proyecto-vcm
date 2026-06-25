@@ -1,0 +1,14 @@
+<div class="callback-wrapper">
+  <div class="callback-card">
+
+    @if (estado() === 'cargando') {
+      <div class="spinner"></div>
+      <p class="callback-msg">{{ mensaje() }}</p>
+    } @else {
+      <div class="callback-icon-error">!</div>
+      <p class="callback-msg">{{ mensaje() }}</p>
+      <a routerLink="/login" class="callback-btn">Ir al inicio de sesión</a>
+    }
+
+  </div>
+</div>

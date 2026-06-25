@@ -88,7 +88,10 @@ export class AuthService {
     const { error } = await this.supabase.auth.signUp({
       email,
       password,
-      options: { data: metadata }
+      options: {
+        data: metadata,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      }
     });
     return { error: error?.message || null };
   }
@@ -98,6 +101,27 @@ export class AuthService {
     this._session.set(null);
     this._usuario.set(null);
     this.router.navigate(['/login']);
+  }
+
+  /** Cierra la sesión y limpia el estado sin redirigir (deja la navegación al llamador). */
+  async signOutSilent(): Promise<void> {
+    await this.supabase.auth.signOut();
+    this._session.set(null);
+    this._usuario.set(null);
+  }
+
+  /** Envía el correo con el enlace para restablecer la contraseña. */
+  async resetPassword(email: string): Promise<{ error: string | null }> {
+    const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
+    return { error: error?.message || null };
+  }
+
+  /** Cambia la contraseña del usuario con la sesión de recuperación activa. */
+  async updatePassword(newPassword: string): Promise<{ error: string | null }> {
+    const { error } = await this.supabase.auth.updateUser({ password: newPassword });
+    return { error: error?.message || null };
   }
 
   async reloadPerfil(): Promise<void> {

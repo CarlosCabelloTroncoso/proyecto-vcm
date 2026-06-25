@@ -74,7 +74,7 @@ export class ContentRegistro {
       return;
     }
 
-    this.successMsg.set('Cuenta creada. Revisa tu correo para confirmar el registro.');
+    this.successMsg.set('Cuenta creada. Te enviamos un correo de confirmación: ábrelo y haz clic en el enlace para activar tu cuenta. Después inicia sesión. Puedes cerrar esta pestaña.');
     this.isLoading.set(false);
   }
 }

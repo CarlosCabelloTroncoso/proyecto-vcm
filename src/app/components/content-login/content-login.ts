@@ -1,7 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -11,16 +11,27 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './content-login.html',
   styleUrl: './content-login.css',
 })
-export class ContentLogin {
+export class ContentLogin implements OnInit {
   email = '';
   password = '';
   errorMsg = signal<string | null>(null);
+  successMsg = signal<string | null>(null);
   isLoading = signal(false);
 
   constructor(
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
+
+  ngOnInit(): void {
+    const params = this.route.snapshot.queryParamMap;
+    if (params.get('confirmado') === '1') {
+      this.successMsg.set('¡Correo confirmado! Ya puedes iniciar sesión con tus credenciales.');
+    } else if (params.get('reset') === '1') {
+      this.successMsg.set('¡Contraseña actualizada! Inicia sesión con tu nueva contraseña.');
+    }
+  }
 
   async onLogin(): Promise<void> {
     if (!this.email || !this.password) {
