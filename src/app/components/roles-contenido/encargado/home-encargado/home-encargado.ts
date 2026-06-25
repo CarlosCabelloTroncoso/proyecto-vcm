@@ -35,45 +35,60 @@ export class HomeEncargado implements OnInit {
   solicitudesPendientes = computed(() => this.solicitudes().filter(s => s.id_estado === 1).length);
   solicitudesAprobadas  = computed(() => this.solicitudes().filter(s => s.id_estado === 2).length);
   solicitudesRechazadas = computed(() => this.solicitudes().filter(s => s.id_estado === 3).length);
+  solicitudesCerradas   = computed(() => this.solicitudes().filter(s => s.estado_solicitud?.nombre_estado === 'Cerrada').length);
 
-  planteamientosPendientes = computed(() => this.planteamientos().filter(p => p.id_estado === 1).length);
-  planteamientosAprobados  = computed(() => this.planteamientos().filter(p => p.id_estado === 2).length);
-  planteamientosRechazados = computed(() => this.planteamientos().filter(p => p.id_estado === 3).length);
+  planteamientosPendientes  = computed(() => this.planteamientos().filter(p => p.id_estado === 1).length);
+  planteamientosAprobados   = computed(() => this.planteamientos().filter(p => p.id_estado === 2).length);
+  planteamientosRechazados  = computed(() => this.planteamientos().filter(p => p.id_estado === 3).length);
+  planteamientosFinalizados = computed(() => this.planteamientos().filter(p => p.estado_planteamiento?.nombre_estado === 'Finalizado').length);
 
-  totalProyectos = computed(() => this.proyectos().length);
+  proyectosEnProceso   = computed(() => this.proyectos().filter(p => p.estado_proyecto?.nombre_estado === 'En proceso').length);
+  proyectosAtrasados   = computed(() => this.proyectos().filter(p => p.estado_proyecto?.nombre_estado === 'Atrasado').length);
+  proyectosFinalizados = computed(() => this.proyectos().filter(p => p.estado_proyecto?.nombre_estado === 'Finalizado').length);
+  proyectosCancelados  = computed(() => this.proyectos().filter(p => p.estado_proyecto?.nombre_estado === 'Cancelado').length);
 
   actividad = computed<EntradaActividad[]>(() => {
-    const entrSol = this.solicitudes().map(s => ({
-      mensaje:      this.mensajeSolicitud(s.id_estado, s.titulo_solicitud),
-      tipo:         'solicitud' as const,
-      estado:       s.id_estado,
-      colorIcono:   s.id_estado === 2 ? 'verde' as const : s.id_estado === 3 ? 'rojo' as const : 'ambar' as const,
-      fechaDisplay: this.buildFechaSolicitud(s),
-      esNuevo:      this.esReciente(s.fecha_actualizacion),
-      fechaOrden:   s.fecha_actualizacion ?? s.fecha_creacion_solicitud ?? '',
-    }));
+    const entrSol = this.solicitudes().map(s => {
+      const nombreEstSol = s.estado_solicitud?.nombre_estado ?? '';
+      return {
+        mensaje:      this.mensajeSolicitud(s.id_estado, s.titulo_solicitud, nombreEstSol),
+        tipo:         'solicitud' as const,
+        estado:       s.id_estado,
+        colorIcono:   nombreEstSol === 'Cerrada' ? 'verde' as const : s.id_estado === 2 ? 'verde' as const : s.id_estado === 3 ? 'rojo' as const : 'ambar' as const,
+        fechaDisplay: this.buildFechaSolicitud(s),
+        esNuevo:      this.esReciente(s.fecha_actualizacion),
+        fechaOrden:   s.fecha_actualizacion ?? s.fecha_creacion_solicitud ?? '',
+      };
+    });
 
-    const entrPlan = this.planteamientos().map(p => ({
-      mensaje:      this.mensajePlanteamiento(p.id_estado, p.titulo_planteamiento),
-      tipo:         'planteamiento' as const,
-      estado:       p.id_estado,
-      colorIcono:   p.id_estado === 2 ? 'verde' as const : p.id_estado === 3 ? 'rojo' as const : 'ambar' as const,
-      fechaDisplay: this.buildFechaPlanteamiento(p),
-      esNuevo:      this.esReciente(p.fecha_actualizacion),
-      fechaOrden:   p.fecha_actualizacion ?? p.fecha_creacion ?? '',
-    }));
+    const entrPlan = this.planteamientos().map(p => {
+      const nombreEstPlan = p.estado_planteamiento?.nombre_estado ?? '';
+      return {
+        mensaje:      this.mensajePlanteamiento(p.id_estado, p.titulo_planteamiento, nombreEstPlan),
+        tipo:         'planteamiento' as const,
+        estado:       p.id_estado,
+        colorIcono:   nombreEstPlan === 'Finalizado' ? 'verde' as const : p.id_estado === 2 ? 'verde' as const : p.id_estado === 3 ? 'rojo' as const : 'ambar' as const,
+        fechaDisplay: this.buildFechaPlanteamiento(p),
+        esNuevo:      this.esReciente(p.fecha_actualizacion),
+        fechaOrden:   p.fecha_actualizacion ?? p.fecha_creacion ?? '',
+      };
+    });
 
     const entrProy = this.proyectos().map(p => {
-      const titulo      = p.planteamiento_proyecto?.titulo_planteamiento ?? `Proyecto #${p.id_proyecto}`;
-      const nombreEst   = (p.estado_proyecto?.nombre_estado ?? '').toLowerCase().replace(/ /g, '_');
+      const titulo       = p.planteamiento_proyecto?.titulo_planteamiento ?? `Proyecto #${p.id_proyecto}`;
+      const nombreEst    = (p.estado_proyecto?.nombre_estado ?? '').toLowerCase().replace(/ /g, '_');
+      const fechaActPlan = p.planteamiento_proyecto?.fecha_actualizacion as string | undefined;
+      const esTerminal   = nombreEst === 'finalizado' || nombreEst === 'cancelado';
       return {
         mensaje:      this.mensajeProyecto(nombreEst, titulo),
         tipo:         'proyecto' as const,
         estado:       p.id_estado,
         colorIcono:   nombreEst === 'finalizado' ? 'verde' as const : nombreEst === 'cancelado' ? 'rojo' as const : 'ambar' as const,
-        fechaDisplay: p.fecha_inicio ? `Iniciado el ${this.formatFechaDate(p.fecha_inicio)}` : '—',
-        esNuevo:      false,
-        fechaOrden:   p.fecha_inicio ?? '',
+        fechaDisplay: esTerminal && fechaActPlan
+          ? `${nombreEst === 'finalizado' ? 'Finalizado' : 'Cancelado'} el ${this.formatFechaISO(fechaActPlan)}`
+          : p.fecha_inicio ? `Iniciado el ${this.formatFechaDate(p.fecha_inicio)}` : '—',
+        esNuevo:      this.esReciente(fechaActPlan ?? p.fecha_inicio),
+        fechaOrden:   fechaActPlan ?? p.fecha_inicio ?? '',
       };
     });
 
@@ -85,7 +100,8 @@ export class HomeEncargado implements OnInit {
     });
   });
 
-  private mensajeSolicitud(estado: number, titulo: string): string {
+  private mensajeSolicitud(estado: number, titulo: string, nombreEstado = ''): string {
+    if (nombreEstado === 'Cerrada') return `Solicitud "${titulo}" fue cerrada`;
     switch (estado) {
       case 2:  return `Solicitud "${titulo}" fue aprobada`;
       case 3:  return `Solicitud "${titulo}" fue rechazada`;
@@ -93,7 +109,8 @@ export class HomeEncargado implements OnInit {
     }
   }
 
-  private mensajePlanteamiento(estado: number, titulo: string): string {
+  private mensajePlanteamiento(estado: number, titulo: string, nombreEstado = ''): string {
+    if (nombreEstado === 'Finalizado') return `Planteamiento "${titulo}" fue finalizado`;
     switch (estado) {
       case 2:  return `Planteamiento "${titulo}" fue aprobado`;
       case 3:  return `Planteamiento "${titulo}" fue rechazado`;
@@ -153,15 +170,15 @@ export class HomeEncargado implements OnInit {
   async ngOnInit(): Promise<void> {
     const [solRes, planRes, proyRes] = await Promise.all([
       this.data.getAll<any>('solicitud', {
-        select:  'id_solicitud, titulo_solicitud, id_estado, fecha_creacion_solicitud, fecha_actualizacion',
+        select:  'id_solicitud, titulo_solicitud, id_estado, fecha_creacion_solicitud, fecha_actualizacion, estado_solicitud(nombre_estado)',
         filters: { is_active: true },
       }),
       this.data.getAll<any>('planteamiento_proyecto', {
-        select:  'id_planteamiento, titulo_planteamiento, id_estado, fecha_creacion, fecha_actualizacion',
+        select:  'id_planteamiento, titulo_planteamiento, id_estado, fecha_creacion, fecha_actualizacion, estado_planteamiento(nombre_estado)',
         filters: { is_active: true },
       }),
       this.data.getAll<any>('proyecto', {
-        select:  'id_proyecto, id_estado, fecha_inicio, estado_proyecto(nombre_estado), planteamiento_proyecto(titulo_planteamiento)',
+        select:  'id_proyecto, id_estado, fecha_inicio, estado_proyecto(nombre_estado), planteamiento_proyecto(titulo_planteamiento, fecha_actualizacion)',
         filters: { is_active: true },
       }),
     ]);

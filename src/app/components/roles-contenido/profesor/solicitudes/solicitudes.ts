@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ModalDetalleSolicitud } from '../../../shared/modal-detalle-solicitud/modal-detalle-solicitud';
+import { ModalDetalleCliente, ClienteVista } from '../../../shared/modal-detalle-cliente/modal-detalle-cliente';
 import { Solicitud, EstadoSolicitud, Ciudad } from '../../../../interfaces/solicitud.interface';
 import { Carrera } from '../../../../interfaces/academico.interface';
 import { Archivo } from '../../../../interfaces/proyecto.interface';
@@ -12,7 +13,7 @@ import { CatalogService } from '../../../../core/services/catalog.service';
 
 @Component({
   selector: 'app-solicitudes',
-  imports: [CommonModule, FormsModule, ModalDetalleSolicitud],
+  imports: [CommonModule, FormsModule, ModalDetalleSolicitud, ModalDetalleCliente],
   templateUrl: './solicitudes.html',
   styleUrl: './solicitudes.css',
 })
@@ -51,13 +52,18 @@ export class Solicitudes implements OnInit {
     { valor: '11', nombre: 'Noviembre'  }, { valor: '12', nombre: 'Diciembre' },
   ];
 
+  filtroActivo: 'disponibles' | 'en_proceso' = 'disponibles';
+  idEnProceso = 0;
+
   filtroAnio = '';
   filtroMes  = '';
   searchTerm = '';
 
   /* ─── Modal ─────────────────────────────────────────────────── */
   mostrarModalDetalle    = false;
+  mostrarModalCliente    = false;
   solicitudSeleccionada: Solicitud | null = null;
+  clienteSeleccionado:   ClienteVista | null = null;
 
   /* ─── Años disponibles según solicitudes cargadas ───────────── */
   get aniosDisponibles(): string[] {
@@ -71,8 +77,20 @@ export class Solicitudes implements OnInit {
   }
 
   /* ─── Lista filtrada ────────────────────────────────────────── */
+  get contadorDisponibles(): number {
+    return this.solicitudes().filter(s => s.id_estado === 2).length;
+  }
+
+  get contadorEnProceso(): number {
+    return this.idEnProceso
+      ? this.solicitudes().filter(s => s.id_estado === this.idEnProceso).length
+      : 0;
+  }
+
   get solicitudesFiltradas(): Solicitud[] {
-    let lista = this.solicitudes().filter(s => s.id_estado === 2);
+    let lista = this.filtroActivo === 'en_proceso'
+      ? this.solicitudes().filter(s => s.id_estado === this.idEnProceso)
+      : this.solicitudes().filter(s => s.id_estado === 2);
 
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
@@ -95,9 +113,10 @@ export class Solicitudes implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    this.estados  = this.catalog.estados();
-    this.carreras = this.catalog.carreras();
-    this.ciudades = this.catalog.ciudades();
+    this.estados     = this.catalog.estados();
+    this.carreras    = this.catalog.carreras();
+    this.ciudades    = this.catalog.ciudades();
+    this.idEnProceso = this.catalog.getIdEstado('En proceso') || 0;
 
     const idCarrera = this.auth.usuario()?.profesor?.id_carrera;
     if (idCarrera) {
@@ -106,7 +125,7 @@ export class Solicitudes implements OnInit {
 
     const [solicitudesRes, ocupadas] = await Promise.all([
       this.dataService.getAll<any>('solicitud', {
-        select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`,
+        select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario, telefono_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`,
         filters: { is_active: true },
       }),
       this.cargarSolicitudesOcupadas(),
@@ -164,8 +183,8 @@ export class Solicitudes implements OnInit {
     const mapa: Record<number, string> = {
       2: 'bg-green-100 text-green-700 border-green-200',
       3: 'bg-red-100   text-red-700   border-red-200',
-      4: 'bg-sky-100   text-sky-700   border-sky-200',
     };
+    if (this.idEnProceso) mapa[this.idEnProceso] = 'bg-sky-100 text-sky-700 border-sky-200';
     return mapa[id] ?? 'bg-gray-100 text-gray-500 border-gray-200';
   }
 
@@ -192,6 +211,17 @@ export class Solicitudes implements OnInit {
     this.mostrarModalDetalle   = false;
     this.solicitudSeleccionada = null;
     this.archivos              = [];
+  }
+
+  abrirModalCliente(sol: any): void {
+    if (!sol.usuario) return;
+    this.clienteSeleccionado = sol.usuario as ClienteVista;
+    this.mostrarModalCliente = true;
+  }
+
+  cerrarModalCliente(): void {
+    this.mostrarModalCliente = false;
+    this.clienteSeleccionado = null;
   }
 
   esSolicitudOcupada(id: number): boolean {

@@ -1,1 +1,261 @@
-<p>reportes works!</p>
+<!-- ══════════════════════════════════════════════════════════════════
+     PANEL DE CONTROLES — se oculta al imprimir
+════════════════════════════════════════════════════════════════════ -->
+<section class="mx-auto max-w-5xl px-4 py-8 lg:px-8 print:hidden">
+
+  <div class="mb-6">
+    <p class="text-xs font-semibold uppercase tracking-widest text-[#1B3A6B]/50">
+      Portal de autoridad
+    </p>
+    <h1 class="mt-1 text-2xl font-extrabold text-[#1B3A6B] sm:text-3xl">
+      Reporte institucional de solicitudes
+    </h1>
+    <p class="mt-1 text-sm text-[#1B3A6B]/60">
+      Vista consolidada de todas las solicitudes por estado y carrera.
+    </p>
+  </div>
+
+  <!-- Filtros y botón -->
+  <div class="flex flex-wrap items-end gap-3 rounded-2xl border border-[#1B3A6B]/10 bg-white p-5 shadow-sm">
+
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Año</label>
+      <select [ngModel]="filtroAnio()" (ngModelChange)="filtroAnio.set($event); filtroMes.set('')"
+              class="rounded-xl border border-[#1B3A6B]/20 bg-white px-3 py-2 text-sm
+                     text-[#1B3A6B] outline-none transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15">
+        <option value="">Todo el período</option>
+        @for (a of aniosDisponibles; track a) {
+          <option [value]="a">{{ a }}</option>
+        }
+      </select>
+    </div>
+
+    @if (filtroAnio()) {
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Mes</label>
+        <select [ngModel]="filtroMes()" (ngModelChange)="filtroMes.set($event)"
+                class="rounded-xl border border-[#1B3A6B]/20 bg-white px-3 py-2 text-sm
+                       text-[#1B3A6B] outline-none transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15">
+          <option value="">Todos los meses</option>
+          @for (m of meses; track m.valor) {
+            <option [value]="m.valor">{{ m.nombre }}</option>
+          }
+        </select>
+      </div>
+    }
+
+    @if (filtroAnio()) {
+      <button type="button" (click)="limpiarFiltros()"
+              class="rounded-xl border border-[#1B3A6B]/20 px-4 py-2 text-sm font-medium
+                     text-[#1B3A6B] transition hover:bg-[#1B3A6B]/5">
+        Limpiar filtros
+      </button>
+    }
+
+    <div class="ml-auto flex flex-col items-end gap-1">
+      <button type="button" (click)="imprimir()"
+              class="inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-5 py-2.5
+                     text-sm font-semibold text-white shadow-sm transition
+                     hover:bg-[#16315b] active:scale-95">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2m2 4h6a2 2 0 0 0 2-2v-4H9v4a2 2 0 0 0 2 2z"/>
+        </svg>
+        Exportar PDF
+      </button>
+      <p class="text-xs font-medium text-[#1B3A6B]/60">En el diálogo, elige "Guardar como PDF"</p>
+    </div>
+  </div>
+
+  <p class="mt-3 text-xs text-[#1B3A6B]/50">
+    Período mostrado: <span class="font-semibold text-[#1B3A6B]/70">{{ periodoLabel }}</span>
+  </p>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     CUERPO DEL REPORTE
+════════════════════════════════════════════════════════════════════ -->
+<div class="reporte-body mx-auto max-w-5xl px-4 pb-12 lg:px-8 print:max-w-none print:px-0 print:pb-0">
+
+  <!-- ── CABECERA INSTITUCIONAL ────────────────────────────────── -->
+  <div class="mb-6 rounded-2xl border border-[#1B3A6B]/10 bg-white p-6 shadow-sm
+              print:rounded-none print:border-0 print:border-b-2 print:border-[#1B3A6B] print:shadow-none">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-widest text-[#1B3A6B]/50">
+          Universidad Católica del Maule
+        </p>
+        <h2 class="mt-0.5 text-xl font-extrabold text-[#1B3A6B]">
+          Reporte Institucional — Vinculación con la Comunidad
+        </h2>
+        <p class="mt-1 text-sm font-semibold text-[#C8A951]">
+          Resumen de solicitudes por estado y carrera
+        </p>
+      </div>
+      <div class="text-right text-xs text-[#1B3A6B]/55">
+        <p><span class="font-semibold">Período:</span> {{ periodoLabel }}</p>
+        <p><span class="font-semibold">Autoridad:</span> {{ nombreAutoridad() }}</p>
+        @if (fechaGeneracion) {
+          <p><span class="font-semibold">Generado:</span> {{ fechaGeneracion }}</p>
+        }
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       SECCIÓN 1 — RESUMEN GLOBAL POR ESTADO
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="seccion mb-6 rounded-2xl border border-[#1B3A6B]/10 bg-white shadow-sm
+              print:rounded-none print:border-0 print:shadow-none">
+
+    <div class="border-b border-[#1B3A6B]/10 px-6 py-4">
+      <h3 class="text-base font-bold text-[#1B3A6B]">1. Resumen global de solicitudes</h3>
+      <p class="text-xs text-[#1B3A6B]/50">
+        Total registradas: <span class="font-semibold">{{ solicitudes().length }}</span>
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 p-5 sm:grid-cols-5">
+      <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center
+                  print:border print:border-gray-300 print:bg-white">
+        <p class="text-2xl font-extrabold text-amber-700 print:text-[#1B3A6B]">{{ cntPendiente() }}</p>
+        <p class="mt-0.5 text-xs font-semibold text-amber-600 print:text-gray-600">Pendientes</p>
+      </div>
+      <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-center
+                  print:border print:border-gray-300 print:bg-white">
+        <p class="text-2xl font-extrabold text-green-700 print:text-[#1B3A6B]">{{ cntAprobada() }}</p>
+        <p class="mt-0.5 text-xs font-semibold text-green-600 print:text-gray-600">Aprobadas</p>
+      </div>
+      <div class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-center
+                  print:border print:border-gray-300 print:bg-white">
+        <p class="text-2xl font-extrabold text-sky-700 print:text-[#1B3A6B]">{{ cntEnProceso() }}</p>
+        <p class="mt-0.5 text-xs font-semibold text-sky-600 print:text-gray-600">En proceso</p>
+      </div>
+      <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-center
+                  print:border print:border-gray-300 print:bg-white">
+        <p class="text-2xl font-extrabold text-red-700 print:text-[#1B3A6B]">{{ cntRechazada() }}</p>
+        <p class="mt-0.5 text-xs font-semibold text-red-600 print:text-gray-600">Rechazadas</p>
+      </div>
+      <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-center
+                  print:border print:border-gray-300 print:bg-white">
+        <p class="text-2xl font-extrabold text-gray-600 print:text-[#1B3A6B]">{{ cntCerrada() }}</p>
+        <p class="mt-0.5 text-xs font-semibold text-gray-500 print:text-gray-600">Cerradas</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       SECCIÓN 2 — DESGLOSE POR CARRERA
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="seccion mb-6 rounded-2xl border border-[#1B3A6B]/10 bg-white shadow-sm
+              print:rounded-none print:border-0 print:shadow-none">
+
+    <div class="border-b border-[#1B3A6B]/10 px-6 py-4">
+      <h3 class="text-base font-bold text-[#1B3A6B]">2. Desglose por carrera</h3>
+    </div>
+
+    @if (desglosePorCarrera().length > 0) {
+      <div class="overflow-auto max-h-[400px] print:max-h-none print:overflow-visible">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.04] print:border-b print:border-gray-300 print:bg-gray-50">
+              <th class="px-4 py-2.5 font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Carrera</th>
+              <th class="px-4 py-2.5 text-center font-semibold uppercase tracking-wider text-amber-600">Pendientes</th>
+              <th class="px-4 py-2.5 text-center font-semibold uppercase tracking-wider text-green-600">Aprobadas</th>
+              <th class="px-4 py-2.5 text-center font-semibold uppercase tracking-wider text-sky-600">En proceso</th>
+              <th class="px-4 py-2.5 text-center font-semibold uppercase tracking-wider text-red-600">Rechazadas</th>
+              <th class="px-4 py-2.5 text-center font-semibold uppercase tracking-wider text-gray-500">Cerradas</th>
+              <th class="px-4 py-2.5 text-center font-semibold uppercase tracking-wider text-[#1B3A6B]">Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#1B3A6B]/8 print:divide-y print:divide-gray-200">
+            @for (fila of desglosePorCarrera(); track fila.nombre) {
+              <tr class="hover:bg-[#1B3A6B]/[0.015]">
+                <td class="px-4 py-2.5 font-semibold text-[#1B3A6B]">{{ fila.nombre }}</td>
+                <td class="px-4 py-2.5 text-center font-semibold text-amber-700">{{ fila.pendientes }}</td>
+                <td class="px-4 py-2.5 text-center font-semibold text-green-700">{{ fila.aprobadas }}</td>
+                <td class="px-4 py-2.5 text-center font-semibold text-sky-700">{{ fila.enProceso }}</td>
+                <td class="px-4 py-2.5 text-center font-semibold text-red-700">{{ fila.rechazadas }}</td>
+                <td class="px-4 py-2.5 text-center font-semibold text-gray-600">{{ fila.cerradas }}</td>
+                <td class="px-4 py-2.5 text-center font-extrabold text-[#1B3A6B]">{{ fila.total }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr class="border-t-2 border-[#1B3A6B]/20 bg-[#1B3A6B]/[0.03] print:border-t-2 print:border-gray-400 print:bg-gray-100">
+              <td class="px-4 py-2.5 text-xs font-bold uppercase text-[#1B3A6B]">Total general</td>
+              <td class="px-4 py-2.5 text-center text-xs font-bold text-amber-700">{{ cntPendiente() }}</td>
+              <td class="px-4 py-2.5 text-center text-xs font-bold text-green-700">{{ cntAprobada() }}</td>
+              <td class="px-4 py-2.5 text-center text-xs font-bold text-sky-700">{{ cntEnProceso() }}</td>
+              <td class="px-4 py-2.5 text-center text-xs font-bold text-red-700">{{ cntRechazada() }}</td>
+              <td class="px-4 py-2.5 text-center text-xs font-bold text-gray-600">{{ cntCerrada() }}</td>
+              <td class="px-4 py-2.5 text-center text-xs font-extrabold text-[#1B3A6B]">{{ solicitudes().length }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    } @else {
+      <p class="px-6 py-4 text-sm text-[#1B3A6B]/40">Sin datos para el período seleccionado.</p>
+    }
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       SECCIÓN 3 — LISTADO COMPLETO
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="seccion mb-2 rounded-2xl border border-[#1B3A6B]/10 bg-white shadow-sm
+              print:rounded-none print:border-0 print:shadow-none">
+
+    <div class="border-b border-[#1B3A6B]/10 px-6 py-4">
+      <h3 class="text-base font-bold text-[#1B3A6B]">3. Listado completo de solicitudes</h3>
+    </div>
+
+    @if (solicitudes().length > 0) {
+      <div class="overflow-auto max-h-[400px] print:max-h-none print:overflow-visible">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.04] print:border-b print:border-gray-300 print:bg-gray-50">
+              <th class="px-4 py-2.5 font-semibold uppercase tracking-wider text-[#1B3A6B]/60">#</th>
+              <th class="px-4 py-2.5 font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Cliente</th>
+              <th class="px-4 py-2.5 font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Título</th>
+              <th class="px-4 py-2.5 font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Carrera</th>
+              <th class="px-4 py-2.5 font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Fecha</th>
+              <th class="px-4 py-2.5 font-semibold uppercase tracking-wider text-[#1B3A6B]/60">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#1B3A6B]/8 print:divide-y print:divide-gray-200">
+            @for (sol of solicitudes(); track sol.id_solicitud; let i = $index) {
+              <tr class="hover:bg-[#1B3A6B]/[0.015]">
+                <td class="px-4 py-2 text-[#1B3A6B]/40">{{ i + 1 }}</td>
+                <td class="px-4 py-2 text-[#1B3A6B]/75">{{ getNombreCliente(sol) }}</td>
+                <td class="max-w-[220px] px-4 py-2">
+                  <span class="line-clamp-2 font-medium text-[#1B3A6B]">{{ sol.titulo_solicitud }}</span>
+                </td>
+                <td class="px-4 py-2 text-[#1B3A6B]/65">{{ getNombreCarrera(sol) }}</td>
+                <td class="whitespace-nowrap px-4 py-2 text-[#1B3A6B]/60">
+                  {{ formatearFecha(sol.fecha_creacion_solicitud) }}
+                </td>
+                <td class="px-4 py-2 font-semibold text-[#1B3A6B]/70">
+                  {{ sol.estado_solicitud?.nombre_estado ?? '—' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="px-6 py-4 text-sm text-[#1B3A6B]/40">Sin solicitudes en el período seleccionado.</p>
+    }
+  </div>
+
+  <!-- Pie de página institucional -->
+  <div class="mt-4 hidden text-center text-xs text-gray-400 print:block">
+    <p>Universidad Católica del Maule — Vicerrectoría de Vinculación con la Comunidad</p>
+    <p>Documento generado automáticamente por el Sistema VCM · {{ fechaGeneracion }}</p>
+  </div>
+
+</div>

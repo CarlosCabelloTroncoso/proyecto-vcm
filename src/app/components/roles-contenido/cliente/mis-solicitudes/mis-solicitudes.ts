@@ -68,7 +68,8 @@ export class MisSolicitudes implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    this.estados = this.catalog.estados();
+    const visibles = new Set(['pendiente', 'aprobada', 'en proceso', 'rechazada', 'cerrada']);
+    this.estados = this.catalog.estados().filter(e => visibles.has(e.nombre_estado.toLowerCase()));
     this.carreras = this.catalog.carreras();
     this.ciudades = this.catalog.ciudades();
 
@@ -116,14 +117,14 @@ export class MisSolicitudes implements OnInit {
   }
 
   getBadgeEstado(id: number): string {
-    const mapa: Record<number, string> = {
-      1: 'bg-amber-100 text-amber-700 border-amber-200',
-      2: 'bg-green-100 text-green-700 border-green-200',
-      3: 'bg-red-100   text-red-700   border-red-200',
-      4: 'bg-sky-100   text-sky-700   border-sky-200',
-      5: 'bg-gray-100  text-gray-600  border-gray-200',
+    const nombre = this.estados.find(e => e.id_estado === id)?.nombre_estado ?? '';
+    const mapa: Record<string, string> = {
+      'Pendiente': 'bg-amber-100 text-amber-700 border-amber-200',
+      'Aprobada':  'bg-green-100 text-green-700 border-green-200',
+      'Rechazada': 'bg-red-100   text-red-700   border-red-200',
+      'Cerrada':   'bg-teal-100  text-teal-700  border-teal-200',
     };
-    return mapa[id] ?? 'bg-gray-100 text-gray-600 border-gray-200';
+    return mapa[nombre] ?? 'bg-gray-100 text-gray-600 border-gray-200';
   }
 
   getBadgeCarrera(id: number): string {

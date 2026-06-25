@@ -88,6 +88,19 @@
       </span>
     </button>
 
+    <button type="button"
+            (click)="filtroActivo = 'finalizado'"
+            [class]="filtroActivo === 'finalizado'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Finalizados
+      <span [class]="filtroActivo === 'finalizado'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-teal-100 px-1.5 py-0.5 text-xs font-bold text-teal-700'">
+        {{ contadorPorEstado['finalizado'] }}
+      </span>
+    </button>
+
   </div>
 
   <!-- ══ TABLA ════════════════════════════════════════════════════ -->

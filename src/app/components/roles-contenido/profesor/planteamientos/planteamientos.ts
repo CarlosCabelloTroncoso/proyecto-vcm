@@ -37,12 +37,15 @@ export class Planteamientos implements OnInit {
 
   planteamientos = signal<PlanteamientoProyecto[]>([]);
 
-  filtroActivo: 'pendiente' | 'aprobado' | 'rechazado' | 'cancelado' = 'pendiente';
+  filtroActivo: 'pendiente' | 'aprobado' | 'rechazado' | 'cancelado' | 'finalizado' = 'pendiente';
 
   mostrarModalForm   = false;
   modoEdicion        = false;
   planteamientoEditando: PlanteamientoProyecto | null = null;
   formData: Partial<PlanteamientoProyecto> = {};
+
+  tiempoEstimadoValor: number | null = null;
+  tiempoEstimadoUnidad: string = 'semanas';
 
   archivosAdjuntos: ArchivoEntry[] = [];
   arrastrandoArchivo = false;
@@ -115,8 +118,9 @@ export class Planteamientos implements OnInit {
   }
 
   get planteamientosFiltrados(): PlanteamientoProyecto[] {
-    const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
-    const idMap: Record<string, number> = { pendiente: 1, aprobado: 2, rechazado: 3, cancelado: idCancelado };
+    const idCancelado  = this.catalog.getIdEstadoPlanteamiento('Cancelado')  || 4;
+    const idFinalizado = this.catalog.getIdEstadoPlanteamiento('Finalizado') || 5;
+    const idMap: Record<string, number> = { pendiente: 1, aprobado: 2, rechazado: 3, cancelado: idCancelado, finalizado: idFinalizado };
     return this.planteamientos()
       .filter(p => p.id_estado === (idMap[this.filtroActivo] ?? 1))
       .sort((a: any, b: any) => {
@@ -127,12 +131,14 @@ export class Planteamientos implements OnInit {
   }
 
   get contadorPorEstado(): Record<string, number> {
-    const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
+    const idCancelado  = this.catalog.getIdEstadoPlanteamiento('Cancelado')  || 4;
+    const idFinalizado = this.catalog.getIdEstadoPlanteamiento('Finalizado') || 5;
     return {
-      pendiente: this.planteamientos().filter(p => p.id_estado === 1).length,
-      aprobado:  this.planteamientos().filter(p => p.id_estado === 2).length,
-      rechazado: this.planteamientos().filter(p => p.id_estado === 3).length,
-      cancelado: this.planteamientos().filter(p => p.id_estado === idCancelado).length,
+      pendiente:  this.planteamientos().filter(p => p.id_estado === 1).length,
+      aprobado:   this.planteamientos().filter(p => p.id_estado === 2).length,
+      rechazado:  this.planteamientos().filter(p => p.id_estado === 3).length,
+      cancelado:  this.planteamientos().filter(p => p.id_estado === idCancelado).length,
+      finalizado: this.planteamientos().filter(p => p.id_estado === idFinalizado).length,
     };
   }
 
@@ -145,12 +151,14 @@ export class Planteamientos implements OnInit {
   }
 
   getBadgeEstado(id: number): string {
-    const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
+    const idCancelado  = this.catalog.getIdEstadoPlanteamiento('Cancelado')  || 4;
+    const idFinalizado = this.catalog.getIdEstadoPlanteamiento('Finalizado') || 5;
     const mapa: Record<number, string> = {
       1: 'bg-amber-100 text-amber-700 border-amber-200',
       2: 'bg-emerald-100 text-emerald-700 border-emerald-200',
       3: 'bg-red-100 text-red-500 border-red-200',
-      [idCancelado]: 'bg-slate-100 text-slate-500 border-slate-200',
+      [idCancelado]:  'bg-slate-100 text-slate-500 border-slate-200',
+      [idFinalizado]: 'bg-teal-100 text-teal-700 border-teal-200',
     };
     return mapa[id] ?? 'bg-gray-100 text-gray-500 border-gray-200';
   }
@@ -192,6 +200,8 @@ export class Planteamientos implements OnInit {
       tiempo_estimado_planteamiento: '',
       id_solicitud: solicitudId,
     };
+    this.tiempoEstimadoValor  = null;
+    this.tiempoEstimadoUnidad = 'semanas';
     this.mostrarModalForm = true;
   }
 
@@ -199,6 +209,9 @@ export class Planteamientos implements OnInit {
     this.modoEdicion = true;
     this.planteamientoEditando = p;
     this.formData = { ...p };
+    const match = p.tiempo_estimado_planteamiento?.match(/^(\d+)\s*(.+)$/);
+    this.tiempoEstimadoValor  = match ? +match[1] : null;
+    this.tiempoEstimadoUnidad = match ? match[2].trim().toLowerCase() : 'semanas';
     this.mostrarModalForm = true;
   }
 
@@ -208,6 +221,8 @@ export class Planteamientos implements OnInit {
     this.formData = {};
     this.archivosAdjuntos = [];
     this.errorArchivos = [];
+    this.tiempoEstimadoValor  = null;
+    this.tiempoEstimadoUnidad = 'semanas';
   }
 
   onFileChange(event: Event): void {
@@ -309,6 +324,8 @@ export class Planteamientos implements OnInit {
     if (!this.formValido()) return;
     const u = this.auth.usuario();
     if (!u) return;
+
+    this.formData.tiempo_estimado_planteamiento = `${this.tiempoEstimadoValor} ${this.tiempoEstimadoUnidad}`;
 
     if (this.modoEdicion && this.planteamientoEditando) {
       const { data } = await this.dataService.update<PlanteamientoProyecto>(
@@ -423,7 +440,7 @@ export class Planteamientos implements OnInit {
     return !!(
       this.formData.titulo_planteamiento?.trim() &&
       this.formData.descripcion_planteamiento?.trim() &&
-      this.formData.tiempo_estimado_planteamiento?.trim() &&
+      this.tiempoEstimadoValor && this.tiempoEstimadoValor > 0 &&
       this.formData.id_solicitud
     );
   }

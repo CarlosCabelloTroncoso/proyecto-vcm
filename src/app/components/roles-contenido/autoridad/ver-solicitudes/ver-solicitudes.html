@@ -1,1 +1,242 @@
-<p>ver-solicitudes works!</p>
+<section class="mx-auto max-w-7xl px-4 py-10 lg:px-8 lg:py-12">
+
+  <!-- ══ ENCABEZADO ══════════════════════════════════════════════ -->
+  <div class="mb-8">
+    <p class="text-xs font-semibold uppercase tracking-widest text-[#1B3A6B]/50">
+      Portal de la autoridad
+    </p>
+    <h1 class="mt-1 text-2xl font-extrabold text-[#1B3A6B] sm:text-3xl">
+      Ver solicitudes
+    </h1>
+    <p class="mt-1 text-sm text-[#1B3A6B]/60">
+      Consulta el estado de todas las solicitudes de vinculación de la institución.
+    </p>
+  </div>
+
+  <!-- ══ BUSCADOR ════════════════════════════════════════════════ -->
+  <div class="mb-4">
+    <div class="relative max-w-md">
+      <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#1B3A6B]/40"
+           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+           stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+      </svg>
+      <input type="text"
+             [(ngModel)]="searchTerm"
+             placeholder="Buscar por cliente, título o carrera…"
+             class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white py-2.5 pl-9 pr-4 text-sm
+                    text-[#1B3A6B] placeholder-[#1B3A6B]/40 shadow-sm outline-none transition
+                    focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15"/>
+    </div>
+  </div>
+
+  <!-- ══ FILTROS DE ESTADO ═══════════════════════════════════════ -->
+  <div class="mb-5 flex flex-wrap items-center gap-2">
+
+    <button type="button"
+            (click)="filtroActivo = 'pendiente'"
+            [class]="filtroActivo === 'pendiente'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Pendientes
+      <span [class]="filtroActivo === 'pendiente'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700'">
+        {{ contadorPorEstado['pendiente'] }}
+      </span>
+    </button>
+
+    <button type="button"
+            (click)="filtroActivo = 'aprobada'"
+            [class]="filtroActivo === 'aprobada'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Aprobadas
+      <span [class]="filtroActivo === 'aprobada'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-emerald-100 px-1.5 py-0.5 text-xs font-bold text-emerald-700'">
+        {{ contadorPorEstado['aprobada'] }}
+      </span>
+    </button>
+
+    <button type="button"
+            (click)="filtroActivo = 'en_proceso'"
+            [class]="filtroActivo === 'en_proceso'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      En proceso
+      <span [class]="filtroActivo === 'en_proceso'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-sky-100 px-1.5 py-0.5 text-xs font-bold text-sky-700'">
+        {{ contadorPorEstado['en_proceso'] }}
+      </span>
+    </button>
+
+    <button type="button"
+            (click)="filtroActivo = 'rechazada'"
+            [class]="filtroActivo === 'rechazada'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Rechazadas
+      <span [class]="filtroActivo === 'rechazada'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700'">
+        {{ contadorPorEstado['rechazada'] }}
+      </span>
+    </button>
+
+    <button type="button"
+            (click)="filtroActivo = 'cerrado'"
+            [class]="filtroActivo === 'cerrado'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Cerradas
+      <span [class]="filtroActivo === 'cerrado'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-teal-100 px-1.5 py-0.5 text-xs font-bold text-teal-700'">
+        {{ contadorPorEstado['cerrado'] }}
+      </span>
+    </button>
+
+  </div>
+
+  <!-- ══ TABLA ════════════════════════════════════════════════════ -->
+  <div class="overflow-hidden rounded-2xl border border-[#1B3A6B]/10 bg-white shadow-sm">
+
+    @if (solicitudesFiltradas.length > 0) {
+
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[700px] border-collapse text-left text-sm">
+
+          <!-- Cabecera -->
+          <thead>
+            <tr class="border-b border-[#1B3A6B]/10 bg-[#1B3A6B]/[0.04]">
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Cliente
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Título
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Carrera
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Fecha de creación
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+                Estado
+              </th>
+              <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60 text-right">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+
+          <!-- Filas -->
+          <tbody class="divide-y divide-[#1B3A6B]/8">
+            @for (sol of solicitudesFiltradas; track sol.id_solicitud) {
+              <tr class="transition hover:bg-[#1B3A6B]/[0.025]">
+
+                <td class="px-5 py-4">
+                  <button type="button"
+                          (click)="abrirModalCliente(sol)"
+                          class="font-medium text-[#1B3A6B] underline-offset-2 transition
+                                 hover:text-blue-600 hover:underline active:scale-95">
+                    {{ getNombreCliente(sol) }}
+                  </button>
+                </td>
+
+                <td class="max-w-[200px] px-5 py-4">
+                  <p class="truncate font-medium text-[#1B3A6B]" [title]="sol.titulo_solicitud">
+                    {{ sol.titulo_solicitud }}
+                  </p>
+                </td>
+
+                <td class="px-5 py-4 text-[#1B3A6B]/65 text-sm">
+                  {{ getNombreCarrera(sol.id_carrera) }}
+                </td>
+
+                <td class="whitespace-nowrap px-5 py-4 text-[#1B3A6B]/65">
+                  {{ formatearFecha(sol.fecha_creacion_solicitud) }}
+                </td>
+
+                <td class="px-5 py-4">
+                  <span class="inline-flex rounded-full border px-2.5 py-0.5
+                               text-xs font-semibold {{ getBadgeEstado(sol.id_estado) }}">
+                    {{ getNombreEstado(sol.id_estado) }}
+                  </span>
+                </td>
+
+                <!-- Solo ver detalle — sin aprobar/rechazar -->
+                <td class="px-5 py-4">
+                  <div class="flex items-center justify-end">
+                    <button type="button"
+                            (click)="abrirDetalle(sol)"
+                            class="inline-flex items-center gap-1.5 rounded-lg border border-[#1B3A6B]/20
+                                   bg-white px-3 py-1.5 text-xs font-semibold text-[#1B3A6B] shadow-sm
+                                   transition hover:bg-[#1B3A6B] hover:text-white active:scale-95">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.477
+                             0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                      Ver detalle
+                    </button>
+                  </div>
+                </td>
+
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pie -->
+      <div class="border-t border-[#1B3A6B]/8 bg-[#1B3A6B]/[0.02] px-5 py-3">
+        <p class="text-xs text-[#1B3A6B]/45">
+          {{ solicitudesFiltradas.length }}
+          solicitud{{ solicitudesFiltradas.length !== 1 ? 'es' : '' }}
+          encontrada{{ solicitudesFiltradas.length !== 1 ? 's' : '' }}
+        </p>
+      </div>
+
+    } @else {
+
+      <div class="flex flex-col items-center justify-center px-6 py-20 text-center">
+        <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1B3A6B]/[0.06]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#1B3A6B]/30"
+               fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1
+                 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"/>
+          </svg>
+        </div>
+        <p class="mt-4 text-base font-semibold text-[#1B3A6B]/60">Sin solicitudes</p>
+        <p class="mt-1 text-sm text-[#1B3A6B]/40">
+          No hay solicitudes en este estado.
+        </p>
+      </div>
+
+    }
+  </div>
+
+</section>
+
+<!-- ══ MODAL: Detalle solicitud ════════════════════════════════ -->
+<app-modal-detalle-solicitud
+  [visible]="mostrarModalDetalle"
+  [solicitud]="solicitudSeleccionada"
+  [estados]="estados"
+  [carreras]="carreras"
+  [ciudades]="ciudades"
+  [archivos]="archivos"
+  [nombreCliente]="solicitudSeleccionada ? getNombreCliente(solicitudSeleccionada) : ''"
+  (cerrar)="cerrarDetalle()" />
+
+<!-- ══ MODAL: Detalle cliente ══════════════════════════════════ -->
+<app-modal-detalle-cliente
+  [visible]="mostrarModalCliente"
+  [cliente]="clienteSeleccionado"
+  (cerrar)="cerrarModalCliente()" />

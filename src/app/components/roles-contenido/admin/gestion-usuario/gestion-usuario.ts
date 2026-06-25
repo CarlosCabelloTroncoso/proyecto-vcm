@@ -10,7 +10,7 @@ import { Carrera } from '../../../../interfaces/academico.interface';
 import { ModalUsuarioForm } from './modales/modal-usuario-form/modal-usuario-form';
 import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
 
-type UsuarioForm = Partial<Usuario> & { id_carrera?: number };
+type UsuarioForm = Partial<Usuario> & { email?: string; password?: string; id_carrera?: number; cargo?: string };
 
 @Component({
   selector: 'app-gestion-usuario',
@@ -51,7 +51,7 @@ export class GestionUsuario implements OnInit {
     await this.catalog.load();
     const [usuRes, rolRes] = await Promise.all([
       this.dataService.getAll<any>('usuario', {
-        select: '*, rol(nombre_rol), gestor_vinculacion_carrera(id_carrera, carrera(nombre_carrera, etiqueta_carrera)), profesor(id_carrera, carrera(nombre_carrera, etiqueta_carrera))',
+        select: '*, rol(nombre_rol), gestor_vinculacion_carrera(id_carrera, carrera(nombre_carrera, etiqueta_carrera)), profesor(id_carrera, carrera(nombre_carrera, etiqueta_carrera)), autoridad(cargo)',
         filters: { is_active: true },
       }),
       this.dataService.getAll<Rol>('rol', { filters: { is_active: true } }),
@@ -122,7 +122,10 @@ export class GestionUsuario implements OnInit {
     const resolve = (raw: any) =>
       Array.isArray(raw) ? raw[0]?.carrera : raw?.carrera;
     const c = resolve(u.gestor_vinculacion_carrera) ?? resolve(u.profesor);
-    return { nombre: c?.nombre_carrera ?? '', etiqueta: c?.etiqueta_carrera ?? '' };
+    if (c) return { nombre: c.nombre_carrera ?? '', etiqueta: c.etiqueta_carrera ?? '' };
+    const cargo = Array.isArray(u.autoridad) ? u.autoridad[0]?.cargo : u.autoridad?.cargo;
+    if (cargo) return { nombre: cargo, etiqueta: '' };
+    return { nombre: '', etiqueta: '' };
   }
 
   getBadgeCarreraEtiqueta(etiqueta: string): string {
@@ -268,15 +271,82 @@ export class GestionUsuario implements OnInit {
         );
       }
 
-      // 4. Recargar para reflejar cambios reales
+      // 4. Cerrar modal y recargar
+      this.mostrarModalForm = false;
       await this.ngOnInit();
 
     } else if (!this.modoEdicion) {
-      // Crear usuario: solo se puede desde auth (requiere email/password)
-      // Por ahora se deja como pendiente de implementación completa
-    }
+      const sb = this.supabaseService.client;
 
-    this.mostrarModalForm = false;
+      if (!datos.email || !datos.password) {
+        console.error('Correo y contraseña son requeridos para crear un usuario.');
+        return;
+      }
+
+      // Guardar sesión del admin antes de que signUp la reemplace
+      const { data: { session: adminSession } } = await sb.auth.getSession();
+
+      const { data: authData, error: signUpError } = await sb.auth.signUp({
+        email:    datos.email,
+        password: datos.password,
+      });
+
+      // Restaurar sesión del admin inmediatamente
+      if (adminSession) {
+        await sb.auth.setSession({
+          access_token:  adminSession.access_token,
+          refresh_token: adminSession.refresh_token,
+        });
+      }
+
+      if (signUpError || !authData.user) {
+        console.error('Error al crear usuario en auth:', signUpError);
+        return;
+      }
+
+      const authUid = authData.user.id;
+
+      // Confirmar email automáticamente para que RLS permita leer el usuario
+      await sb.rpc('confirm_user_email', { user_auth_uid: authUid });
+
+      // Crear fila en public.usuario
+      const { data: nuevoUsuario, error: dbError } = await sb.from('usuario').insert({
+        auth_uid:          authUid,
+        rut_usuario:       datos.rut_usuario       ?? '',
+        nombres_usuario:   datos.nombres_usuario   ?? '',
+        apellidos_usuario: datos.apellidos_usuario ?? '',
+        telefono_usuario:  datos.telefono_usuario  ?? '',
+        id_rol:            datos.id_rol,
+        is_active:         true,
+        fecha_creacion:    new Date().toISOString(),
+      }).select().single();
+
+      if (dbError || !nuevoUsuario) {
+        console.error('Error al crear usuario en BD:', dbError);
+        return;
+      }
+
+      const idUsuario = nuevoUsuario.id_usuario;
+      const rolNombre = this.todosLosRoles.find(r => r.id_rol === datos.id_rol)?.nombre_rol;
+
+      if (rolNombre === 'encargado' && datos.id_carrera) {
+        await sb.from('gestor_vinculacion_carrera').insert({
+          id_usuario: idUsuario, id_carrera: datos.id_carrera, is_active: true,
+        });
+      } else if (rolNombre === 'profesor' && datos.id_carrera) {
+        await sb.from('profesor').insert({
+          id_usuario: idUsuario, id_carrera: datos.id_carrera, is_active: true,
+        });
+      } else if (rolNombre === 'autoridad') {
+        await sb.from('autoridad').insert({
+          id_usuario: idUsuario, cargo: datos.cargo ?? '', is_active: true,
+        });
+      }
+
+      // Cerrar modal y recargar
+      this.mostrarModalForm = false;
+      await this.ngOnInit();
+    }
   }
 
   /** Confirmación del ModalConfirmar */

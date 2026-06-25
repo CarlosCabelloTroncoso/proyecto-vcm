@@ -57,7 +57,7 @@ export class GestionPlanteamiento implements OnInit {
 
   archivos: Archivo[] = [];
 
-  filtroActivo: 'pendiente' | 'aprobado' | 'rechazado' | 'cancelado' = 'pendiente';
+  filtroActivo: 'pendiente' | 'aprobado' | 'rechazado' | 'cancelado' | 'finalizado' = 'pendiente';
   searchTerm = '';
 
   mostrarModalDetalle   = false;
@@ -68,7 +68,9 @@ export class GestionPlanteamiento implements OnInit {
   planteamientoAccion:  PlanteamientoProyecto | null = null;
 
   get planteamientosFiltrados(): PlanteamientoProyecto[] {
-    const idMap: Record<string, number> = { pendiente: 1, aprobado: 2, rechazado: 3, cancelado: this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4 };
+    const idCancelado   = this.catalog.getIdEstadoPlanteamiento('Cancelado')   || 4;
+    const idFinalizado  = this.catalog.getIdEstadoPlanteamiento('Finalizado')  || 5;
+    const idMap: Record<string, number> = { pendiente: 1, aprobado: 2, rechazado: 3, cancelado: idCancelado, finalizado: idFinalizado };
     const idEstado = idMap[this.filtroActivo] ?? 1;
     let lista = this.planteamientos().filter(
       p => p.id_estado === idEstado
@@ -88,13 +90,15 @@ export class GestionPlanteamiento implements OnInit {
   }
 
   get contadorPorEstado(): Record<string, number> {
-    const todos = [...this.planteamientos()];
-    const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
+    const todos        = [...this.planteamientos()];
+    const idCancelado  = this.catalog.getIdEstadoPlanteamiento('Cancelado')  || 4;
+    const idFinalizado = this.catalog.getIdEstadoPlanteamiento('Finalizado') || 5;
     return {
-      pendiente: todos.filter(p => p.id_estado === 1).length,
-      aprobado:  todos.filter(p => p.id_estado === 2).length,
-      rechazado: todos.filter(p => p.id_estado === 3).length,
-      cancelado: todos.filter(p => p.id_estado === idCancelado).length,
+      pendiente:  todos.filter(p => p.id_estado === 1).length,
+      aprobado:   todos.filter(p => p.id_estado === 2).length,
+      rechazado:  todos.filter(p => p.id_estado === 3).length,
+      cancelado:  todos.filter(p => p.id_estado === idCancelado).length,
+      finalizado: todos.filter(p => p.id_estado === idFinalizado).length,
     };
   }
 
@@ -111,12 +115,14 @@ export class GestionPlanteamiento implements OnInit {
   }
 
   getBadgeEstado(id: number): string {
-    const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
+    const idCancelado  = this.catalog.getIdEstadoPlanteamiento('Cancelado')  || 4;
+    const idFinalizado = this.catalog.getIdEstadoPlanteamiento('Finalizado') || 5;
     const mapa: Record<number, string> = {
       1: 'bg-amber-100 text-amber-700 border-amber-200',
       2: 'bg-emerald-100 text-emerald-700 border-emerald-200',
       3: 'bg-red-100 text-red-500 border-red-200',
-      [idCancelado]: 'bg-slate-100 text-slate-500 border-slate-200',
+      [idCancelado]:  'bg-slate-100 text-slate-500 border-slate-200',
+      [idFinalizado]: 'bg-teal-100 text-teal-700 border-teal-200',
     };
     return mapa[id] ?? 'bg-gray-100 text-gray-500 border-gray-200';
   }

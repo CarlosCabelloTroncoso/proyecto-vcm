@@ -63,6 +63,19 @@
     </button>
 
     <button type="button"
+            (click)="filtroActivo = 'en_proceso'"
+            [class]="filtroActivo === 'en_proceso'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      En proceso
+      <span [class]="filtroActivo === 'en_proceso'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-sky-100 px-1.5 py-0.5 text-xs font-bold text-sky-700'">
+        {{ contadorPorEstado['en_proceso'] }}
+      </span>
+    </button>
+
+    <button type="button"
             (click)="filtroActivo = 'rechazada'"
             [class]="filtroActivo === 'rechazada'
               ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
@@ -72,6 +85,19 @@
         ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
         : 'rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700'">
         {{ contadorPorEstado['rechazada'] }}
+      </span>
+    </button>
+
+    <button type="button"
+            (click)="filtroActivo = 'cerrado'"
+            [class]="filtroActivo === 'cerrado'
+              ? 'inline-flex items-center gap-2 rounded-xl bg-[#1B3A6B] px-4 py-2 text-sm font-semibold text-white shadow-sm transition'
+              : 'inline-flex items-center gap-2 rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2 text-sm font-semibold text-[#1B3A6B]/60 shadow-sm transition hover:bg-[#1B3A6B]/5'">
+      Cerradas
+      <span [class]="filtroActivo === 'cerrado'
+        ? 'rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold text-white'
+        : 'rounded-full bg-teal-100 px-1.5 py-0.5 text-xs font-bold text-teal-700'">
+        {{ contadorPorEstado['cerrado'] }}
       </span>
     </button>
 
@@ -111,8 +137,13 @@
             @for (sol of solicitudesFiltradas; track sol.id_solicitud) {
               <tr class="transition hover:bg-[#1B3A6B]/[0.025]">
 
-                <td class="px-5 py-4 font-medium text-[#1B3A6B]">
-                  {{ getNombreCliente(sol.id_usuario) }}
+                <td class="px-5 py-4">
+                  <button type="button"
+                          (click)="abrirModalCliente(sol)"
+                          class="font-medium text-[#1B3A6B] underline-offset-2 transition
+                                 hover:text-blue-600 hover:underline active:scale-95">
+                    {{ getNombreCliente(sol.id_usuario) }}
+                  </button>
                 </td>
 
                 <td class="max-w-[220px] px-5 py-4">
@@ -258,3 +289,9 @@
   textoConfirmar="Sí, rechazar"
   (confirmar)="confirmarRechazar()"
   (cancelar)="cancelarAccion()" />
+
+<!-- ══ MODAL: Detalle cliente ══════════════════════════════════ -->
+<app-modal-detalle-cliente
+  [visible]="mostrarModalCliente"
+  [cliente]="clienteSeleccionado"
+  (cerrar)="cerrarModalCliente()" />

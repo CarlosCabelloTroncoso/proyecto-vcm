@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ModalDetalleSolicitud } from '../../../shared/modal-detalle-solicitud/modal-detalle-solicitud';
 import { ModalConfirmarAccion } from '../../../shared/modal-confirmar-accion/modal-confirmar-accion';
+import { ModalDetalleCliente, ClienteVista } from '../../../shared/modal-detalle-cliente/modal-detalle-cliente';
 import { Solicitud, EstadoSolicitud, Ciudad } from '../../../../interfaces/solicitud.interface';
 import { Carrera } from '../../../../interfaces/academico.interface';
 import { Usuario, EncargadoCarrera } from '../../../../interfaces/usuario.interface';
@@ -13,7 +14,7 @@ import { CatalogService } from '../../../../core/services/catalog.service';
 
 @Component({
   selector: 'app-ver-solicitudes',
-  imports: [CommonModule, FormsModule, ModalDetalleSolicitud, ModalConfirmarAccion],
+  imports: [CommonModule, FormsModule, ModalDetalleSolicitud, ModalConfirmarAccion, ModalDetalleCliente],
   templateUrl: './ver-solicitudes.html',
   styleUrl: './ver-solicitudes.css',
 })
@@ -39,8 +40,8 @@ export class VerSolicitudes implements OnInit {
     }
 
     const [solicitudesRes, planRes] = await Promise.all([
-      this.dataService.getAll<any>('solicitud', { select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`, filters: { is_active: true } }),
-      this.dataService.getAll<any>('planteamiento_proyecto', { select: 'id_solicitud', filters: { is_active: true } }),
+      this.dataService.getAll<any>('solicitud', { select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario, telefono_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`, filters: { is_active: true } }),
+      this.dataService.getAll<any>('planteamiento_proyecto', { select: 'id_solicitud', filters: { id_estado: 2, is_active: true } }),
     ]);
     if (solicitudesRes.data) this.solicitudes.set(solicitudesRes.data);
     if (planRes.data) this.solicitudesOcupadasIds = new Set(planRes.data.map((p: any) => p.id_solicitud));
@@ -66,19 +67,23 @@ export class VerSolicitudes implements OnInit {
     archivos: any[] = [];
 
   /* ─── Filtro activo y búsqueda ──────────────────────────────── */
-  filtroActivo: 'pendiente' | 'aprobada' | 'rechazada' = 'pendiente';
+  filtroActivo: 'pendiente' | 'aprobada' | 'en_proceso' | 'rechazada' | 'cerrado' = 'pendiente';
   searchTerm = '';
 
   /* ─── Estado modales ────────────────────────────────────────── */
   mostrarModalDetalle   = false;
   mostrarModalAprobar   = false;
   mostrarModalRechazar  = false;
+  mostrarModalCliente   = false;
   solicitudSeleccionada: Solicitud | null = null;
   solicitudAccion:       Solicitud | null = null;
+  clienteSeleccionado: ClienteVista | null = null;
 
   /* ─── Lista filtrada ────────────────────────────────────────── */
   get solicitudesFiltradas(): Solicitud[] {
-    const estadoId = { pendiente: 1, aprobada: 2, rechazada: 3 }[this.filtroActivo];
+    const idCerrada   = this.catalog.getIdEstado('Cerrada')    || 4;
+    const idEnProceso = this.catalog.getIdEstado('En proceso') || 5;
+    const estadoId = ({ pendiente: 1, aprobada: 2, en_proceso: idEnProceso, rechazada: 3, cerrado: idCerrada } as Record<string, number>)[this.filtroActivo];
 
     let lista = this.solicitudes().filter(
       s => s.id_estado === estadoId
@@ -100,11 +105,15 @@ export class VerSolicitudes implements OnInit {
   }
 
   get contadorPorEstado(): Record<string, number> {
-    const base = [...this.solicitudes()];
+    const base        = [...this.solicitudes()];
+    const idCerrada   = this.catalog.getIdEstado('Cerrada')    || 4;
+    const idEnProceso = this.catalog.getIdEstado('En proceso') || 5;
     return {
-      pendiente: base.filter(s => s.id_estado === 1).length,
-      aprobada:  base.filter(s => s.id_estado === 2).length,
-      rechazada: base.filter(s => s.id_estado === 3).length,
+      pendiente:  base.filter(s => s.id_estado === 1).length,
+      aprobada:   base.filter(s => s.id_estado === 2).length,
+      en_proceso: base.filter(s => s.id_estado === idEnProceso).length,
+      rechazada:  base.filter(s => s.id_estado === 3).length,
+      cerrado:    base.filter(s => s.id_estado === idCerrada).length,
     };
   }
 
@@ -141,12 +150,14 @@ export class VerSolicitudes implements OnInit {
   }
 
   getBadgeEstado(id: number): string {
+    const idCerrada   = this.catalog.getIdEstado('Cerrada')    || 4;
+    const idEnProceso = this.catalog.getIdEstado('En proceso') || 5;
     const mapa: Record<number, string> = {
-      1: 'bg-amber-100 text-amber-700 border-amber-200',
-      2: 'bg-green-100 text-green-700 border-green-200',
-      3: 'bg-red-100   text-red-700   border-red-200',
-      4: 'bg-sky-100   text-sky-700   border-sky-200',
-      5: 'bg-gray-100  text-gray-600  border-gray-200',
+      1:            'bg-amber-100 text-amber-700 border-amber-200',
+      2:            'bg-green-100 text-green-700 border-green-200',
+      3:            'bg-red-100   text-red-700   border-red-200',
+      [idCerrada]:   'bg-teal-100 text-teal-700 border-teal-200',
+      [idEnProceso]: 'bg-sky-100  text-sky-700  border-sky-200',
     };
     return mapa[id] ?? 'bg-gray-100 text-gray-500 border-gray-200';
   }
@@ -174,6 +185,17 @@ export class VerSolicitudes implements OnInit {
     this.mostrarModalDetalle   = false;
     this.solicitudSeleccionada = null;
     this.archivos              = [];
+  }
+
+  abrirModalCliente(sol: any): void {
+    if (!sol.usuario) return;
+    this.clienteSeleccionado = sol.usuario as ClienteVista;
+    this.mostrarModalCliente = true;
+  }
+
+  cerrarModalCliente(): void {
+    this.mostrarModalCliente = false;
+    this.clienteSeleccionado = null;
   }
 
   /* ─── Acciones aprobar / rechazar ───────────────────────────── */

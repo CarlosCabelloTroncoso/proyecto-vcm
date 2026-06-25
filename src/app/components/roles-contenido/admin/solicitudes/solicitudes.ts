@@ -1,30 +1,37 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Solicitud, EstadoSolicitud, Ciudad } from '../../../../interfaces/solicitud.interface';
 import { Carrera } from '../../../../interfaces/academico.interface';
+import { Archivo } from '../../../../interfaces/proyecto.interface';
 import { ModalSolicitudForm } from './modales/modal-solicitud-form/modal-solicitud-form';
 import { ModalConfirmar } from '../../../shared/modal-confirmar/modal-confirmar';
+import { ModalDetalleSolicitud } from '../../../shared/modal-detalle-solicitud/modal-detalle-solicitud';
+import { ModalDetalleCliente, ClienteVista } from '../../../shared/modal-detalle-cliente/modal-detalle-cliente';
 import { AuthService } from '../../../../core/services/auth.service';
 import { DataService } from '../../../../core/services/data.service';
 import { CatalogService } from '../../../../core/services/catalog.service';
 
 @Component({
   selector: 'app-solicitudes',
-  imports: [CommonModule, FormsModule, ModalSolicitudForm, ModalConfirmar],
+  imports: [CommonModule, FormsModule, ModalSolicitudForm, ModalConfirmar, ModalDetalleSolicitud, ModalDetalleCliente],
   templateUrl: './solicitudes.html',
   styleUrl: './solicitudes.css',
 })
 export class Solicitudes implements OnInit {
 
-  constructor(private dataService: DataService, private catalog: CatalogService) {}
+  constructor(
+    private dataService: DataService,
+    private catalog: CatalogService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
     this.estados = this.catalog.estados();
     this.carreras = this.catalog.carreras();
     this.ciudades = this.catalog.ciudades();
-    const solicitudesRes = await this.dataService.getAll<any>('solicitud', { select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`, filters: { is_active: true } });
+    const solicitudesRes = await this.dataService.getAll<any>('solicitud', { select: `*, estado_solicitud(nombre_estado), usuario(nombres_usuario, apellidos_usuario, rut_usuario, telefono_usuario), carrera(nombre_carrera, etiqueta_carrera), ciudad(nombre_ciudad)`, filters: { is_active: true } });
     if (solicitudesRes.data) this.solicitudes.set(solicitudesRes.data);
   }
 
@@ -68,10 +75,21 @@ export class Solicitudes implements OnInit {
   /* ─── Estado de modales ────────────────────────────────────── */
   mostrarModalForm     = false;
   mostrarModalEliminar = false;
-  solicitudEnEdicion: Partial<Solicitud> = {};
-  solicitudAEliminar: Solicitud | null   = null;
+  mostrarModalDetalle  = false;
+  mostrarModalCliente  = false;
+  solicitudEnEdicion:   Partial<Solicitud>  = {};
+  solicitudAEliminar:   Solicitud | null    = null;
+  solicitudSeleccionada: Solicitud | null   = null;
+  clienteSeleccionado:  ClienteVista | null = null;
+  archivos: Archivo[] = [];
 
   /* ─── Helpers de presentación ──────────────────────────────── */
+  getNombreCliente(sol: any): string {
+    return sol.usuario
+      ? `${sol.usuario.nombres_usuario} ${sol.usuario.apellidos_usuario}`
+      : '—';
+  }
+
   getNombreEstado(id_estado: number): string {
     return this.estados.find(e => e.id_estado === id_estado)?.nombre_estado ?? '—';
   }
@@ -146,8 +164,9 @@ export class Solicitudes implements OnInit {
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
       lista = lista.filter(s =>
-        s.titulo_solicitud.toLowerCase().includes(t)       ||
-        s.descripcion_solicitud.toLowerCase().includes(t)  ||
+        s.titulo_solicitud.toLowerCase().includes(t)                  ||
+        s.descripcion_solicitud.toLowerCase().includes(t)             ||
+        this.getNombreCliente(s).toLowerCase().includes(t)            ||
         this.getNombreCarrera(s.id_carrera).toLowerCase().includes(t) ||
         this.getNombreEstado(s.id_estado).toLowerCase().includes(t)   ||
         this.getNombreCiudad(s.id_ciudad ?? 0).toLowerCase().includes(t)
@@ -161,7 +180,11 @@ export class Solicitudes implements OnInit {
     if (this.filtroTipo === 'carrera' && this.filtroCarrera)
       lista = lista.filter(s => s.id_carrera === +this.filtroCarrera);
 
-    return lista;
+    return lista.sort((a, b) => {
+      const fa = a.fecha_creacion_solicitud ?? '';
+      const fb = b.fecha_creacion_solicitud ?? '';
+      return fb.localeCompare(fa);
+    });
   }
 
   onCambiarFiltroTipo(): void {
@@ -209,8 +232,36 @@ export class Solicitudes implements OnInit {
     }
   }
 
+  async abrirDetalle(solicitud: Solicitud): Promise<void> {
+    this.solicitudSeleccionada = solicitud;
+    this.mostrarModalDetalle   = true;
+    this.archivos              = [];
+    const { data } = await this.dataService.getAll<Archivo>('archivo', {
+      filters: { id_solicitud: solicitud.id_solicitud },
+    });
+    this.archivos = data ?? [];
+    this.cdr.detectChanges();
+  }
+
+  cerrarDetalle(): void {
+    this.mostrarModalDetalle   = false;
+    this.solicitudSeleccionada = null;
+    this.archivos              = [];
+  }
+
   cerrarModales(): void {
     this.mostrarModalForm     = false;
     this.mostrarModalEliminar = false;
+  }
+
+  abrirModalCliente(solicitud: any): void {
+    if (!solicitud.usuario) return;
+    this.clienteSeleccionado = solicitud.usuario as ClienteVista;
+    this.mostrarModalCliente = true;
+  }
+
+  cerrarModalCliente(): void {
+    this.mostrarModalCliente = false;
+    this.clienteSeleccionado = null;
   }
 }

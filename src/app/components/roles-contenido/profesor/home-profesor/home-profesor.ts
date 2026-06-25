@@ -31,10 +31,16 @@ export class HomeProfesor implements OnInit {
   private planteamientos = signal<any[]>([]);
   private proyectos      = signal<any[]>([]);
 
-  pendientes = computed(() => this.planteamientos().filter(p => p.id_estado === 1).length);
-  aprobados  = computed(() => this.planteamientos().filter(p => p.id_estado === 2).length);
-  rechazados = computed(() => this.planteamientos().filter(p => p.id_estado === 3).length);
-  enCurso    = computed(() => this.proyectos().length);
+  pendientes    = computed(() => this.planteamientos().filter(p => p.id_estado === 1).length);
+  aprobados     = computed(() => this.planteamientos().filter(p => p.id_estado === 2).length);
+  rechazados    = computed(() => this.planteamientos().filter(p => p.id_estado === 3).length);
+  canceladosPlan  = computed(() => this.planteamientos().filter(p => p.estado_planteamiento?.nombre_estado === 'Cancelado').length);
+  finalizadosPlan = computed(() => this.planteamientos().filter(p => p.estado_planteamiento?.nombre_estado === 'Finalizado').length);
+
+  enProcesoProy  = computed(() => this.proyectos().filter(p => p.estado_proyecto?.nombre_estado === 'En proceso').length);
+  atrasadosProy  = computed(() => this.proyectos().filter(p => p.estado_proyecto?.nombre_estado === 'Atrasado').length);
+  finalizadosProy = computed(() => this.proyectos().filter(p => p.estado_proyecto?.nombre_estado === 'Finalizado').length);
+  canceladosProy  = computed(() => this.proyectos().filter(p => p.estado_proyecto?.nombre_estado === 'Cancelado').length);
 
   actividad = computed<EntradaActividad[]>(() => {
     type Item = { entry: EntradaActividad; date: string; id: number };
@@ -47,9 +53,9 @@ export class HomeProfesor implements OnInit {
       entry: {
         tipo:         'planteamiento' as const,
         titulo:       p.titulo_planteamiento,
-        mensaje:      this.mensajePorEstado(p.id_estado, p.titulo_planteamiento),
+        mensaje:      this.mensajePorEstado(p.id_estado, p.titulo_planteamiento, p.estado_planteamiento?.nombre_estado ?? ''),
         estadoId:     p.id_estado,
-        estadoNombre: '',
+        estadoNombre: (p.estado_planteamiento?.nombre_estado ?? '').toLowerCase(),
         fechaDisplay: this.buildFechaDisplay(p),
         esNuevo:      this.esReciente(p.fecha_actualizacion),
       },
@@ -87,7 +93,8 @@ export class HomeProfesor implements OnInit {
       .map(item => item.entry);
   });
 
-  private mensajePorEstado(estado: number, titulo: string): string {
+  private mensajePorEstado(estado: number, titulo: string, nombreEstado = ''): string {
+    if (nombreEstado === 'Finalizado') return `Tu planteamiento "${titulo}" fue finalizado`;
     switch (estado) {
       case 2:  return `Tu planteamiento "${titulo}" fue aprobado`;
       case 3:  return `Tu planteamiento "${titulo}" fue rechazado`;
@@ -124,7 +131,7 @@ export class HomeProfesor implements OnInit {
     if (!idUsuario) return;
 
     const planRes = await this.data.getAll<any>('planteamiento_proyecto', {
-      select:  'id_planteamiento, titulo_planteamiento, id_estado, fecha_creacion, fecha_actualizacion',
+      select:  'id_planteamiento, titulo_planteamiento, id_estado, fecha_creacion, fecha_actualizacion, estado_planteamiento(nombre_estado)',
       filters: { id_usuario: idUsuario, is_active: true },
     });
 

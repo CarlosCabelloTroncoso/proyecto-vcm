@@ -35,15 +35,18 @@ export class HomeCliente implements OnInit {
   private idEnProceso = signal(0);
   private idAprobada  = signal(2);
   private idRechazada = signal(3);
+  private idCerrada   = signal(0);
 
   get aprobadaId()  { return this.idAprobada();  }
   get rechazadaId() { return this.idRechazada(); }
   get enProcesoId() { return this.idEnProceso(); }
+  get cerradaId()   { return this.idCerrada();   }
 
   pendientes = computed(() => this.solicitudes().filter(s => s.id_estado === this.idPendiente()).length);
   enProceso  = computed(() => this.solicitudes().filter(s => s.id_estado === this.idEnProceso()).length);
   aprobadas  = computed(() => this.solicitudes().filter(s => s.id_estado === this.idAprobada()).length);
   rechazadas = computed(() => this.solicitudes().filter(s => s.id_estado === this.idRechazada()).length);
+  cerradas   = computed(() => this.solicitudes().filter(s => s.id_estado === this.idCerrada()).length);
 
   actividad = computed<EntradaActividad[]>(() =>
     [...this.solicitudes()]
@@ -66,6 +69,7 @@ export class HomeCliente implements OnInit {
     if (estado === this.idAprobada())  return `Tu solicitud "${titulo}" fue aprobada`;
     if (estado === this.idRechazada()) return `Tu solicitud "${titulo}" fue rechazada`;
     if (estado === this.idEnProceso()) return `Tu solicitud "${titulo}" está en proceso`;
+    if (estado === this.idCerrada())   return `Tu solicitud "${titulo}" fue cerrada`;
     return `Tu solicitud "${titulo}" está pendiente de revisión`;
   }
 
@@ -103,6 +107,7 @@ export class HomeCliente implements OnInit {
     this.idEnProceso.set(find(/proceso/i)   || 0);
     this.idAprobada.set(find(/aprobad/i)    || 2);
     this.idRechazada.set(find(/rechazad/i)  || 3);
+    this.idCerrada.set(find(/cerrad/i)      || 4);
 
     const res = await this.data.getAll<Solicitud>('solicitud', {
       select:  'id_solicitud, id_estado, titulo_solicitud, fecha_creacion_solicitud, fecha_actualizacion',

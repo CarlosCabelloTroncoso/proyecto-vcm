@@ -11,6 +11,7 @@ import { SupabaseService } from '../../../../core/services/supabase.service';
 interface ProyectoVista {
   id: number;
   id_planteamiento: number;
+  id_solicitud?: number;
   titulo: string;
   planteamiento_origen: string;
   solicitud_origen: string;
@@ -58,7 +59,7 @@ export class Proyectos implements OnInit {
         filters: { is_active: true },
       }),
       this.dataService.getAll<any>('planteamiento_proyecto', {
-        select: 'id_planteamiento, titulo_planteamiento, id_carrera',
+        select: 'id_planteamiento, titulo_planteamiento, id_carrera, id_solicitud, tiempo_estimado_planteamiento',
         filters: { id_estado: 2, is_active: true },
       }),
       this.dataService.getAll<any>('alumno_voluntario', {
@@ -70,21 +71,34 @@ export class Proyectos implements OnInit {
     if (proyectosRes.data) {
       const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
       const terminales: ProyectoVista['estado'][] = ['finalizado', 'cancelado'];
-      const idEstadoAtrasado = this.catalog.getIdEstadoProyecto('Atrasado');
+      const idEstadoAtrasado   = this.catalog.getIdEstadoProyecto('Atrasado');
+      const idEstadoEnProceso  = this.catalog.getIdEstadoProyecto('En proceso');
       const idsAMarcarAtrasado: number[] = [];
+      const idsAIniciar: number[] = [];
 
       const mapped = proyectosRes.data.map((p: any): ProyectoVista => {
         const estadoRaw = ((p.estado_proyecto?.nombre_estado ?? '') as string)
           .toLowerCase().replace(/ /g, '_') as ProyectoVista['estado'];
-        const fechaFin = p.fecha_fin ? new Date(p.fecha_fin) : null;
+        const fechaInicio = p.fecha_inicio ? new Date(p.fecha_inicio + 'T00:00:00') : null;
+        const fechaFin    = p.fecha_fin    ? new Date(p.fecha_fin    + 'T00:00:00') : null;
         let estado = estadoRaw;
-        if (fechaFin && fechaFin < hoy && !terminales.includes(estadoRaw) && estadoRaw !== 'atrasado') {
+
+        // Disponible → En proceso cuando llega la fecha de inicio
+        if (estadoRaw === 'disponible' && fechaInicio && fechaInicio <= hoy) {
+          estado = 'en_proceso';
+          idsAIniciar.push(p.id_proyecto);
+        }
+
+        // En proceso/Pausado → Atrasado cuando se pasa la fecha de término
+        if (fechaFin && fechaFin < hoy && !terminales.includes(estado) && estado !== 'atrasado' && estadoRaw !== 'disponible') {
           estado = 'atrasado';
           idsAMarcarAtrasado.push(p.id_proyecto);
         }
+
         return {
           id:                   p.id_proyecto,
           id_planteamiento:     p.id_planteamiento,
+          id_solicitud:         p.planteamiento_proyecto?.id_solicitud ?? undefined,
           titulo:               p.planteamiento_proyecto?.titulo_planteamiento ?? `Proyecto #${p.id_proyecto}`,
           planteamiento_origen: p.planteamiento_proyecto?.titulo_planteamiento ?? '—',
           solicitud_origen:     p.planteamiento_proyecto?.solicitud?.titulo_solicitud ?? '—',
@@ -98,13 +112,18 @@ export class Proyectos implements OnInit {
       if (mapped.length > 0 && !mapped.some(p => p.estado === this.filtroActivo)) {
         this.filtroActivo = mapped[0].estado;
       }
-      if (idEstadoAtrasado && idsAMarcarAtrasado.length > 0) {
-        await Promise.all(
-          idsAMarcarAtrasado.map(id =>
-            this.dataService.update('proyecto', id, { id_estado: idEstadoAtrasado }, 'id_proyecto')
-          )
-        );
-      }
+      await Promise.all([
+        ...(idEstadoAtrasado && idsAMarcarAtrasado.length > 0
+          ? idsAMarcarAtrasado.map(id =>
+              this.dataService.update('proyecto', id, { id_estado: idEstadoAtrasado }, 'id_proyecto')
+            )
+          : []),
+        ...(idEstadoEnProceso && idsAIniciar.length > 0
+          ? idsAIniciar.map(id =>
+              this.dataService.update('proyecto', id, { id_estado: idEstadoEnProceso }, 'id_proyecto')
+            )
+          : []),
+      ]);
     }
 
     if (planteamientosRes.data) {
@@ -133,7 +152,7 @@ export class Proyectos implements OnInit {
 
   proyectos = signal<ProyectoVista[]>([]);
 
-  planteamientosAprobados = signal<{ id_planteamiento: number; titulo_planteamiento: string; id_carrera: number }[]>([]);
+  planteamientosAprobados = signal<{ id_planteamiento: number; titulo_planteamiento: string; id_carrera: number; id_solicitud?: number; tiempo_estimado_planteamiento?: string }[]>([]);
 
   // ── Modal Crear Proyecto ──────────────────────────────────────
   mostrarModalCrear = false;
@@ -169,6 +188,7 @@ export class Proyectos implements OnInit {
   // ── Constantes ────────────────────────────────────────────────
 
   readonly ESTADOS_ASIGNABLES: { key: ProyectoVista['estado']; label: string }[] = [
+    { key: 'disponible', label: 'Disponible' },
     { key: 'en_proceso', label: 'En proceso' },
     { key: 'pausado',    label: 'Pausado'    },
     { key: 'finalizado', label: 'Finalizado' },
@@ -225,24 +245,43 @@ export class Proyectos implements OnInit {
     const select = event.target as HTMLSelectElement;
     const nuevoEstado = select.value as ProyectoVista['estado'];
     if (!nuevoEstado) return;
-    const idEstado = this.catalog.getIdEstadoProyecto(this.getNombreEstado(nuevoEstado));
-    if (idEstado) {
-      const { error } = await this.dataService.update('proyecto', proyecto.id, { id_estado: idEstado }, 'id_proyecto');
+
+    if (nuevoEstado === 'finalizado') {
+      const { error } = await this.dataService.rpc('finalizar_proyecto', { p_id_proyecto: proyecto.id });
       if (!error) {
         this.proyectos.update(lista =>
           lista.map(p => p.id === proyecto.id ? { ...p, estado: nuevoEstado } : p)
         );
-        if (nuevoEstado === 'cancelado' && proyecto.id_planteamiento) {
-          const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
-          await this.dataService.update(
-            'planteamiento_proyecto',
-            proyecto.id_planteamiento,
-            { id_estado: idCancelado, fecha_actualizacion: new Date().toISOString() },
-            'id_planteamiento'
-          );
-        }
       } else {
-        console.error('Error al cambiar estado:', error);
+        console.error('Error al finalizar proyecto:', error);
+      }
+    } else {
+      const idEstado = this.catalog.getIdEstadoProyecto(this.getNombreEstado(nuevoEstado));
+      if (idEstado) {
+        const { error } = await this.dataService.update('proyecto', proyecto.id, { id_estado: idEstado }, 'id_proyecto');
+        if (!error) {
+          this.proyectos.update(lista =>
+            lista.map(p => p.id === proyecto.id ? { ...p, estado: nuevoEstado } : p)
+          );
+          if (nuevoEstado === 'cancelado' && proyecto.id_planteamiento) {
+            const idCancelado = this.catalog.getIdEstadoPlanteamiento('Cancelado') || 4;
+            await this.dataService.update(
+              'planteamiento_proyecto',
+              proyecto.id_planteamiento,
+              { id_estado: idCancelado, fecha_actualizacion: new Date().toISOString() },
+              'id_planteamiento'
+            );
+            if (proyecto.id_solicitud) {
+              const idAprobada = this.catalog.getIdEstado('Aprobada') || 2;
+              await this.dataService.update('solicitud', proyecto.id_solicitud, {
+                id_estado:           idAprobada,
+                fecha_actualizacion: new Date().toISOString(),
+              }, 'id_solicitud');
+            }
+          }
+        } else {
+          console.error('Error al cambiar estado:', error);
+        }
       }
     }
     select.value = '';
@@ -250,7 +289,7 @@ export class Proyectos implements OnInit {
 
   getBadgeEstado(estado: string): string {
     const mapa: Record<string, string> = {
-      disponible: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+      disponible: 'bg-violet-100 text-violet-700 border-violet-200',
       en_proceso: 'bg-blue-100 text-blue-700 border-blue-200',
       pausado:    'bg-amber-100 text-amber-700 border-amber-200',
       cancelado:  'bg-red-100 text-red-500 border-red-200',
@@ -311,22 +350,46 @@ export class Proyectos implements OnInit {
     this.alumnosSeleccionados = this.alumnosSeleccionados.filter(a => a.id !== id);
   }
 
+  private parsearDias(tiempoEstimado: string): number {
+    const match = tiempoEstimado.trim().match(/^(\d+)\s*(.+)$/i);
+    if (!match) return 0;
+    const n = +match[1];
+    const u = match[2].toLowerCase();
+    if (/^d/.test(u)) return n;
+    if (/^s/.test(u)) return n * 7;
+    if (/^m/.test(u)) return n * 30;
+    return 0;
+  }
+
+  get fechaTerminoMax(): string {
+    const idPlan = this.formProyecto.id_planteamiento
+      ?? this.planteamientoPreseleccionado?.id_planteamiento;
+    const plan = this.planteamientosAprobados().find(p => p.id_planteamiento === idPlan);
+    if (!plan?.tiempo_estimado_planteamiento || !this.formProyecto.fecha_inicio) return '';
+    const dias = this.parsearDias(plan.tiempo_estimado_planteamiento);
+    if (!dias) return '';
+    const fecha = new Date(this.formProyecto.fecha_inicio + 'T00:00:00');
+    fecha.setDate(fecha.getDate() + dias);
+    return fecha.toISOString().split('T')[0];
+  }
+
   formValido(): boolean {
-    return !!(
+    if (!(
       this.formProyecto.id_planteamiento &&
       this.formProyecto.fecha_inicio &&
       this.formProyecto.fecha_termino
-    );
+    )) return false;
+    const max = this.fechaTerminoMax;
+    if (max && this.formProyecto.fecha_termino > max) return false;
+    return true;
   }
 
   async guardarProyecto(): Promise<void> {
     if (!this.formValido()) return;
 
-    let idEstadoDisponible = this.catalog.getIdEstadoProyecto('Disponible');
-    if (!idEstadoDisponible) {
-      const estados = this.catalog.estadosProyecto();
-      idEstadoDisponible = estados[0]?.id_estado ?? 1;
-    }
+    const idEstadoDisponible = this.catalog.getIdEstadoProyecto('Disponible')
+      || this.catalog.estadosProyecto()[0]?.id_estado
+      || 1;
 
     const { data, error } = await this.dataService.create<any>('proyecto', {
       id_planteamiento: this.formProyecto.id_planteamiento,
@@ -355,6 +418,18 @@ export class Proyectos implements OnInit {
 
     if (data) {
       await this.subirNuevosArchivos(data.id_proyecto);
+
+      const plan = this.planteamientosAprobados().find(
+        p => p.id_planteamiento === this.formProyecto.id_planteamiento
+      );
+      const idSolicitud = plan?.id_solicitud;
+      const idEnProceso = this.catalog.getIdEstado('En proceso');
+      if (idSolicitud && idEnProceso) {
+        await this.dataService.update('solicitud', idSolicitud, {
+          id_estado:           idEnProceso,
+          fecha_actualizacion: new Date().toISOString(),
+        }, 'id_solicitud');
+      }
     }
 
     await this.ngOnInit();

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Usuario, Rol } from '../../../../../../interfaces/usuario.interface';
 import { Carrera } from '../../../../../../interfaces/academico.interface';
 
-type UsuarioForm = Partial<Usuario> & { email?: string; id_carrera?: number };
+type UsuarioForm = Partial<Usuario> & { email?: string; password?: string; id_carrera?: number; cargo?: string };
 
 @Component({
   selector: 'app-modal-usuario-form',
@@ -27,7 +27,7 @@ export class ModalUsuarioForm implements OnChanges {
   private readonly rolLabels: Record<string, string> = {
     cliente:   'Cliente',
     profesor:  'Profesor',
-    encargado: 'Gestor de Vinculación',
+    encargado: 'Encargado',
     autoridad: 'Autoridad',
   };
 
@@ -37,9 +37,16 @@ export class ModalUsuarioForm implements OnChanges {
     }
   }
 
+  get rolNombre(): string {
+    return this.roles.find(r => r.id_rol === +this.usuarioLocal.id_rol!)?.nombre_rol ?? '';
+  }
+
   get rolRequiereCarrera(): boolean {
-    const rol = this.roles.find(r => r.id_rol === +this.usuarioLocal.id_rol!);
-    return rol?.nombre_rol === 'encargado' || rol?.nombre_rol === 'profesor';
+    return this.rolNombre === 'encargado' || this.rolNombre === 'profesor';
+  }
+
+  get rolRequiereCargo(): boolean {
+    return this.rolNombre === 'autoridad';
   }
 
   getRolLabel(nombre: string): string {
@@ -47,9 +54,8 @@ export class ModalUsuarioForm implements OnChanges {
   }
 
   onRolChange(): void {
-    if (!this.rolRequiereCarrera) {
-      this.usuarioLocal.id_carrera = undefined;
-    }
+    if (!this.rolRequiereCarrera) this.usuarioLocal.id_carrera = undefined;
+    if (!this.rolRequiereCargo)   this.usuarioLocal.cargo      = undefined;
   }
 
   onGuardar(): void {

@@ -103,7 +103,7 @@
           <!-- Solicitudes -->
           <div>
             <h3 class="mb-2 text-xs font-bold uppercase tracking-widest text-gray-400">Solicitudes</h3>
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-4 flex flex-col items-center text-center">
                 <p class="text-2xl font-extrabold text-amber-700 leading-none">{{ solicitudesPendientes() }}</p>
                 <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-amber-500">Pendientes</p>
@@ -116,6 +116,10 @@
                 <p class="text-2xl font-extrabold text-red-700 leading-none">{{ solicitudesRechazadas() }}</p>
                 <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-red-500">Rechazadas</p>
               </div>
+              <div class="rounded-xl border border-teal-200 bg-teal-50 px-3 py-4 flex flex-col items-center text-center">
+                <p class="text-2xl font-extrabold text-teal-700 leading-none">{{ solicitudesCerradas() }}</p>
+                <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-teal-500">Cerradas</p>
+              </div>
             </div>
           </div>
 
@@ -124,7 +128,7 @@
           <!-- Planteamientos -->
           <div>
             <h3 class="mb-2 text-xs font-bold uppercase tracking-widest text-gray-400">Planteamientos</h3>
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-4 flex flex-col items-center text-center">
                 <p class="text-2xl font-extrabold text-amber-700 leading-none">{{ planteamientosPendientes() }}</p>
                 <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-amber-500">Pendientes</p>
@@ -137,6 +141,10 @@
                 <p class="text-2xl font-extrabold text-red-700 leading-none">{{ planteamientosRechazados() }}</p>
                 <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-red-500">Rechazados</p>
               </div>
+              <div class="rounded-xl border border-teal-200 bg-teal-50 px-3 py-4 flex flex-col items-center text-center">
+                <p class="text-2xl font-extrabold text-teal-700 leading-none">{{ planteamientosFinalizados() }}</p>
+                <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-teal-500">Finalizados</p>
+              </div>
             </div>
           </div>
 
@@ -145,10 +153,22 @@
           <!-- Proyectos -->
           <div>
             <h3 class="mb-2 text-xs font-bold uppercase tracking-widest text-gray-400">Proyectos</h3>
-            <div class="grid grid-cols-1 gap-2">
-              <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-4 flex flex-col items-center text-center">
-                <p class="text-2xl font-extrabold text-sky-700 leading-none">{{ totalProyectos() }}</p>
-                <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-sky-500">Total</p>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div class="rounded-xl border border-blue-200 bg-blue-50 px-3 py-4 flex flex-col items-center text-center">
+                <p class="text-2xl font-extrabold text-blue-700 leading-none">{{ proyectosEnProceso() }}</p>
+                <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-blue-500">En proceso</p>
+              </div>
+              <div class="rounded-xl border border-orange-200 bg-orange-50 px-3 py-4 flex flex-col items-center text-center">
+                <p class="text-2xl font-extrabold text-orange-600 leading-none">{{ proyectosAtrasados() }}</p>
+                <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-orange-400">Atrasados</p>
+              </div>
+              <div class="rounded-xl border border-teal-200 bg-teal-50 px-3 py-4 flex flex-col items-center text-center">
+                <p class="text-2xl font-extrabold text-teal-700 leading-none">{{ proyectosFinalizados() }}</p>
+                <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-teal-500">Finalizados</p>
+              </div>
+              <div class="rounded-xl border border-red-200 bg-red-50 px-3 py-4 flex flex-col items-center text-center">
+                <p class="text-2xl font-extrabold text-red-700 leading-none">{{ proyectosCancelados() }}</p>
+                <p class="mt-2 text-[10px] font-semibold uppercase tracking-wider text-red-500">Cancelados</p>
               </div>
             </div>
           </div>
