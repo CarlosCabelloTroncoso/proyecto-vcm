@@ -46,14 +46,16 @@ export class Perfil {
   mensajeExito = signal('');
   mensajeError = signal('');
 
-  formNombres  = '';
-  formTelefono = '';
+  formNombres   = '';
+  formApellidos = '';
+  formTelefono  = '';
 
   iniciarEdicion(): void {
     const u = this.usuario();
     if (!u) return;
-    this.formNombres  = u.nombres_usuario;
-    this.formTelefono = u.telefono_usuario ?? '';
+    this.formNombres   = u.nombres_usuario;
+    this.formApellidos = u.apellidos_usuario;
+    this.formTelefono  = u.telefono_usuario ?? '';
     this.mensajeExito.set('');
     this.mensajeError.set('');
     this.editando.set(true);
@@ -65,7 +67,7 @@ export class Perfil {
 
   async guardar(): Promise<void> {
     const u = this.usuario();
-    if (!u || !this.formNombres.trim()) return;
+    if (!u || !this.formNombres.trim() || !this.formApellidos.trim()) return;
 
     this.guardando.set(true);
     this.mensajeError.set('');
@@ -73,8 +75,9 @@ export class Perfil {
     const { error } = await this.supabase.client
       .from('usuario')
       .update({
-        nombres_usuario:  this.formNombres.trim(),
-        telefono_usuario: this.formTelefono.trim()
+        nombres_usuario:   this.formNombres.trim(),
+        apellidos_usuario: this.formApellidos.trim(),
+        telefono_usuario:  this.formTelefono.trim()
       })
       .eq('id_usuario', u.id_usuario);
 

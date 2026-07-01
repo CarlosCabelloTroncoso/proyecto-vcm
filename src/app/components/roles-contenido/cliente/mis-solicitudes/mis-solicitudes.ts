@@ -117,12 +117,13 @@ export class MisSolicitudes implements OnInit {
   }
 
   getBadgeEstado(id: number): string {
-    const nombre = this.estados.find(e => e.id_estado === id)?.nombre_estado ?? '';
+    const nombre = (this.estados.find(e => e.id_estado === id)?.nombre_estado ?? '').toLowerCase();
     const mapa: Record<string, string> = {
-      'Pendiente': 'bg-amber-100 text-amber-700 border-amber-200',
-      'Aprobada':  'bg-green-100 text-green-700 border-green-200',
-      'Rechazada': 'bg-red-100   text-red-700   border-red-200',
-      'Cerrada':   'bg-teal-100  text-teal-700  border-teal-200',
+      'pendiente':  'bg-amber-100 text-amber-700 border-amber-200',
+      'aprobada':   'bg-green-100 text-green-700 border-green-200',
+      'en proceso': 'bg-sky-100   text-sky-700   border-sky-200',
+      'rechazada':  'bg-red-100   text-red-700   border-red-200',
+      'cerrada':    'bg-teal-100  text-teal-700  border-teal-200',
     };
     return mapa[nombre] ?? 'bg-gray-100 text-gray-600 border-gray-200';
   }
