@@ -42,12 +42,27 @@
 
       <div class="space-y-4">
 
-        <!-- Fila 1: RUT + Teléfono -->
+        <!-- Fila 0: Tipo de documento -->
+        <div>
+          <label for="tipoDoc"
+                 class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
+            Tipo de documento
+          </label>
+          <select id="tipoDoc" [(ngModel)]="tipoDocumento"
+                  class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white px-4 py-2.5
+                         text-sm text-[#1B3A6B] outline-none shadow-sm
+                         transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15">
+            <option value="rut">RUT (chileno)</option>
+            <option value="pasaporte">Pasaporte (extranjero)</option>
+          </select>
+        </div>
+
+        <!-- Fila 1: Documento + Teléfono -->
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label for="rut"
                    class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1B3A6B]/60">
-              RUT
+              {{ tipoDocumento === 'rut' ? 'RUT' : 'Pasaporte' }}
             </label>
             <div class="relative">
               <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center">
@@ -58,7 +73,8 @@
                        m-4 0V5a2 2 0 1 1 4 0v1m-4 0a2 2 0 1 0 4 0m-5 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
                 </svg>
               </span>
-              <input id="rut" type="text" placeholder="12345678K"
+              <input id="rut" type="text"
+                     [placeholder]="tipoDocumento === 'rut' ? '12345678-5' : 'Ej: AB123456'"
                      [(ngModel)]="rut"
                      class="w-full rounded-xl border border-[#1B3A6B]/20 bg-white py-2.5 pl-9 pr-4
                             text-sm text-[#1B3A6B] placeholder-[#1B3A6B]/35 outline-none shadow-sm

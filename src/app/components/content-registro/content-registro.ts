@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { DataService } from '../../core/services/data.service';
+import { validarRut, limpiarRut } from '../../core/utils/rut.util';
 
 @Component({
   selector: 'app-content-registro',
@@ -13,6 +14,7 @@ import { DataService } from '../../core/services/data.service';
   styleUrl: './content-registro.css',
 })
 export class ContentRegistro {
+  tipoDocumento: 'rut' | 'pasaporte' = 'rut';
   rut = '';
   telefono = '';
   nombres = '';
@@ -51,8 +53,23 @@ export class ContentRegistro {
       return;
     }
 
-    // Limpiar RUT: quitar puntos y guion
-    const rutLimpio = this.rut.replace(/\./g, '').replace(/-/g, '');
+    // Procesar el documento según el tipo elegido
+    let documento: string;
+    if (this.tipoDocumento === 'rut') {
+      // Limpiar RUT (quitar puntos y guion) y validar dígito verificador (módulo 11)
+      documento = limpiarRut(this.rut);
+      if (!validarRut(documento)) {
+        this.errorMsg.set('El RUT ingresado no es válido. Revísalo (ej: 12345678-5).');
+        return;
+      }
+    } else {
+      // Pasaporte: se acepta el número tal cual (solo validamos que tenga algo)
+      documento = this.rut.trim().toUpperCase();
+      if (documento.length < 5) {
+        this.errorMsg.set('Ingresa un número de pasaporte válido.');
+        return;
+      }
+    }
 
     this.isLoading.set(true);
 
@@ -61,7 +78,7 @@ export class ContentRegistro {
       this.email,
       this.password,
       {
-        rut: rutLimpio,
+        rut: documento,
         nombres: this.nombres,
         apellidos: this.apellidos,
         telefono: this.telefono
