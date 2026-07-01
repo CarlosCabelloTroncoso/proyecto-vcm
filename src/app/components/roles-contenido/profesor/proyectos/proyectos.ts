@@ -419,17 +419,12 @@ export class Proyectos implements OnInit {
     if (data) {
       await this.subirNuevosArchivos(data.id_proyecto);
 
-      const plan = this.planteamientosAprobados().find(
-        p => p.id_planteamiento === this.formProyecto.id_planteamiento
-      );
-      const idSolicitud = plan?.id_solicitud;
-      const idEnProceso = this.catalog.getIdEstado('En proceso');
-      if (idSolicitud && idEnProceso) {
-        await this.dataService.update('solicitud', idSolicitud, {
-          id_estado:           idEnProceso,
-          fecha_actualizacion: new Date().toISOString(),
-        }, 'id_solicitud');
-      }
+      // La solicitud vinculada pasa a "En proceso" vía RPC (SECURITY DEFINER),
+      // porque el rol profesor no tiene permiso RLS para UPDATE directo sobre solicitud.
+      const { error: rpcError } = await this.dataService.rpc('iniciar_proyecto', {
+        p_id_proyecto: data.id_proyecto,
+      });
+      if (rpcError) console.error('Error al marcar la solicitud En proceso:', rpcError);
     }
 
     await this.ngOnInit();
