@@ -83,15 +83,21 @@ export class CatalogService {
     return this._facultades().find(f => f.id_facultad === id)?.nombre_facultad || '—';
   }
 
+  // Compara nombres de estado ignorando mayúsculas/minúsculas y espacios,
+  // porque en BD algunos vienen con distinta capitalización (ej: "En Proceso").
+  private mismoNombre(a: string, b: string): boolean {
+    return (a ?? '').trim().toLowerCase() === (b ?? '').trim().toLowerCase();
+  }
+
   getIdEstado(nombre: string): number {
-    return this._estados().find(e => e.nombre_estado === nombre)?.id_estado || 0;
+    return this._estados().find(e => this.mismoNombre(e.nombre_estado, nombre))?.id_estado || 0;
   }
 
   getIdEstadoPlanteamiento(nombre: string): number {
-    return this._estadosPlanteamiento().find(e => e.nombre_estado === nombre)?.id_estado || 0;
+    return this._estadosPlanteamiento().find(e => this.mismoNombre(e.nombre_estado, nombre))?.id_estado || 0;
   }
 
   getIdEstadoProyecto(nombre: string): number {
-    return this._estadosProyecto().find(e => e.nombre_estado === nombre)?.id_estado || 0;
+    return this._estadosProyecto().find(e => this.mismoNombre(e.nombre_estado, nombre))?.id_estado || 0;
   }
 }
