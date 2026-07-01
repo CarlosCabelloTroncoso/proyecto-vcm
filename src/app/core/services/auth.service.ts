@@ -129,6 +129,35 @@ export class AuthService {
     if (session) await this.loadUsuario(session.user.id);
   }
 
+  /** Desactiva (soft-delete) la cuenta del propio usuario y cierra la sesión. */
+  async desactivarCuenta(): Promise<{ error: string | null }> {
+    const { error } = await this.supabase.rpc('desactivar_mi_cuenta');
+    if (error) return { error: error.message };
+    await this.signOutSilent();
+    return { error: null };
+  }
+
+  /** Reactiva la cuenta del usuario autenticado (sesión activa vía el enlace por correo). */
+  async reactivarCuenta(): Promise<{ error: string | null }> {
+    const { error } = await this.supabase.rpc('reactivar_mi_cuenta');
+    return { error: error?.message || null };
+  }
+
+  /**
+   * Envía un enlace de un solo uso al correo para reactivar la cuenta.
+   * No revela si el correo existe (anti-enumeración): el llamador siempre
+   * muestra el mismo mensaje neutro.
+   */
+  async enviarEnlaceReactivacion(email: string): Promise<void> {
+    await this.supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: `${window.location.origin}/auth/reactivar`,
+      },
+    });
+  }
+
   hasRole(role: string): boolean {
     return this.userRole() === role;
   }

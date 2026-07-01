@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
 
@@ -24,6 +25,7 @@ const ROLES_INTERNOS = ['admin', 'encargado', 'profesor', 'autoridad'];
 export class Perfil {
   private auth = inject(AuthService);
   private supabase = inject(SupabaseService);
+  private router = inject(Router);
 
   usuario    = computed(() => this.auth.usuario());
   email      = computed(() => this.auth.session()?.user?.email ?? '');
@@ -63,6 +65,37 @@ export class Perfil {
 
   cancelarEdicion(): void {
     this.editando.set(false);
+  }
+
+  // ── Desactivar cuenta ─────────────────────────────────────────
+  mostrarModalDesactivar = signal(false);
+  desactivando           = signal(false);
+  errorDesactivar        = signal('');
+
+  abrirDesactivar(): void {
+    this.errorDesactivar.set('');
+    this.mostrarModalDesactivar.set(true);
+  }
+
+  cerrarDesactivar(): void {
+    if (this.desactivando()) return;
+    this.mostrarModalDesactivar.set(false);
+  }
+
+  async confirmarDesactivar(): Promise<void> {
+    this.desactivando.set(true);
+    this.errorDesactivar.set('');
+
+    const { error } = await this.auth.desactivarCuenta();
+
+    if (error) {
+      this.desactivando.set(false);
+      this.errorDesactivar.set('No pudimos desactivar tu cuenta. Inténtalo de nuevo.');
+      return;
+    }
+
+    // Cuenta desactivada y sesión cerrada: enviamos al login con aviso.
+    this.router.navigate(['/login'], { queryParams: { desactivada: '1' } });
   }
 
   async guardar(): Promise<void> {
