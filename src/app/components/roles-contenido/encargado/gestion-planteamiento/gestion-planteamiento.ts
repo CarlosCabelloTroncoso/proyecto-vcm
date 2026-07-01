@@ -36,12 +36,14 @@ export class GestionPlanteamiento implements OnInit {
       this.nombreCarrera = carreras.find(c => c.id_carrera === idCarrera)?.nombre_carrera ?? '';
     }
 
-    const [planteamientosRes, proyectosRes] = await Promise.all([
+    const [planteamientosRes, proyectosRes, solicitudesRes] = await Promise.all([
       this.dataService.getAll<any>('planteamiento_proyecto', { select: `*, estado_planteamiento(nombre_estado), carrera(nombre_carrera), solicitud(titulo_solicitud), usuario(nombres_usuario, apellidos_usuario)`, filters: { is_active: true } }),
       this.dataService.getAll<any>('proyecto', { select: 'id_planteamiento', filters: { is_active: true } }),
+      this.dataService.getAll<Solicitud>('solicitud', { select: 'id_solicitud, titulo_solicitud', filters: { is_active: true } }),
     ]);
     if (planteamientosRes.data) this.planteamientos.set(planteamientosRes.data);
     if (proyectosRes.data) this.planteamientosConProyectoIds = new Set(proyectosRes.data.map((p: any) => p.id_planteamiento));
+    if (solicitudesRes.data) this.solicitudesAprobadas.set(solicitudesRes.data);
   }
 
   /* ─── Carrera del encargado ─────────────────────────────────── */
