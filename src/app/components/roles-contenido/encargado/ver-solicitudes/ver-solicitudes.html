@@ -162,7 +162,7 @@
                                  text-xs font-semibold {{ getBadgeEstado(sol.id_estado) }}">
                       {{ getNombreEstado(sol.id_estado) }}
                     </span>
-                    @if (esSolicitudOcupada(sol.id_solicitud)) {
+                    @if (mostrarEnUso(sol)) {
                       <span class="inline-flex rounded-full border border-orange-200
                                    bg-orange-50 px-2.5 py-0.5 text-xs font-semibold text-orange-600">
                         En uso

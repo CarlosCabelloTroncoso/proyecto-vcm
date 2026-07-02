@@ -123,7 +123,7 @@ export class GestionPlanteamiento implements OnInit {
       1: 'bg-amber-100 text-amber-700 border-amber-200',
       2: 'bg-emerald-100 text-emerald-700 border-emerald-200',
       3: 'bg-red-100 text-red-500 border-red-200',
-      [idCancelado]:  'bg-slate-100 text-slate-500 border-slate-200',
+      [idCancelado]:  'bg-rose-100 text-rose-700 border-rose-200',
       [idFinalizado]: 'bg-teal-100 text-teal-700 border-teal-200',
     };
     return mapa[id] ?? 'bg-gray-100 text-gray-500 border-gray-200';

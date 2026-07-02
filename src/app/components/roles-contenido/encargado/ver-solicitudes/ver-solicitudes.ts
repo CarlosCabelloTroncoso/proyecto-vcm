@@ -145,6 +145,12 @@ export class VerSolicitudes implements OnInit {
     return this.solicitudesOcupadasIds.has(id);
   }
 
+  /** Muestra el badge "En uso" solo si la solicitud sigue vigente (no Cerrada). */
+  mostrarEnUso(sol: Solicitud): boolean {
+    const idCerrada = this.catalog.getIdEstado('Cerrada') || 5;
+    return sol.id_estado !== idCerrada && this.solicitudesOcupadasIds.has(sol.id_solicitud);
+  }
+
   getArchivosDeSolicitud(id: number): Archivo[] {
     return this.archivos.filter(a => a.id_solicitud === id);
   }
