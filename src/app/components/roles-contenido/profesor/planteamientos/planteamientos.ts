@@ -146,8 +146,10 @@ export class Planteamientos implements OnInit {
     return this.estadosPlanteamiento().find(e => e.id_estado === id)?.nombre_estado ?? '—';
   }
 
-  getTituloSolicitud(id: number): string {
-    return this.solicitudesAprobadas().find(s => s.id_solicitud === id)?.titulo_solicitud ?? '—';
+  getTituloSolicitud(p: PlanteamientoProyecto): string {
+    return p.solicitud?.titulo_solicitud
+      ?? this.solicitudesAprobadas().find(s => s.id_solicitud === p.id_solicitud)?.titulo_solicitud
+      ?? '—';
   }
 
   getBadgeEstado(id: number): string {
