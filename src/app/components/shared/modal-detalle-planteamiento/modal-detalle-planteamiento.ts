@@ -40,7 +40,9 @@ export class ModalDetallePlanteamiento {
   }
 
   getTituloSolicitud(id: number): string {
-    return this.solicitudesAprobadas.find(s => s.id_solicitud === id)?.titulo_solicitud ?? '—';
+    return this.planteamiento?.solicitud?.titulo_solicitud
+      ?? this.solicitudesAprobadas.find(s => s.id_solicitud === id)?.titulo_solicitud
+      ?? '—';
   }
 
   getBadgeEstado(id: number): string {
