@@ -27,22 +27,34 @@ export class Alumno implements OnInit {
     this.carreras = this.catalog.carreras();
 
     const idCarrera = this.auth.usuario()?.gestor_vinculacion_carrera?.id_carrera;
-    const filters: Record<string, any> = { is_active: true };
-    if (idCarrera) filters['id_carrera'] = idCarrera;
+    const base: Record<string, any> = {};
+    if (idCarrera) base['id_carrera'] = idCarrera;
 
-    const alumnosRes = await this.dataService.getAll<any>('alumno_voluntario', {
-      select: `*, carrera(nombre_carrera, etiqueta_carrera)`,
-      filters,
-    });
-    if (alumnosRes.data) this.alumnos.set(alumnosRes.data);
+    const [activosRes, inactivosRes] = await Promise.all([
+      this.dataService.getAll<any>('alumno_voluntario', {
+        select: `*, carrera(nombre_carrera, etiqueta_carrera)`,
+        filters: { ...base, is_active: true },
+      }),
+      this.dataService.getAll<any>('alumno_voluntario', {
+        select: `*, carrera(nombre_carrera, etiqueta_carrera)`,
+        filters: { ...base, is_active: false },
+      }),
+    ]);
+    if (activosRes.data)   this.alumnos.set(activosRes.data);
+    if (inactivosRes.data) this.alumnosInactivos.set(inactivosRes.data);
   }
 
 
   /* ─── Carreras de referencia ───────────────────────────────── */
   carreras: Carrera[] = [];
 
-  /* ─── Datos mock ───────────────────────────────────────────── */
+  /* ─── Datos ────────────────────────────────────────────────── */
   alumnos = signal<AlumnoVoluntario[]>([]);
+  alumnosInactivos = signal<AlumnoVoluntario[]>([]);
+
+  /* ─── Vista activos / inactivos + mensajes ─────────────────── */
+  verInactivos = false;
+  mensaje = '';
 
   /* ─── Búsqueda y filtros ───────────────────────────────────── */
   searchTerm    = '';
@@ -80,9 +92,14 @@ export class Alumno implements OnInit {
     return colores[id_carrera] ?? 'bg-gray-100 text-gray-600 border-gray-200';
   }
 
+  /* ─── Fuente según vista (activos / inactivos) ─────────────── */
+  private get fuente(): AlumnoVoluntario[] {
+    return this.verInactivos ? this.alumnosInactivos() : this.alumnos();
+  }
+
   /* ─── Lista filtrada ───────────────────────────────────────── */
   get alumnosFiltrados(): AlumnoVoluntario[] {
-    let lista = [...this.alumnos()];
+    let lista = [...this.fuente];
 
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
@@ -106,6 +123,21 @@ export class Alumno implements OnInit {
     this.searchTerm = this.filtroCarrera = '';
   }
 
+  /* ─── Vista activos / inactivos ────────────────────────────── */
+  cambiarVista(verInactivos: boolean): void {
+    this.verInactivos = verInactivos;
+    this.mensaje = '';
+    this.limpiarFiltros();
+  }
+
+  async reactivar(alumno: AlumnoVoluntario): Promise<void> {
+    const { error } = await this.dataService.update('alumno_voluntario', alumno.id_alumno, { is_active: true }, 'id_alumno');
+    if (!error) {
+      this.alumnosInactivos.update(lista => lista.filter(a => a.id_alumno !== alumno.id_alumno));
+      this.alumnos.update(lista => [...lista, { ...alumno, is_active: true }]);
+    }
+  }
+
   /* ─── Acciones CRUD ────────────────────────────────────────── */
   abrirCrear(): void {
     const idCarrera = this.auth.usuario()?.gestor_vinculacion_carrera?.id_carrera ?? 1;
@@ -126,11 +158,33 @@ export class Alumno implements OnInit {
   }
 
   async onGuardarAlumno(datos: Partial<AlumnoVoluntario>): Promise<void> {
+    this.mensaje = '';
+
     if (this.modoEdicion && datos.id_alumno) {
       await this.dataService.update('alumno_voluntario', datos.id_alumno, datos, 'id_alumno');
+      this.mostrarModalForm = false;
+      await this.ngOnInit();
+      return;
+    }
+
+    // Crear: si ya existe un alumno con el mismo RUT, reactivar en vez de fallar por RUT duplicado
+    const rut = (datos.rut_alumno ?? '').trim().toLowerCase();
+
+    const activo = this.alumnos().find(a => (a.rut_alumno ?? '').trim().toLowerCase() === rut);
+    if (activo) {
+      this.mostrarModalForm = false;
+      this.mensaje = `Ya existe un alumno activo con el RUT ${activo.rut_alumno}.`;
+      return;
+    }
+
+    const inactivo = this.alumnosInactivos().find(a => (a.rut_alumno ?? '').trim().toLowerCase() === rut);
+    if (inactivo) {
+      await this.dataService.update('alumno_voluntario', inactivo.id_alumno, { ...datos, is_active: true }, 'id_alumno');
+      this.mensaje = `Se reactivó el alumno con RUT ${inactivo.rut_alumno} que estaba inactivo.`;
     } else {
       await this.dataService.create('alumno_voluntario', datos);
     }
+
     this.mostrarModalForm = false;
     await this.ngOnInit();
   }
