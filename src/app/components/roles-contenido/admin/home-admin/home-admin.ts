@@ -218,8 +218,17 @@ export class HomeAdmin implements OnInit {
   /* ─── Helpers ────────────────────────────────────────────────── */
   formatFecha(fecha: string): string {
     if (!fecha) return '—';
-    const d = new Date(fecha);
-    return d.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' })
-      + ' — ' + d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+
+    // Fechas sin hora (ej. "2026-07-02"): se formatean directo para no
+    // interpretarlas como medianoche UTC (evita día y hora corridos).
+    if (!fecha.includes('T')) {
+      const [y, m, d] = fecha.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    // Fechas con hora real (timestamp ISO): se muestra fecha y hora en local.
+    const dt = new Date(fecha);
+    return dt.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      + ' — ' + dt.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
   }
 }
