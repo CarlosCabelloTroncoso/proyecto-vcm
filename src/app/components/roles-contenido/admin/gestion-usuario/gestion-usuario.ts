@@ -33,8 +33,12 @@ export class GestionUsuario implements OnInit {
     autoridad:  'Autoridad',
   };
 
-  /* ─── Datos mock ───────────────────────────────────────────── */
+  /* ─── Datos ────────────────────────────────────────────────── */
   usuarios = signal<Usuario[]>([]);
+  usuariosInactivos = signal<Usuario[]>([]);
+
+  /* ─── Vista activos / inactivos ────────────────────────────── */
+  verInactivos = false;
 
   constructor(
     private dataService: DataService,
@@ -49,14 +53,14 @@ export class GestionUsuario implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    const [usuRes, rolRes] = await Promise.all([
-      this.dataService.getAll<any>('usuario', {
-        select: '*, rol(nombre_rol), gestor_vinculacion_carrera(id_carrera, carrera(nombre_carrera, etiqueta_carrera)), profesor(id_carrera, carrera(nombre_carrera, etiqueta_carrera)), autoridad(cargo)',
-        filters: { is_active: true },
-      }),
+    const select = '*, rol(nombre_rol), gestor_vinculacion_carrera(id_carrera, carrera(nombre_carrera, etiqueta_carrera)), profesor(id_carrera, carrera(nombre_carrera, etiqueta_carrera)), autoridad(cargo)';
+    const [usuRes, inactivosRes, rolRes] = await Promise.all([
+      this.dataService.getAll<any>('usuario', { select, filters: { is_active: true } }),
+      this.dataService.getAll<any>('usuario', { select, filters: { is_active: false } }),
       this.dataService.getAll<Rol>('rol', { filters: { is_active: true } }),
     ]);
-    if (usuRes.data) this.usuarios.set(usuRes.data);
+    if (usuRes.data)       this.usuarios.set(usuRes.data);
+    if (inactivosRes.data) this.usuariosInactivos.set(inactivosRes.data);
     if (rolRes.data) {
       this.todosLosRoles = rolRes.data;
       this.roles = rolRes.data.filter(r => r.nombre_rol !== 'admin');
@@ -167,9 +171,14 @@ export class GestionUsuario implements OnInit {
     return this.filtroMes ? `${this.filtroAnio}-${this.filtroMes}` : this.filtroAnio;
   }
 
+  /* ─── Fuente según vista (activos / inactivos) ─────────────── */
+  private get fuente(): Usuario[] {
+    return this.verInactivos ? this.usuariosInactivos() : this.usuarios();
+  }
+
   /* ─── Lista filtrada ───────────────────────────────────────── */
   get usuariosFiltrados(): Usuario[] {
-    let lista = [...this.usuarios()];
+    let lista = [...this.fuente];
 
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
@@ -196,6 +205,20 @@ export class GestionUsuario implements OnInit {
 
   limpiarFiltros(): void {
     this.searchTerm = this.filtroTipo = this.filtroRol = this.filtroEstado = this.filtroAnio = this.filtroMes = '';
+  }
+
+  /* ─── Vista activos / inactivos ────────────────────────────── */
+  cambiarVista(verInactivos: boolean): void {
+    this.verInactivos = verInactivos;
+    this.limpiarFiltros();
+  }
+
+  async reactivar(usuario: Usuario): Promise<void> {
+    const { error } = await this.dataService.update('usuario', usuario.id_usuario, { is_active: true }, 'id_usuario');
+    if (!error) {
+      this.usuariosInactivos.update(lista => lista.filter(u => u.id_usuario !== usuario.id_usuario));
+      this.usuarios.update(lista => [...lista, { ...usuario, is_active: true }]);
+    }
   }
 
   /* ─── Acciones CRUD ────────────────────────────────────────── */
