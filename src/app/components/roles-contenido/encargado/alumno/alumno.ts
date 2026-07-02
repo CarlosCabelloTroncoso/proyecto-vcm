@@ -24,9 +24,14 @@ export class Alumno implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    this.carreras = this.catalog.carreras();
 
     const idCarrera = this.auth.usuario()?.gestor_vinculacion_carrera?.id_carrera;
+    // El encargado solo gestiona su carrera: la lista (dropdown al crear alumno,
+    // filtros y etiquetas) debe limitarse a esa carrera, no a todas.
+    this.carreras = idCarrera
+      ? this.catalog.carreras().filter(c => c.id_carrera === idCarrera)
+      : this.catalog.carreras();
+
     const base: Record<string, any> = {};
     if (idCarrera) base['id_carrera'] = idCarrera;
 
