@@ -419,7 +419,18 @@ export class Planteamientos implements OnInit {
   async confirmarEliminar(): Promise<void> {
     if (!this.planteamientoEliminar) return;
     const id = this.planteamientoEliminar.id_planteamiento;
-    await this.dataService.softDelete('planteamiento_proyecto', id, 'id_planteamiento');
+    // Se usa un RPC (SECURITY DEFINER) en lugar de un UPDATE directo: la policy
+    // `planteamiento_update_profesor` exige is_active = TRUE en su WITH CHECK,
+    // así que un UPDATE a is_active = FALSE es rechazado por RLS y el
+    // planteamiento reaparecía al recargar.
+    const { error } = await this.dataService.rpc('eliminar_mi_planteamiento', { p_id: id });
+    if (error) {
+      console.error('[planteamiento] error al eliminar:', error);
+      // No se quita de la lista: la eliminación no se guardó en la base de datos.
+      alert('No se pudo eliminar el planteamiento. Solo puedes eliminar planteamientos pendientes que sean tuyos.');
+      this.cerrarEliminar();
+      return;
+    }
     this.planteamientos.update(lista =>
       lista.filter(p => p.id_planteamiento !== id)
     );
