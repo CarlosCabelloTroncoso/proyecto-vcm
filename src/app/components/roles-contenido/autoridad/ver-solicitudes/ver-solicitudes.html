@@ -13,9 +13,9 @@
     </p>
   </div>
 
-  <!-- ══ BUSCADOR ════════════════════════════════════════════════ -->
-  <div class="mb-4">
-    <div class="relative max-w-md">
+  <!-- ══ BUSCADOR + FILTRO CARRERA ═══════════════════════════════ -->
+  <div class="mb-4 flex flex-wrap items-center gap-3">
+    <div class="relative max-w-md flex-1 min-w-[220px]">
       <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#1B3A6B]/40"
            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
            stroke="currentColor" stroke-width="2">
@@ -29,6 +29,15 @@
                     text-[#1B3A6B] placeholder-[#1B3A6B]/40 shadow-sm outline-none transition
                     focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15"/>
     </div>
+
+    <select [(ngModel)]="filtroCarrera"
+            class="rounded-xl border border-[#1B3A6B]/20 bg-white py-2.5 px-3 text-sm text-[#1B3A6B]
+                   shadow-sm outline-none transition focus:border-[#1B3A6B]/50 focus:ring-2 focus:ring-[#1B3A6B]/15">
+      <option value="">Todas las carreras</option>
+      @for (c of carreras; track c.id_carrera) {
+        <option [value]="c.id_carrera">{{ c.nombre_carrera }}</option>
+      }
+    </select>
   </div>
 
   <!-- ══ FILTROS DE ESTADO ═══════════════════════════════════════ -->
