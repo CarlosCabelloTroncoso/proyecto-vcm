@@ -173,17 +173,32 @@ export class ProyectoDetalle implements OnInit {
     this.cdr.detectChanges();
   }
 
-  agregarObservacion(): void {
-    if (!this.nuevaObservacion.trim() || !this.proyecto) return;
-    const nuevaId = this.proyecto.observaciones.length
-      ? Math.max(...this.proyecto.observaciones.map(o => o.id)) + 1
-      : 1;
+  async agregarObservacion(): Promise<void> {
+    const detalle = this.nuevaObservacion.trim();
+    if (!detalle || !this.proyecto) return;
+
+    // Antes solo se agregaba al arreglo local y nunca se guardaba en la BD,
+    // por eso la observacion desaparecia al recargar. Ahora se inserta de verdad.
+    const { data, error } = await this.dataService.create<any>('observacion', {
+      id_proyecto:         this.proyecto.id,
+      detalle_observacion: detalle,
+      fecha_observacion:   new Date().toISOString(),
+      is_active:           true,
+    });
+
+    if (error || !data) {
+      console.error('[observacion] error al guardar:', error);
+      alert('No se pudo guardar la observación. Intenta de nuevo.');
+      return;
+    }
+
     this.proyecto.observaciones.push({
-      id:      nuevaId,
-      fecha:   new Date().toISOString().split('T')[0],
-      detalle: this.nuevaObservacion.trim(),
+      id:      data.id_observacion,
+      fecha:   data.fecha_observacion ?? new Date().toISOString(),
+      detalle: data.detalle_observacion ?? detalle,
     });
     this.nuevaObservacion = '';
+    this.cdr.detectChanges();
   }
 
   volver(): void {
