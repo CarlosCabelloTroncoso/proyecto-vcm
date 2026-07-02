@@ -10,6 +10,10 @@ indica **qué hace**, los **pasos** para realizarla y el **resultado** esperado.
 > acción listada corresponde a una escena.
 
 ---
+# LINK VIDEO DEL MANUAL DE USUARIO
+> https://drive.google.com/file/d/1edDK9HFfqm3t2hiGPnt0Eh90ug4k2c6v/view?usp=sharing
+
+---
 
 ## Índice
 
