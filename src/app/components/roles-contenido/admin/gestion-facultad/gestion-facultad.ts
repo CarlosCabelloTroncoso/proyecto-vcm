@@ -20,13 +20,22 @@ export class GestionFacultad implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    const facultadesRes = await this.dataService.getAll<any>('facultad', { select: `*`, filters: { is_active: true } });
-    if (facultadesRes.data) this.facultades.set(facultadesRes.data);
+    const [activasRes, inactivasRes] = await Promise.all([
+      this.dataService.getAll<any>('facultad', { select: `*`, filters: { is_active: true } }),
+      this.dataService.getAll<any>('facultad', { select: `*`, filters: { is_active: false } }),
+    ]);
+    if (activasRes.data)   this.facultades.set(activasRes.data);
+    if (inactivasRes.data) this.facultadesInactivas.set(inactivasRes.data);
   }
 
 
-  /* ─── Datos mock ───────────────────────────────────────────── */
+  /* ─── Datos ────────────────────────────────────────────────── */
   facultades = signal<Facultad[]>([]);
+  facultadesInactivas = signal<Facultad[]>([]);
+
+  /* ─── Vista activas / inactivas + mensajes ─────────────────── */
+  verInactivos = false;
+  mensaje = '';
 
   /* ─── Búsqueda y filtros ───────────────────────────────────── */
   searchTerm     = '';
@@ -55,14 +64,19 @@ export class GestionFacultad implements OnInit {
     return colores[hash % colores.length];
   }
 
+  /* ─── Fuente según vista (activas / inactivas) ─────────────── */
+  private get fuente(): Facultad[] {
+    return this.verInactivos ? this.facultadesInactivas() : this.facultades();
+  }
+
   /* ─── Etiquetas únicas para el selector de filtro ─────────── */
   get etiquetasUnicas(): string[] {
-    return [...new Set(this.facultades().map(f => f.etiqueta_facultad))].sort();
+    return [...new Set(this.fuente.map(f => f.etiqueta_facultad))].sort();
   }
 
   /* ─── Lista filtrada ───────────────────────────────────────── */
   get facultadesFiltradas(): Facultad[] {
-    let lista = [...this.facultades()];
+    let lista = [...this.fuente];
 
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
@@ -79,6 +93,22 @@ export class GestionFacultad implements OnInit {
 
   limpiarFiltros(): void {
     this.searchTerm = this.filtroEtiqueta = '';
+  }
+
+  /* ─── Vista activas / inactivas ────────────────────────────── */
+  cambiarVista(verInactivos: boolean): void {
+    this.verInactivos = verInactivos;
+    this.mensaje = '';
+    this.limpiarFiltros();
+  }
+
+  async reactivar(facultad: Facultad): Promise<void> {
+    const { error } = await this.dataService.update('facultad', facultad.id_facultad, { is_active: true }, 'id_facultad');
+    if (!error) {
+      this.facultadesInactivas.update(lista => lista.filter(f => f.id_facultad !== facultad.id_facultad));
+      this.facultades.update(lista => [...lista, { ...facultad, is_active: true }]);
+      this.catalog.invalidate();
+    }
   }
 
   /* ─── Acciones CRUD ────────────────────────────────────────── */
@@ -100,11 +130,34 @@ export class GestionFacultad implements OnInit {
   }
 
   async onGuardarFacultad(datos: Partial<Facultad>): Promise<void> {
+    this.mensaje = '';
+
     if (this.modoEdicion && datos.id_facultad) {
       await this.dataService.update('facultad', datos.id_facultad, datos, 'id_facultad');
+      this.mostrarModalForm = false;
+      this.catalog.invalidate();
+      await this.ngOnInit();
+      return;
+    }
+
+    // Crear: si ya existe una facultad con el mismo nombre, reactivar en vez de duplicar/fallar
+    const nombre = (datos.nombre_facultad ?? '').trim().toLowerCase();
+
+    const activa = this.facultades().find(f => (f.nombre_facultad ?? '').trim().toLowerCase() === nombre);
+    if (activa) {
+      this.mostrarModalForm = false;
+      this.mensaje = `Ya existe una facultad activa llamada "${activa.nombre_facultad}".`;
+      return;
+    }
+
+    const inactiva = this.facultadesInactivas().find(f => (f.nombre_facultad ?? '').trim().toLowerCase() === nombre);
+    if (inactiva) {
+      await this.dataService.update('facultad', inactiva.id_facultad, { ...datos, is_active: true }, 'id_facultad');
+      this.mensaje = `Se reactivó la facultad "${inactiva.nombre_facultad}" que estaba inactiva.`;
     } else {
       await this.dataService.create('facultad', datos);
     }
+
     this.mostrarModalForm = false;
     this.catalog.invalidate();
     await this.ngOnInit();

@@ -21,16 +21,25 @@ export class GestionCarrera implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
     this.facultades = this.catalog.facultades();
-    const carrerasRes = await this.dataService.getAll<any>('carrera', { select: `*, facultad(nombre_facultad, etiqueta_facultad)`, filters: { is_active: true } });
-    if (carrerasRes.data) this.carreras.set(carrerasRes.data);
+    const [activasRes, inactivasRes] = await Promise.all([
+      this.dataService.getAll<any>('carrera', { select: `*, facultad(nombre_facultad, etiqueta_facultad)`, filters: { is_active: true } }),
+      this.dataService.getAll<any>('carrera', { select: `*, facultad(nombre_facultad, etiqueta_facultad)`, filters: { is_active: false } }),
+    ]);
+    if (activasRes.data)   this.carreras.set(activasRes.data);
+    if (inactivasRes.data) this.carrerasInactivas.set(inactivasRes.data);
   }
 
 
   /* ─── Facultades de referencia ─────────────────────────────── */
   facultades: Facultad[] = [];
 
-  /* ─── Datos mock ───────────────────────────────────────────── */
+  /* ─── Datos ────────────────────────────────────────────────── */
   carreras = signal<Carrera[]>([]);
+  carrerasInactivas = signal<Carrera[]>([]);
+
+  /* ─── Vista activas / inactivas + mensajes ─────────────────── */
+  verInactivos = false;
+  mensaje = '';
 
   /* ─── Búsqueda y filtros ───────────────────────────────────── */
   searchTerm     = '';
@@ -76,14 +85,19 @@ export class GestionCarrera implements OnInit {
     return mapa[id_facultad] ?? 'bg-gray-100 text-gray-600 border-gray-200';
   }
 
+  /* ─── Fuente según vista (activas / inactivas) ─────────────── */
+  private get fuente(): Carrera[] {
+    return this.verInactivos ? this.carrerasInactivas() : this.carreras();
+  }
+
   /* ─── Etiquetas únicas para el selector de filtro ─────────── */
   get etiquetasUnicas(): string[] {
-    return [...new Set(this.carreras().map(c => c.etiqueta_carrera))].sort();
+    return [...new Set(this.fuente.map(c => c.etiqueta_carrera))].sort();
   }
 
   /* ─── Lista filtrada ───────────────────────────────────────── */
   get carrerasFiltradas(): Carrera[] {
-    let lista = [...this.carreras()];
+    let lista = [...this.fuente];
 
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
@@ -101,6 +115,22 @@ export class GestionCarrera implements OnInit {
 
   limpiarFiltros(): void {
     this.searchTerm = this.filtroEtiqueta = this.filtroFacultad = '';
+  }
+
+  /* ─── Vista activas / inactivas ────────────────────────────── */
+  cambiarVista(verInactivos: boolean): void {
+    this.verInactivos = verInactivos;
+    this.mensaje = '';
+    this.limpiarFiltros();
+  }
+
+  async reactivar(carrera: Carrera): Promise<void> {
+    const { error } = await this.dataService.update('carrera', carrera.id_carrera, { is_active: true }, 'id_carrera');
+    if (!error) {
+      this.carrerasInactivas.update(lista => lista.filter(c => c.id_carrera !== carrera.id_carrera));
+      this.carreras.update(lista => [...lista, { ...carrera, is_active: true }]);
+      this.catalog.invalidate();
+    }
   }
 
   /* ─── Acciones CRUD ────────────────────────────────────────── */
@@ -122,11 +152,34 @@ export class GestionCarrera implements OnInit {
   }
 
   async onGuardarCarrera(datos: Partial<Carrera>): Promise<void> {
+    this.mensaje = '';
+
     if (this.modoEdicion && datos.id_carrera) {
       await this.dataService.update('carrera', datos.id_carrera, datos, 'id_carrera');
+      this.mostrarModalForm = false;
+      this.catalog.invalidate();
+      await this.ngOnInit();
+      return;
+    }
+
+    // Crear: si ya existe una carrera con el mismo nombre, reactivar en vez de duplicar/fallar
+    const nombre = (datos.nombre_carrera ?? '').trim().toLowerCase();
+
+    const activa = this.carreras().find(c => (c.nombre_carrera ?? '').trim().toLowerCase() === nombre);
+    if (activa) {
+      this.mostrarModalForm = false;
+      this.mensaje = `Ya existe una carrera activa llamada "${activa.nombre_carrera}".`;
+      return;
+    }
+
+    const inactiva = this.carrerasInactivas().find(c => (c.nombre_carrera ?? '').trim().toLowerCase() === nombre);
+    if (inactiva) {
+      await this.dataService.update('carrera', inactiva.id_carrera, { ...datos, is_active: true }, 'id_carrera');
+      this.mensaje = `Se reactivó la carrera "${inactiva.nombre_carrera}" que estaba inactiva.`;
     } else {
       await this.dataService.create('carrera', datos);
     }
+
     this.mostrarModalForm = false;
     this.catalog.invalidate();
     await this.ngOnInit();
