@@ -30,18 +30,14 @@ export class HomeAutoridad implements OnInit {
 
   private solicitudes = signal<any[]>([]);
 
-  private idCerrada   = 0;
-  private idEnProceso = 0;
-
+  // Ids de estado_solicitud (verificados en BD): 1 Pendiente, 2 Aprobada,
+  // 3 Rechazada, 4 En Proceso, 5 Cerrada. Se usan directos para que cada
+  // computed siempre lea this.solicitudes() y se actualice al cargar los datos.
   solicitudesPendientes = computed(() => this.solicitudes().filter(s => s.id_estado === 1).length);
   solicitudesAprobadas  = computed(() => this.solicitudes().filter(s => s.id_estado === 2).length);
   solicitudesRechazadas = computed(() => this.solicitudes().filter(s => s.id_estado === 3).length);
-  solicitudesEnProceso  = computed(() =>
-    this.idEnProceso ? this.solicitudes().filter(s => s.id_estado === this.idEnProceso).length : 0
-  );
-  solicitudesCerradas = computed(() =>
-    this.idCerrada ? this.solicitudes().filter(s => s.id_estado === this.idCerrada).length : 0
-  );
+  solicitudesEnProceso  = computed(() => this.solicitudes().filter(s => s.id_estado === 4).length);
+  solicitudesCerradas   = computed(() => this.solicitudes().filter(s => s.id_estado === 5).length);
 
   actividad = computed<EntradaActividad[]>(() =>
     this.solicitudes().map(s => {
@@ -97,8 +93,6 @@ export class HomeAutoridad implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
-    this.idCerrada   = this.catalog.getIdEstado('Cerrada')    || 4;
-    this.idEnProceso = this.catalog.getIdEstado('En proceso') || 5;
 
     const solRes = await this.data.getAll<any>('solicitud', {
       select:  'id_solicitud, titulo_solicitud, id_estado, fecha_creacion_solicitud, fecha_actualizacion, estado_solicitud(nombre_estado)',
