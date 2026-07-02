@@ -63,7 +63,7 @@ export class ModalDetalleSolicitud {
       2: 'bg-green-100 text-green-700 border-green-200',
       3: 'bg-red-100   text-red-700   border-red-200',
       4: 'bg-sky-100   text-sky-700   border-sky-200',
-      5: 'bg-gray-100  text-gray-600  border-gray-200',
+      5: 'bg-teal-100  text-teal-700  border-teal-200',
     };
     return mapa[id] ?? 'bg-gray-100 text-gray-600 border-gray-200';
   }

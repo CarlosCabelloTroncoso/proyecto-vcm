@@ -32,6 +32,7 @@ export class VerSolicitudes implements OnInit {
 
   filtroActivo: 'pendiente' | 'aprobada' | 'en_proceso' | 'rechazada' | 'cerrado' = 'pendiente';
   searchTerm = '';
+  filtroCarrera = '';
 
   mostrarModalDetalle    = false;
   mostrarModalCliente    = false;
@@ -63,6 +64,10 @@ export class VerSolicitudes implements OnInit {
     } as Record<string, number>)[this.filtroActivo];
 
     let lista = this.solicitudes().filter(s => s.id_estado === estadoId);
+
+    if (this.filtroCarrera) {
+      lista = lista.filter(s => s.id_carrera === +this.filtroCarrera);
+    }
 
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
