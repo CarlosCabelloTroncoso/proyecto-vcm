@@ -166,7 +166,15 @@ export class Alumno implements OnInit {
     this.mensaje = '';
 
     if (this.modoEdicion && datos.id_alumno) {
-      await this.dataService.update('alumno_voluntario', datos.id_alumno, datos, 'id_alumno');
+      // Quitar el join `carrera` y la PK: no son columnas de la tabla y hacen
+      // que Supabase rechace el UPDATE (por eso no se guardaban los cambios).
+      const { id_alumno, carrera, ...cambios } = datos as any;
+      const { error } = await this.dataService.update('alumno_voluntario', id_alumno, cambios, 'id_alumno');
+      if (error) {
+        console.error('[alumno] error al editar:', error);
+        this.mensaje = 'No se pudieron guardar los cambios del alumno.';
+        return;
+      }
       this.mostrarModalForm = false;
       await this.ngOnInit();
       return;
