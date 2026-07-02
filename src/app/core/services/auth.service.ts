@@ -149,13 +149,17 @@ export class AuthService {
    * muestra el mismo mensaje neutro.
    */
   async enviarEnlaceReactivacion(email: string): Promise<void> {
-    await this.supabase.auth.signInWithOtp({
+    const { error } = await this.supabase.auth.signInWithOtp({
       email,
       options: {
         shouldCreateUser: false,
         emailRedirectTo: `${window.location.origin}/auth/reactivar`,
       },
     });
+    // El mensaje al usuario sigue siendo neutro (anti-enumeración), pero
+    // registramos el error real en consola para poder diagnosticar por qué
+    // no llega el correo (rate limit, redirect no permitido, etc.).
+    if (error) console.error('[reactivacion] signInWithOtp error:', error);
   }
 
   hasRole(role: string): boolean {
