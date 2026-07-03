@@ -166,21 +166,79 @@ subirse a cualquier hosting de archivos estáticos.
 ## 8. Despliegue en Vercel
 
 El proyecto se despliega en **Vercel**, que reconstruye y publica automáticamente
-cada vez que se hace *push* a la rama `main`.
+cada vez que se hace *push* a la rama `main`. El código vive en un repositorio de
+GitHub y Vercel se conecta a ese repositorio.
 
-La configuración ya está en `vercel.json`:
+La configuración de build ya está en `vercel.json`:
 
 - **Build command:** `npm run build`
 - **Output directory:** `dist/proyecto-vcm/browser`
 - **Rewrites:** todas las rutas redirigen a `index.html` (necesario para que
   funcione el enrutamiento de una SPA).
 
-### Variables de entorno en Vercel
+A continuación se describe el flujo completo, desde subir el código a GitHub hasta
+dejar la app publicada.
+
+### 8.1. Crear el repositorio en GitHub y subir el código
+
+1. Crea un repositorio **nuevo y vacío** en GitHub (sin README, sin `.gitignore`,
+   sin licencia), por ejemplo `mi-usuario/mi-repositorio`.
+
+2. Desde la carpeta del proyecto (`proyecto-vcm`), apunta el remoto `origin` a la
+   URL de tu nuevo repositorio. Reemplaza la URL de ejemplo por la tuya:
+
+   ```bash
+   git remote set-url origin https://github.com/mi-usuario/mi-repositorio.git
+   ```
+
+   > Si el proyecto todavía no tiene un remoto `origin`, usa `git remote add origin ...`
+   > en lugar de `set-url`.
+
+3. Confirma que quedó apuntando al repositorio correcto:
+
+   ```bash
+   git remote -v
+   ```
+
+   Debe verse algo así (con tu propia URL):
+
+   ```text
+   origin  https://github.com/mi-usuario/mi-repositorio.git (fetch)
+   origin  https://github.com/mi-usuario/mi-repositorio.git (push)
+   ```
+
+4. Sube el código. Primero la rama **`main`**, que es la que Vercel usa para
+   desplegar:
+
+   ```bash
+   git push -u origin main
+   ```
+
+   Después sube la rama de trabajo **`supabase`**:
+
+   ```bash
+   git push -u origin supabase
+   ```
+
+   Con esto quedan ambas ramas publicadas en GitHub.
+
+### 8.2. Crear el proyecto en Vercel
+
+1. Entra a [Vercel](https://vercel.com/) e inicia sesión (el plan **Hobby**,
+   gratuito, es suficiente).
+2. Crea un **New Project** y elige **Import Git Repository**.
+3. Conecta tu cuenta de GitHub (**Install**) y otorga acceso al repositorio que
+   acabas de crear.
+4. Selecciona ese repositorio para importarlo. Vercel detecta automáticamente la
+   configuración de `vercel.json` (build command y output directory), así que no
+   hace falta cambiarlos.
+
+### 8.3. Configurar las variables de entorno en Vercel
 
 En producción, las credenciales **no** se toman de `environment.ts` (ese archivo no
 está en Git). En su lugar, el script `scripts/set-env.js` genera el archivo durante
-el build a partir de dos variables de entorno que debes configurar en Vercel
-(**Project Settings → Environment Variables**):
+el build a partir de dos variables de entorno que debes configurar en Vercel, antes
+del primer despliegue (**Project Settings → Environment Variables**):
 
 | Variable | Valor |
 |---|---|
@@ -188,6 +246,24 @@ el build a partir de dos variables de entorno que debes configurar en Vercel
 | `SUPABASE_KEY` | La clave publicable (`sb_publishable_...`) |
 
 Si esas variables faltan, el build falla con un error de `set-env`.
+
+Con las variables cargadas, lanza el despliegue (**Deploy**). Vercel compilará y
+publicará la app en una URL del tipo `https://mi-repositorio.vercel.app`.
+
+### 8.4. Registrar las URLs en Supabase
+
+Para que el inicio de sesión y los enlaces por correo funcionen en la app ya
+publicada, hay que decirle a Supabase cuál es la URL del sitio. En el panel de
+Supabase, ve a tu proyecto → **Authentication → URL Configuration** y agrega la
+URL de Vercel:
+
+- **Site URL:** la URL principal de tu despliegue, por ejemplo
+  `https://mi-repositorio.vercel.app`.
+- **Redirect URLs:** agrega esa misma URL (y, si las usas, las de vistas previas
+  de Vercel) para permitir las redirecciones de autenticación.
+
+Guarda los cambios. Con esto la aplicación queda **desplegada y funcionando**: cada
+nuevo *push* a `main` disparará automáticamente un nuevo despliegue en Vercel.
 
 ---
 
