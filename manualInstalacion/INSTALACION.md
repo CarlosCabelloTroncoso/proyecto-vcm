@@ -274,10 +274,17 @@ la terminal te devuelva la línea para escribir, ya está listo.
 Aquí crearás tu **propia** base de datos y le cargarás la estructura (tablas,
 datos iniciales y reglas de seguridad).
 
-> 📁 **Necesitas 3 archivos SQL** (te los entrega el equipo o están dentro del
-> proyecto): el del **esquema** (las tablas), el de los **insert** (datos iniciales)
-> y el de las **policies** (reglas de seguridad RLS). Da igual dónde estén guardados;
-> lo que importa es abrir cada uno, copiar su contenido y pegarlo en Supabase.
+> 📁 **Los 3 archivos SQL ya vienen incluidos** en el proyecto, dentro de la carpeta
+> **`supabase/`**:
+>
+> | Archivo | Qué contiene |
+> |---|---|
+> | `supabase/schema.sql` | El **esquema**: tablas, funciones, constraints |
+> | `supabase/inserts.sql` | Los **datos iniciales** (INSERT) |
+> | `supabase/policies.sql` | Las **policies** (seguridad RLS por rol) |
+>
+> Los abres desde VS Code (panel izquierdo → carpeta `supabase`). Para cada uno solo
+> tienes que copiar su contenido y pegarlo en Supabase, como se explica abajo.
 
 ### 5.1. Crear el proyecto en Supabase
 
@@ -300,21 +307,21 @@ y los ejecutas.
    (o directo: `https://supabase.com/dashboard/project/_/sql`).
 2. Presiona **"New query"** (nueva consulta).
 
-Ahora ejecuta los 3 archivos **en este orden exacto**. Para cada uno: abre el
-archivo `.sql`, **copia todo su contenido**, **pégalo** en el editor y presiona el
-botón **"Run"** (o `Ctrl + Enter`). Espera a que diga *Success* antes de pasar al
-siguiente.
+Ahora ejecuta los 3 archivos de la carpeta `supabase/` **en este orden exacto**. Para
+cada uno: ábrelo en VS Code, **copia todo su contenido** (`Ctrl + A` y luego
+`Ctrl + C`), **pégalo** en el editor de Supabase (`Ctrl + V`) y presiona el botón
+**"Run"** (o `Ctrl + Enter`). Espera a que diga *Success* antes de pasar al siguiente.
 
 | Orden | Archivo | Qué hace |
 |---|---|---|
-| **1º** | Esquema (schema) | Crea las tablas y su estructura |
-| **2º** | Insert (seed/datos) | Carga datos iniciales (facultades, carreras, roles, etc.) |
-| **3º** | Policies (RLS) | Aplica las reglas de seguridad por rol |
+| **1º** | `supabase/schema.sql` | Crea las tablas, funciones y su estructura |
+| **2º** | `supabase/inserts.sql` | Carga los datos iniciales (facultades, carreras, roles, etc.) |
+| **3º** | `supabase/policies.sql` | Activa la seguridad RLS y crea las policies por rol |
 
-> ⚠️ **El orden importa.** Si ejecutas los insert antes que el esquema, fallará
-> porque las tablas todavía no existen. Si algo sale en rojo, lee el mensaje de
-> error: casi siempre es porque se ejecutó fuera de orden o se pegó solo una parte
-> del archivo.
+> ⚠️ **El orden importa.** Las policies van al final porque dependen de que las tablas
+> y los datos ya existan; y los insert van después del esquema porque las tablas
+> deben existir primero. Si algo sale en rojo, lee el mensaje de error: casi siempre
+> es porque se ejecutó fuera de orden o se pegó solo una parte del archivo.
 
 3. Para comprobar que quedó bien, entra en el menú lateral a **Table Editor**:
    deberías ver la lista de tablas creadas.
