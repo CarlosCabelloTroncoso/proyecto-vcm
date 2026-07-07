@@ -219,7 +219,16 @@ export class Proyectos implements OnInit {
   }
 
   get planteamientosDisponibles(): { id_planteamiento: number; titulo_planteamiento: string }[] {
-    return this.planteamientosAprobados();
+    // Un planteamiento ya vinculado a un proyecto no puede reutilizarse: se
+    // excluye de la lista para seleccionar planteamiento al crear un proyecto.
+    // Un proyecto cancelado libera el planteamiento (igual criterio que
+    // tieneProyectoActivo en la vista de planteamientos).
+    const vinculados = new Set(
+      this.proyectos()
+        .filter(p => p.estado !== 'cancelado')
+        .map(p => p.id_planteamiento)
+    );
+    return this.planteamientosAprobados().filter(p => !vinculados.has(p.id_planteamiento));
   }
 
   get alumnosDisponiblesParaAgregar(): AlumnoVista[] {
