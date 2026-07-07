@@ -51,6 +51,8 @@ las indicaciones literales de cada uno.
 
 ### 1.1. Instalar Node.js
 
+**Opción A — Descargar desde la web (recomendada si no conoces la terminal):**
+
 1. Entra a: https://nodejs.org/
 2. Verás dos botones grandes. Presiona el de la **izquierda**, el que dice **"LTS"**
    (es la versión estable; sirve la 20 o la 22). Se descargará un archivo
@@ -61,6 +63,25 @@ las indicaciones literales de cada uno.
    presiona **Sí**.
 5. Cuando diga *"Completed"*, presiona **Finish**. No necesitas abrir nada; Node.js
    funciona por debajo.
+
+**Opción B — Instalar por terminal con `winget` (solo Windows 10/11, sin descargas
+manuales):**
+
+`winget` es el gestor de paquetes que **ya viene incluido en Windows 10 y 11**, así
+que no hay que instalar nada extra. Abre **PowerShell** (tecla `Windows`, escribe
+**PowerShell** y ábrelo) y ejecuta:
+
+```powershell
+winget install OpenJS.NodeJS.LTS
+```
+
+Si Windows pide permiso, acepta. Cuando termine, **cierra y vuelve a abrir la
+terminal** para que reconozca el comando `node`. Luego verifica con `node -v` (ver
+paso 1.5).
+
+> 💡 `OpenJS.NodeJS.LTS` instala la versión **LTS** (estable, recomendada). Si algún
+> día quieres la última versión en vez de la LTS, usa `winget install OpenJS.NodeJS`
+> (sin el `.LTS`).
 
 ### 1.2. Instalar Git
 
@@ -116,11 +137,35 @@ si sigue fallando, reinstala ese programa.
 
 Necesitas 4 cuentas. Créalas antes de continuar. Todas son **gratuitas**.
 
-### 2.1. Correo electrónico
+### 2.1. Correo electrónico (crear una cuenta de Google / Gmail)
 
-Si ya tienes un correo (Gmail, Outlook, etc.), úsalo y salta al 2.2. Si no:
+Si ya tienes un correo (Gmail, Outlook, etc.), úsalo y salta al **2.2**. Si no tienes
+uno, crea un Gmail siguiendo estos pasos:
 
-- Crear un Gmail: https://accounts.google.com/signup
+1. Entra a: https://accounts.google.com/signup
+2. En la primera pantalla (**"Crea tu cuenta de Google"**), escribe tu **Nombre** y
+   tus **Apellidos**. Presiona **"Siguiente"**.
+3. Te pedirá tu **fecha de nacimiento** y tu **género**. Complétalos y presiona
+   **"Siguiente"**.
+4. En **"Elige tu dirección de Gmail"**:
+   - Google te sugiere algunas direcciones; puedes elegir una, **o**
+   - marca **"Crear tu propia dirección de Gmail"** y escribe el nombre que quieras
+     (por ejemplo `tunombre.vcm`). Esa será tu dirección: `tunombre.vcm@gmail.com`.
+   - Si dice que **ya está en uso**, prueba con otra variante (agrega números o
+     puntos). Presiona **"Siguiente"**.
+5. **Crea una contraseña** segura (mínimo 8 caracteres, mezcla letras, números y
+   símbolos), escríbela dos veces y presiona **"Siguiente"**.
+
+   > 📝 **Anota tu correo y tu contraseña** en un lugar seguro: los vas a necesitar en
+   > los pasos 2.2 a 2.4 (GitHub, Supabase y Vercel).
+
+6. Google puede pedir un **número de teléfono** para verificar que eres una persona.
+   Escríbelo, presiona **"Siguiente"** y te llegará un **código por SMS**; escribe ese
+   código para confirmar. (Este paso a veces es opcional; si te deja saltarlo, puedes
+   hacerlo.)
+7. Revisa y **acepta** las condiciones del servicio y de privacidad (presiona
+   **"Acepto"** al final de la página).
+8. Listo: verás la bandeja de entrada de Gmail. Ya tienes tu correo creado.
 
 > Usa **el mismo correo** para GitHub, Vercel y Supabase. Así todo queda ordenado.
 

@@ -11,7 +11,7 @@ indica **qué hace**, los **pasos** para realizarla y el **resultado** esperado.
 
 ---
 # LINK VIDEO DEL MANUAL DE USUARIO
-> https://drive.google.com/file/d/1edDK9HFfqm3t2hiGPnt0Eh90ug4k2c6v/view?usp=sharing
+> https://drive.google.com/file/d/1K7n-6n631I7IHgC_aerVrMdbT1Vr_Lem/view?usp=sharing
 
 ---
 
