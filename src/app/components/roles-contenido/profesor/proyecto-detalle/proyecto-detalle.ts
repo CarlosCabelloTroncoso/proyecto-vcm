@@ -35,6 +35,7 @@ interface ProyectoDetalleData {
   id: number;
   id_planteamiento: number;
   id_solicitud: number;
+  id_carrera: number;
   titulo: string;
   planteamiento_origen: string;
   solicitud_origen: string;
@@ -82,7 +83,7 @@ export class ProyectoDetalle implements OnInit {
         `id_proyecto, fecha_inicio, fecha_fin, id_estado, id_planteamiento,
          estado_proyecto(nombre_estado),
          planteamiento_proyecto(
-           id_planteamiento, titulo_planteamiento, tiempo_estimado_planteamiento, id_solicitud,
+           id_planteamiento, titulo_planteamiento, tiempo_estimado_planteamiento, id_solicitud, id_carrera,
            solicitud(id_solicitud, titulo_solicitud, usuario(nombres_usuario, apellidos_usuario, telefono_usuario)),
            detalle_planteamiento_alumno(
              alumno_voluntario(id_alumno, rut_alumno, nombres_alumno, apellidos_alumno)
@@ -155,6 +156,7 @@ export class ProyectoDetalle implements OnInit {
         id:                   p.id_proyecto,
         id_planteamiento:     idPlanteamiento ?? 0,
         id_solicitud:         idSolicitud ?? 0,
+        id_carrera:           plan?.id_carrera ?? 0,
         titulo:               plan?.titulo_planteamiento ?? `Proyecto #${id}`,
         planteamiento_origen: plan?.titulo_planteamiento ?? '—',
         solicitud_origen:     plan?.solicitud?.titulo_solicitud ?? '—',
@@ -199,6 +201,112 @@ export class ProyectoDetalle implements OnInit {
     });
     this.nuevaObservacion = '';
     this.cdr.detectChanges();
+  }
+
+  // ── Edición de alumnos voluntarios (solo en estado "Disponible") ──
+  readonly MAX_ALUMNOS = 5;
+  editandoAlumnos   = false;
+  guardandoAlumnos  = false;
+  errorAlumnos      = '';
+  alumnosEdicion:      AlumnoVista[] = [];
+  private alumnosOriginal: AlumnoVista[] = [];
+  alumnosDisponibles:  AlumnoVista[] = [];
+  alumnoSeleccionadoId: number | undefined = undefined;
+
+  /** El profesor solo puede editar los alumnos mientras el proyecto está Disponible. */
+  get puedeEditarAlumnos(): boolean {
+    return this.proyecto?.estado === 'disponible';
+  }
+
+  get alumnosDisponiblesParaAgregar(): AlumnoVista[] {
+    return this.alumnosDisponibles.filter(
+      a => !this.alumnosEdicion.some(s => s.id === a.id)
+    );
+  }
+
+  async abrirEdicionAlumnos(): Promise<void> {
+    if (!this.proyecto || !this.puedeEditarAlumnos) return;
+    this.errorAlumnos = '';
+
+    // Alumnos activos de la carrera del planteamiento (candidatos a asignar)
+    if (this.alumnosDisponibles.length === 0) {
+      const { data } = await this.dataService.getAll<any>('alumno_voluntario', {
+        select:  'id_alumno, rut_alumno, nombres_alumno, apellidos_alumno',
+        filters: { id_carrera: this.proyecto.id_carrera, is_active: true },
+      });
+      this.alumnosDisponibles = (data ?? []).map((a: any): AlumnoVista => ({
+        id:     a.id_alumno,
+        rut:    a.rut_alumno,
+        nombre: `${a.nombres_alumno} ${a.apellidos_alumno}`,
+      }));
+    }
+
+    this.alumnosEdicion   = this.proyecto.alumnos.map(a => ({ ...a }));
+    this.alumnosOriginal  = this.proyecto.alumnos.map(a => ({ ...a }));
+    this.alumnoSeleccionadoId = undefined;
+    this.editandoAlumnos  = true;
+    this.cdr.detectChanges();
+  }
+
+  agregarAlumnoEdicion(): void {
+    if (!this.alumnoSeleccionadoId || this.alumnosEdicion.length >= this.MAX_ALUMNOS) return;
+    const alumno = this.alumnosDisponibles.find(a => a.id === this.alumnoSeleccionadoId);
+    if (alumno && !this.alumnosEdicion.some(a => a.id === alumno.id)) {
+      this.alumnosEdicion.push(alumno);
+    }
+    this.alumnoSeleccionadoId = undefined;
+  }
+
+  quitarAlumnoEdicion(id: number): void {
+    this.alumnosEdicion = this.alumnosEdicion.filter(a => a.id !== id);
+  }
+
+  cancelarEdicionAlumnos(): void {
+    this.editandoAlumnos      = false;
+    this.alumnoSeleccionadoId = undefined;
+    this.errorAlumnos         = '';
+  }
+
+  async guardarAlumnos(): Promise<void> {
+    if (!this.proyecto) return;
+    this.guardandoAlumnos = true;
+    this.errorAlumnos     = '';
+
+    const idPlan   = this.proyecto.id_planteamiento;
+    const original = this.alumnosOriginal;
+    const actual   = this.alumnosEdicion;
+
+    const agregados = actual.filter(a => !original.some(o => o.id === a.id));
+    const quitados  = original.filter(o => !actual.some(a => a.id === o.id));
+
+    const sb = this.supabaseService.client;
+    try {
+      // Agregar o reactivar: upsert por la PK compuesta (id_planteamiento, id_alumno)
+      if (agregados.length > 0) {
+        const { error } = await sb.from('detalle_planteamiento_alumno').upsert(
+          agregados.map(a => ({ id_planteamiento: idPlan, id_alumno: a.id, is_active: true })),
+          { onConflict: 'id_planteamiento,id_alumno' }
+        );
+        if (error) throw error;
+      }
+      // Quitar: soft-delete (la RLS no permite DELETE físico sobre esta tabla)
+      for (const a of quitados) {
+        const { error } = await sb.from('detalle_planteamiento_alumno')
+          .update({ is_active: false })
+          .eq('id_planteamiento', idPlan)
+          .eq('id_alumno', a.id);
+        if (error) throw error;
+      }
+
+      this.proyecto.alumnos = actual.map(a => ({ ...a }));
+      this.editandoAlumnos  = false;
+    } catch (e) {
+      console.error('[editar alumnos] error:', e);
+      this.errorAlumnos = 'No se pudieron guardar los cambios. Intenta de nuevo.';
+    } finally {
+      this.guardandoAlumnos = false;
+      this.cdr.detectChanges();
+    }
   }
 
   volver(): void {
@@ -250,7 +358,7 @@ export class ProyectoDetalle implements OnInit {
 
   getBadgeEstado(estado: string): string {
     const mapa: Record<string, string> = {
-      aprobado:   'bg-emerald-100 text-emerald-700 border-emerald-200',
+      disponible: 'bg-violet-100 text-violet-700 border-violet-200',
       en_proceso: 'bg-blue-100 text-blue-700 border-blue-200',
       pausado:    'bg-amber-100 text-amber-700 border-amber-200',
       atrasado:   'bg-orange-100 text-orange-600 border-orange-200',
@@ -262,7 +370,7 @@ export class ProyectoDetalle implements OnInit {
 
   getNombreEstado(estado: string): string {
     const mapa: Record<string, string> = {
-      aprobado:   'Disponible',
+      disponible: 'Disponible',
       en_proceso: 'En proceso',
       pausado:    'Pausado',
       atrasado:   'Atrasado',

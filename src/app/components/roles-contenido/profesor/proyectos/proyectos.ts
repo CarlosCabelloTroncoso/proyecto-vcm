@@ -187,8 +187,10 @@ export class Proyectos implements OnInit {
 
   // ── Constantes ────────────────────────────────────────────────
 
+  // "Disponible" no es asignable manualmente: es un estado automático que se
+  // establece al crear el proyecto con una fecha de inicio futura, y pasa solo
+  // a "En proceso" cuando llega esa fecha. Por eso no aparece en el droplist.
   readonly ESTADOS_ASIGNABLES: { key: ProyectoVista['estado']; label: string }[] = [
-    { key: 'disponible', label: 'Disponible' },
     { key: 'en_proceso', label: 'En proceso' },
     { key: 'pausado',    label: 'Pausado'    },
     { key: 'finalizado', label: 'Finalizado' },
