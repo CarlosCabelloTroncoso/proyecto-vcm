@@ -209,7 +209,6 @@ export class ProyectoDetalle implements OnInit {
   guardandoAlumnos  = false;
   errorAlumnos      = '';
   alumnosEdicion:      AlumnoVista[] = [];
-  private alumnosOriginal: AlumnoVista[] = [];
   alumnosDisponibles:  AlumnoVista[] = [];
   alumnoSeleccionadoId: number | undefined = undefined;
 
@@ -242,7 +241,6 @@ export class ProyectoDetalle implements OnInit {
     }
 
     this.alumnosEdicion   = this.proyecto.alumnos.map(a => ({ ...a }));
-    this.alumnosOriginal  = this.proyecto.alumnos.map(a => ({ ...a }));
     this.alumnoSeleccionadoId = undefined;
     this.editandoAlumnos  = true;
     this.cdr.detectChanges();
@@ -272,41 +270,26 @@ export class ProyectoDetalle implements OnInit {
     this.guardandoAlumnos = true;
     this.errorAlumnos     = '';
 
-    const idPlan   = this.proyecto.id_planteamiento;
-    const original = this.alumnosOriginal;
-    const actual   = this.alumnosEdicion;
+    // La sincronización (agregar/reactivar + soft-delete de los quitados) se hace
+    // en una función SECURITY DEFINER, porque el rol profesor no tiene permiso RLS
+    // para UPDATE directo sobre detalle_planteamiento_alumno.
+    const { error } = await this.dataService.rpc('set_alumnos_planteamiento', {
+      p_id_planteamiento: this.proyecto.id_planteamiento,
+      p_ids_alumnos:      this.alumnosEdicion.map(a => a.id),
+    });
 
-    const agregados = actual.filter(a => !original.some(o => o.id === a.id));
-    const quitados  = original.filter(o => !actual.some(a => a.id === o.id));
-
-    const sb = this.supabaseService.client;
-    try {
-      // Agregar o reactivar: upsert por la PK compuesta (id_planteamiento, id_alumno)
-      if (agregados.length > 0) {
-        const { error } = await sb.from('detalle_planteamiento_alumno').upsert(
-          agregados.map(a => ({ id_planteamiento: idPlan, id_alumno: a.id, is_active: true })),
-          { onConflict: 'id_planteamiento,id_alumno' }
-        );
-        if (error) throw error;
-      }
-      // Quitar: soft-delete (la RLS no permite DELETE físico sobre esta tabla)
-      for (const a of quitados) {
-        const { error } = await sb.from('detalle_planteamiento_alumno')
-          .update({ is_active: false })
-          .eq('id_planteamiento', idPlan)
-          .eq('id_alumno', a.id);
-        if (error) throw error;
-      }
-
-      this.proyecto.alumnos = actual.map(a => ({ ...a }));
-      this.editandoAlumnos  = false;
-    } catch (e) {
-      console.error('[editar alumnos] error:', e);
-      this.errorAlumnos = 'No se pudieron guardar los cambios. Intenta de nuevo.';
-    } finally {
+    if (error) {
+      console.error('[editar alumnos] error:', error);
+      this.errorAlumnos     = 'No se pudieron guardar los cambios. Intenta de nuevo.';
       this.guardandoAlumnos = false;
       this.cdr.detectChanges();
+      return;
     }
+
+    this.proyecto.alumnos = this.alumnosEdicion.map(a => ({ ...a }));
+    this.editandoAlumnos  = false;
+    this.guardandoAlumnos = false;
+    this.cdr.detectChanges();
   }
 
   volver(): void {

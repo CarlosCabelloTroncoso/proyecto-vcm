@@ -125,8 +125,9 @@ export class GestionProyecto implements OnInit {
 
   // ── Constantes ────────────────────────────────────────────────────
 
+  // "Disponible" NO se asigna manualmente: es automatico (ver estados de proyecto).
+  // Por eso no aparece en el droplist de cambio de estado del encargado.
   readonly ESTADOS_ASIGNABLES: { key: EstadoProyectoKey; label: string }[] = [
-    { key: 'disponible', label: 'Disponible' },
     { key: 'en_proceso', label: 'En proceso' },
     { key: 'pausado',    label: 'Pausado'    },
     { key: 'finalizado', label: 'Finalizado' },

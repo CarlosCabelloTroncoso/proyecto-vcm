@@ -243,6 +243,43 @@ $$;
 
 ALTER FUNCTION "public"."iniciar_proyecto"("p_id_proyecto" bigint) OWNER TO "postgres";
 
+CREATE OR REPLACE FUNCTION "public"."set_alumnos_planteamiento"("p_id_planteamiento" integer, "p_ids_alumnos" integer[]) RETURNS "void"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+DECLARE
+  v_rol       text;
+  v_id_alumno integer;
+  v_ids       integer[] := COALESCE(p_ids_alumnos, ARRAY[]::integer[]);
+BEGIN
+  v_rol := get_current_user_role();
+  IF v_rol IS NULL OR v_rol NOT IN ('admin', 'encargado', 'profesor') THEN
+    RAISE EXCEPTION 'No autorizado para editar los alumnos del proyecto';
+  END IF;
+
+  -- Quitar (soft-delete) los alumnos que ya no están en la lista
+  UPDATE detalle_planteamiento_alumno
+     SET is_active = FALSE
+   WHERE id_planteamiento = p_id_planteamiento
+     AND is_active = TRUE
+     AND NOT (id_alumno = ANY (v_ids));
+
+  -- Agregar o reactivar los alumnos de la lista (PK compuesta id_planteamiento,id_alumno)
+  FOREACH v_id_alumno IN ARRAY v_ids LOOP
+    INSERT INTO detalle_planteamiento_alumno (id_planteamiento, id_alumno, is_active)
+    VALUES (p_id_planteamiento, v_id_alumno, TRUE)
+    ON CONFLICT (id_planteamiento, id_alumno)
+    DO UPDATE SET is_active = TRUE;
+  END LOOP;
+
+  INSERT INTO logs (id_usuario, accion, tabla_afectada, descripcion)
+  VALUES (get_current_user_id(), 'UPDATE_ALUMNOS', 'detalle_planteamiento_alumno',
+          format('Actualizados alumnos del planteamiento %s', p_id_planteamiento));
+END;
+$$;
+
+ALTER FUNCTION "public"."set_alumnos_planteamiento"("p_id_planteamiento" integer, "p_ids_alumnos" integer[]) OWNER TO "postgres";
+
 CREATE OR REPLACE FUNCTION "public"."reactivar_mi_cuenta"() RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
@@ -1067,6 +1104,10 @@ GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "service_role";
 GRANT ALL ON FUNCTION "public"."iniciar_proyecto"("p_id_proyecto" bigint) TO "anon";
 GRANT ALL ON FUNCTION "public"."iniciar_proyecto"("p_id_proyecto" bigint) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."iniciar_proyecto"("p_id_proyecto" bigint) TO "service_role";
+
+GRANT ALL ON FUNCTION "public"."set_alumnos_planteamiento"("p_id_planteamiento" integer, "p_ids_alumnos" integer[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."set_alumnos_planteamiento"("p_id_planteamiento" integer, "p_ids_alumnos" integer[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."set_alumnos_planteamiento"("p_id_planteamiento" integer, "p_ids_alumnos" integer[]) TO "service_role";
 
 GRANT ALL ON FUNCTION "public"."reactivar_mi_cuenta"() TO "anon";
 GRANT ALL ON FUNCTION "public"."reactivar_mi_cuenta"() TO "authenticated";
