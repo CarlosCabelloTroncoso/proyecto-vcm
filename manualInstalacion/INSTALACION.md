@@ -51,7 +51,7 @@ las indicaciones literales de cada uno.
 
 ### 1.1. Instalar Node.js
 
-**Opción A — Descargar desde la web (recomendada si no conoces la terminal):**
+**Opción A — Descargar desde la web:**
 
 1. Entra a: https://nodejs.org/
 2. Verás dos botones grandes. Presiona el de la **izquierda**, el que dice **"LTS"**
@@ -64,32 +64,15 @@ las indicaciones literales de cada uno.
 5. Cuando diga *"Completed"*, presiona **Finish**. No necesitas abrir nada; Node.js
    funciona por debajo.
 
-**Opción B — Instalar por terminal con `winget` (solo Windows 10/11, sin descargas
-manuales):**
-
-`winget` es el gestor de paquetes que **ya viene incluido en Windows 10 y 11**, así
-que no hay que instalar nada extra. Abre **PowerShell** (tecla `Windows`, escribe
-**PowerShell** y ábrelo) y ejecuta:
-
-```powershell
-winget install OpenJS.NodeJS.LTS
-```
-
-Si Windows pide permiso, acepta. Cuando termine, **cierra y vuelve a abrir la
-terminal** para que reconozca el comando `node`. Luego verifica con `node -v` (ver
-paso 1.5).
-
-> 💡 `OpenJS.NodeJS.LTS` instala la versión **LTS** (estable, recomendada). Si algún
-> día quieres la última versión en vez de la LTS, usa `winget install OpenJS.NodeJS`
-> (sin el `.LTS`).
-
 ### 1.2. Instalar Git
 
 1. Entra a: https://git-scm.com/downloads
 2. Presiona el logo de tu sistema (**Windows** o **macOS**) y luego el botón de
    descarga (**"Click here to download"** / *64-bit Setup*).
 3. Abre el archivo descargado.
-4. **Windows:** el instalador tiene muchas pantallas. **No cambies nada**: solo
+4. Si Windows pregunta *"¿Permitir que esta app haga cambios?"*,
+   presiona **Sí**.
+5. **Windows:** el instalador tiene muchas pantallas. **No cambies nada**: solo
    presiona **Next** en todas hasta llegar a **Install**, y al final **Finish**.
    (Las opciones por defecto son las correctas.)
 5. No hay que abrir Git; se usa desde la terminal.
@@ -110,6 +93,9 @@ paso 1.5).
 1. Entra a: https://www.google.com/chrome/
 2. Presiona **"Descargar Chrome"** → abre el archivo → sigue los pasos hasta
    terminar. (Si ya tienes Chrome, Edge o Firefox, puedes saltarte esto.)
+3. Si Windows pregunta *"¿Permitir que esta app haga cambios?"*,
+   presiona **Sí** Y realizara la instalacion de manera automática.
+4. Una vez instalado puedes cerrarlo.
 
 ### 1.5. Verificar que Node y Git quedaron bien instalados
 
@@ -126,7 +112,7 @@ node -v
 npm -v
 git --version
 ```
-
+>Solución a npm -v debes ejecutar este comando en la PowerShell "Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned" y respondes "Sí a todo" opcion "O" (Esta en Mayúscula)
 Si cada uno responde algo como `v22.11.0`, `11.5.1`, `git version 2.4x`, ¡vas bien!
 Si alguno dice "no se reconoce el comando", **cierra y vuelve a abrir la terminal**;
 si sigue fallando, reinstala ese programa.
@@ -160,9 +146,7 @@ uno, crea un Gmail siguiendo estos pasos:
    > los pasos 2.2 a 2.4 (GitHub, Supabase y Vercel).
 
 6. Google puede pedir un **número de teléfono** para verificar que eres una persona.
-   Escríbelo, presiona **"Siguiente"** y te llegará un **código por SMS**; escribe ese
-   código para confirmar. (Este paso a veces es opcional; si te deja saltarlo, puedes
-   hacerlo.)
+   Pedirá escanear un código QR para verificar unos datos, debes hacerlo desde la cámara de tu dispositivo móvil
 7. Revisa y **acepta** las condiciones del servicio y de privacidad (presiona
    **"Acepto"** al final de la página).
 8. Listo: verás la bandeja de entrada de Gmail. Ya tienes tu correo creado.
@@ -311,6 +295,42 @@ npm install
 Esto crea la carpeta `node_modules/` con todo lo necesario. La **primera vez** puede
 tardar un par de minutos (verás muchas líneas moverse; es normal). Cuando termine y
 la terminal te devuelva la línea para escribir, ya está listo.
+
+### 4.1. Instalar Angular CLI global (para usar el comando `ng serve`)
+
+Con el paso anterior el proyecto ya funciona usando `npm start`. Pero si quieres usar
+el comando **`ng serve`** directamente (sin `npm`), necesitas instalar el **Angular
+CLI de forma global**, una sola vez por computador:
+
+```bash
+npm install -g @angular/cli
+```
+
+Cuando termine, **cierra y vuelve a abrir la terminal** y comprueba que quedó
+instalado:
+
+```bash
+ng version
+```
+
+Debe mostrar la versión de Angular CLI. Si en cambio dice
+*`ng: no se reconoce el comando`*, cierra y abre la terminal de nuevo.
+
+> ℹ️ **Es opcional.** Si prefieres, puedes saltarte este paso y usar siempre
+> `npm start` (o `npx ng serve`), que no requieren instalación global.
+
+> ⚠️ **Windows — error "la ejecución de scripts está deshabilitada":** si al usar
+> `ng` (o `npm`) aparece un mensaje diciendo que *no se puede cargar el archivo
+> `...\ng.ps1` porque la ejecución de scripts está deshabilitada*, ejecuta **una vez**
+> en PowerShell:
+>
+> ```powershell
+> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+> ```
+>
+> Responde **"Sí a todo"** (opción **A**, en mayúscula). Solo afecta a tu usuario y es
+> seguro (permite scripts locales, sigue bloqueando los descargados sin firma). Luego
+> cierra y abre la terminal.
 
 ---
 
@@ -505,7 +525,14 @@ Parado dentro de `proyecto-vcm`:
 npm start
 ```
 
-(equivale a `ng serve`; también puedes usar `npx ng serve`)
+Este comando equivale a `ng serve`. Tienes tres formas de arrancar la app, todas
+válidas:
+
+| Comando | Requisito |
+|---|---|
+| `npm start` | Solo haber hecho `npm install` (paso 4) |
+| `npx ng serve` | Solo haber hecho `npm install` (paso 4) |
+| `ng serve` | Haber instalado Angular CLI global (paso 4.1) |
 
 Espera a que compile. Cuando veas un mensaje como *"Compiled successfully"*, abre el
 navegador en:
@@ -738,7 +765,8 @@ automáticamente un nuevo despliegue en Vercel. 🚀
 | `git clone <url>` | Descargar el proyecto por primera vez | Carpeta donde lo quieras guardar |
 | `cd proyecto-vcm` | Entrar a la carpeta del proyecto | — |
 | `npm install` | Instalar las dependencias | Dentro de `proyecto-vcm` |
-| `npm start` | Ejecutar en desarrollo (`http://localhost:4200`) | Dentro de `proyecto-vcm` |
+| `npm install -g @angular/cli` | Instalar Angular CLI global (para usar `ng serve`) | Cualquier lugar |
+| `npm start` / `npx ng serve` / `ng serve` | Ejecutar en desarrollo (`http://localhost:4200`) | Dentro de `proyecto-vcm` |
 | `npm run build` | Compilar para producción (`dist/proyecto-vcm/browser`) | Dentro de `proyecto-vcm` |
 | `git remote -v` | Ver a qué repositorio apunta el proyecto | Dentro de `proyecto-vcm` |
 | `git remote set-url origin <url>` | Cambiar el repositorio de destino | Dentro de `proyecto-vcm` |
